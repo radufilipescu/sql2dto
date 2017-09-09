@@ -120,7 +120,7 @@ namespace sql2dto.Core
         {
             if (_mapper == null && DtoMapper<TDto>.DefaultOrderedKeyPropNames != null)
             {
-                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length != KeyItemsCount)
+                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[0], 
@@ -132,7 +132,7 @@ namespace sql2dto.Core
             }
             else if (_mapper != null && _mapper.OrderedKeyPropNames != null)
             {
-                if (_mapper.OrderedKeyPropNames.Length != KeyItemsCount)
+                if (_mapper.OrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         _mapper.OrderedKeyPropNames[0], 
@@ -192,7 +192,7 @@ namespace sql2dto.Core
         {
             if (_mapper == null && DtoMapper<TDto>.DefaultOrderedKeyPropNames != null)
             {
-                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length != KeyItemsCount)
+                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[0],
@@ -205,7 +205,7 @@ namespace sql2dto.Core
             }
             else if (_mapper != null && _mapper.OrderedKeyPropNames != null)
             {
-                if (_mapper.OrderedKeyPropNames.Length != KeyItemsCount)
+                if (_mapper.OrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         _mapper.OrderedKeyPropNames[0],
@@ -268,7 +268,7 @@ namespace sql2dto.Core
         {
             if (_mapper == null && DtoMapper<TDto>.DefaultOrderedKeyPropNames != null)
             {
-                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length != KeyItemsCount)
+                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[0],
@@ -282,7 +282,7 @@ namespace sql2dto.Core
             }
             else if (_mapper != null && _mapper.OrderedKeyPropNames != null)
             {
-                if (_mapper.OrderedKeyPropNames.Length != KeyItemsCount)
+                if (_mapper.OrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         _mapper.OrderedKeyPropNames[0],
@@ -348,7 +348,7 @@ namespace sql2dto.Core
         {
             if (_mapper == null && DtoMapper<TDto>.DefaultOrderedKeyPropNames != null)
             {
-                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length != KeyItemsCount)
+                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[0],
@@ -363,7 +363,7 @@ namespace sql2dto.Core
             }
             else if (_mapper != null && _mapper.OrderedKeyPropNames != null)
             {
-                if (_mapper.OrderedKeyPropNames.Length != KeyItemsCount)
+                if (_mapper.OrderedKeyPropNames.Length == KeyItemsCount)
                 {
                     return FetchByKeyProps(
                         _mapper.OrderedKeyPropNames[0],

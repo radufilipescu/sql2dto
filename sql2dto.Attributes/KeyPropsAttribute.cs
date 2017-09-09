@@ -10,7 +10,7 @@ namespace sql2dto.Attributes
         public string[] KeyPropNames { get; private set; }
         public KeyPropsAttribute(params string[] keyPropNames)
         {
-            KeyPropNames = KeyPropNames;
+            KeyPropNames = keyPropNames;
         }
     }
 }
