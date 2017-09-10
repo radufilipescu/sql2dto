@@ -249,5 +249,13 @@ namespace sql2dto.Core
         {
             return ExtractOrdinal(_propMapConfigs, helper.ColumnNamesToOrdinals, propName, columnsPrefix);
         }
+
+        public DtoMapper<TDto> Clone()
+        {
+            var clone = new DtoMapper<TDto>(this.ColumnsPrefix);
+            clone.OrderedKeyPropNames = this.OrderedKeyPropNames.ToArray();
+            clone._propMapConfigs = this._propMapConfigs.ToDictionary(keySelector => keySelector.Key, valueSelector => valueSelector.Value);
+            return clone;
+        }
     }
 }
