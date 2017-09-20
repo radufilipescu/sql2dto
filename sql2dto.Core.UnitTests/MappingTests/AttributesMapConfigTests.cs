@@ -19,14 +19,14 @@ namespace sql2dto.Core.UnitTests.MappingTests
             [PropMap(ColumnName = "Emp_NAME")]
             public string Name { get; set; }
 
-            [PropMap(ColumnName = "ratio")]
-            public double? Ratio { get; set; }
+            [PropMap(ColumnName = "age")]
+            public double? Age { get; set; }
         }
 
         [Fact]
         public void Test()
         {
-            var fakeReader = new FakeDataReader("EmpId", "emp_Name", "RATIO");
+            var fakeReader = new FakeDataReader("EmpId", "emp_Name", "AGE");
             MappingTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);

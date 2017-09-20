@@ -26,17 +26,17 @@ namespace sql2dto.Core.UnitTests.KeyTests.Data
             var alex = emps.First();
             Assert.Equal(alex.Id, 1);
             Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.Ratio, 0.1);
+            Assert.Equal(alex.Age, 0.1);
 
             var geroge = emps.ElementAt(1);
             Assert.Equal(geroge.Id, 2);
             Assert.Equal(geroge.Name, "George");
-            Assert.Equal(geroge.Ratio, 0.2);
+            Assert.Equal(geroge.Age, 0.2);
 
             var lisa = emps.ElementAt(2);
             Assert.Equal(lisa.Id, 3);
             Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.Ratio, 0.3);
+            Assert.Equal(lisa.Age, 0.3);
         }
     }
 }

@@ -22,17 +22,17 @@ namespace sql2dto.Core.UnitTests.MappingTests.Data
             var alex = emps.First();
             Assert.Equal(alex.Id, 1);
             Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.Ratio, 0.1);
+            Assert.Equal(alex.Age, 0.1);
 
             var george = emps.ElementAt(1);
             Assert.Equal(george.Id, 2);
             Assert.Equal(george.Name, "George");
-            Assert.Equal(george.Ratio, null);
+            Assert.Equal(george.Age, null);
 
             var lisa = emps.ElementAt(2);
             Assert.Equal(lisa.Id, 3);
             Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.Ratio, 0.3);
+            Assert.Equal(lisa.Age, 0.3);
         }
 
         internal static void AssertDataIntegrity(IEnumerable<ConverterTests.Data.IEmployee> enumerable)

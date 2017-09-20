@@ -8,6 +8,6 @@ namespace sql2dto.Core.UnitTests.MappingTests.Data
     {
         int Id { get; set; }
         string Name { get; set; }
-        double? Ratio { get; set; }
+        double? Age { get; set; }
     }
 }

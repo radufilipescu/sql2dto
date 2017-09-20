@@ -9,11 +9,11 @@ namespace sql2dto.Core
     public class ReadHelper : IDisposable
     {
         #region STATIC
-        internal static MethodInfo GetValueOrdinalDefaultMethodInfo { get; private set; }
+        internal static MethodInfo GetValueOrDefaultMethodInfo { get; private set; }
 
         static ReadHelper()
         {
-            GetValueOrdinalDefaultMethodInfo = typeof(ReadHelper).GetMethod("GetValue", new Type[] { typeof(int), typeof(object) });
+            GetValueOrDefaultMethodInfo = typeof(ReadHelper).GetMethod("GetValueOrDefault", BindingFlags.Instance | BindingFlags.NonPublic);
         }
         #endregion
 
@@ -74,19 +74,24 @@ namespace sql2dto.Core
             Reader.Dispose();
         }
 
-        #region GetValue
-        public object GetValue(int ordinal)
-        {
-            return Reader.GetValue(ordinal);
-        }
-
-        public object GetValue(int ordinal, object defaultValue)
+        internal object GetValueOrDefault(int ordinal, object defaultValue)
         {
             if (Reader.IsDBNull(ordinal))
             {
                 return defaultValue;
             }
             return Reader.GetValue(ordinal);
+        }
+
+        #region GetValue
+        public object GetValue(int ordinal)
+        {
+            return Reader.GetValue(ordinal);
+        }
+
+        public object GetNullableValue(int ordinal)
+        {
+            return Reader.IsDBNull(ordinal) ? null : Reader.GetValue(ordinal);
         }
 
         public object GetValue<TDto>(string propName, string columnsPrefix = null) where TDto : new()
@@ -102,12 +107,38 @@ namespace sql2dto.Core
             }
         }
 
+        public object GetNullableValue<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                return Reader.IsDBNull(ordinal.Value) ? null : Reader.GetValue(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public object GetValue<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetValue(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public object GetNullableValue<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                return Reader.IsDBNull(ordinal.Value) ? null : Reader.GetValue(ordinal.Value);
             }
             else
             {
@@ -129,6 +160,25 @@ namespace sql2dto.Core
             }
         }
 
+        public bool? GetNullableBoolean(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetBoolean(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public bool GetBoolean<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -142,12 +192,52 @@ namespace sql2dto.Core
             }
         }
 
+        public bool? GetNullableBoolean<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetBoolean(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public bool GetBoolean<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetBoolean(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public bool? GetNullableBoolean<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetBoolean(ordinal.Value);
+                }
             }
             else
             {
@@ -421,6 +511,25 @@ namespace sql2dto.Core
             }
         }
 
+        public DateTime? GetNullableDateTime(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDateTime(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public DateTime GetDateTime<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -434,12 +543,52 @@ namespace sql2dto.Core
             }
         }
 
+        public DateTime? GetNullableDateTime<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDateTime(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public DateTime GetDateTime<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDateTime(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public DateTime? GetNullableDateTime<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDateTime(ordinal.Value);
+                }
             }
             else
             {
@@ -461,6 +610,25 @@ namespace sql2dto.Core
             }
         }
 
+        public decimal? GetNullableDecimal(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDecimal(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public decimal GetDecimal<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -474,12 +642,52 @@ namespace sql2dto.Core
             }
         }
 
+        public decimal? GetNullableDecimal<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDecimal(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public decimal GetDecimal<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDecimal(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public decimal? GetNullableDecimal<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDecimal(ordinal.Value);
+                }
             }
             else
             {
@@ -501,6 +709,25 @@ namespace sql2dto.Core
             }
         }
 
+        public double? GetNullableDouble(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDouble(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public double GetDouble<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -514,12 +741,52 @@ namespace sql2dto.Core
             }
         }
 
+        public double? GetNullableDouble<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDouble(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public double GetDouble<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDouble(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public double? GetNullableDouble<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetDouble(ordinal.Value);
+                }
             }
             else
             {
@@ -581,6 +848,25 @@ namespace sql2dto.Core
             }
         }
 
+        public float? GetNullableFloat(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetFloat(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public float GetFloat<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -594,12 +880,52 @@ namespace sql2dto.Core
             }
         }
 
+        public float? GetNullableFloat<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetFloat(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public float GetFloat<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetFloat(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public float? GetNullableFloat<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetFloat(ordinal.Value);
+                }
             }
             else
             {
@@ -621,6 +947,25 @@ namespace sql2dto.Core
             }
         }
 
+        public Guid? GetNullableGuid(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetGuid(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public Guid GetGuid<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -634,12 +979,52 @@ namespace sql2dto.Core
             }
         }
 
+        public Guid? GetNullableGuid<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetGuid(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public Guid GetGuid<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetGuid(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public Guid? GetNullableGuid<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetGuid(ordinal.Value);
+                }
             }
             else
             {
@@ -661,6 +1046,25 @@ namespace sql2dto.Core
             }
         }
 
+        public short? GetNullableInt16(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt16(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public short GetInt16<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -674,12 +1078,52 @@ namespace sql2dto.Core
             }
         }
 
+        public short? GetNullableInt16<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt16(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public short GetInt16<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt16(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public short? GetNullableInt16<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt16(ordinal.Value);
+                }
             }
             else
             {
@@ -701,6 +1145,25 @@ namespace sql2dto.Core
             }
         }
 
+        public int? GetNullableInt32(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt32(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public int GetInt32<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -714,12 +1177,52 @@ namespace sql2dto.Core
             }
         }
 
+        public int? GetNullableInt32<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt32(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public int GetInt32<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt32(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public int? GetNullableInt32<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt32(ordinal.Value);
+                }
             }
             else
             {
@@ -741,6 +1244,25 @@ namespace sql2dto.Core
             }
         }
 
+        public long? GetNullableInt64(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt64(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public long GetInt64<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -754,12 +1276,52 @@ namespace sql2dto.Core
             }
         }
 
+        public long? GetNullableInt64<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt64(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public long GetInt64<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt64(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public long? GetNullableInt64<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetInt64(ordinal.Value);
+                }
             }
             else
             {
@@ -781,6 +1343,25 @@ namespace sql2dto.Core
             }
         }
 
+        public string GetNullableString(string columnName)
+        {
+            if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
+            {
+                if (Reader.IsDBNull(ordinal))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetString(ordinal);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+        }
+
         public string GetString<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
@@ -794,12 +1375,52 @@ namespace sql2dto.Core
             }
         }
 
+        public string GetNullableString<TDto>(string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetString(ordinal.Value);
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         public string GetString<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
         {
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetString(ordinal.Value);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        public string GetNullableString<TDto>(DtoMapper<TDto> mapper, string propName, string columnsPrefix = null) where TDto : new()
+        {
+            int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
+            if (ordinal.HasValue)
+            {
+                if (Reader.IsDBNull(ordinal.Value))
+                {
+                    return null;
+                }
+                else
+                {
+                    return Reader.GetString(ordinal.Value);
+                }
             }
             else
             {

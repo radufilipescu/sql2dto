@@ -16,7 +16,7 @@ namespace sql2dto.Core.UnitTests.ConverterTests
             public int Id { get; set; }
             public string Name { get; set; }
             
-            [NullableIntToBooleanConverterAttribute]
+            [NullableIntToBooleanConverter]
             public bool IsActive { get; set; }
         }
 

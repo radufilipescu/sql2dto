@@ -15,13 +15,13 @@ namespace sql2dto.Core.UnitTests.KeyTests
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public double Ratio { get; set; }
+            public double Age { get; set; }
         }
 
         [Fact]
         public void Fetch_by_key_value()
         {
-            var fakeReader = new FakeDataReader("Id", "Name", "Ratio");
+            var fakeReader = new FakeDataReader("Id", "Name", "Age");
             KeyTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);
@@ -39,7 +39,7 @@ namespace sql2dto.Core.UnitTests.KeyTests
         [Fact]
         public void Fetch_by_key_props()
         {
-            var fakeReader = new FakeDataReader("Id", "Name", "Ratio");
+            var fakeReader = new FakeDataReader("Id", "Name", "Age");
             KeyTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);
@@ -60,7 +60,7 @@ namespace sql2dto.Core.UnitTests.KeyTests
         [Fact]
         public void Fetch_using_mapper_instance_config()
         {
-            var fakeReader = new FakeDataReader("Id", "Name", "Ratio");
+            var fakeReader = new FakeDataReader("Id", "Name", "Age");
             KeyTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);
@@ -80,13 +80,13 @@ namespace sql2dto.Core.UnitTests.KeyTests
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public double Ratio { get; set; }
+            public double Age { get; set; }
         }
 
         [Fact]
         public void Fetch_using_attributes_map_config()
         {
-            var fakeReader = new FakeDataReader("Id", "Name", "Ratio");
+            var fakeReader = new FakeDataReader("Id", "Name", "Age");
             KeyTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);

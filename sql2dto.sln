@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Core", "sql2dto.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Core.UnitTests", "sql2dto.Core.UnitTests\sql2dto.Core.UnitTests.csproj", "{70C91ACB-B118-483A-BBD8-FDBE45267CC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.Attributes", "sql2dto.Attributes\sql2dto.Attributes.csproj", "{8C5C7B03-AC06-4DD2-8EC9-CF25CB45FAB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Attributes", "sql2dto.Attributes\sql2dto.Attributes.csproj", "{8C5C7B03-AC06-4DD2-8EC9-CF25CB45FAB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.MSSqlServer", "sql2dto.MSSqlServer\sql2dto.MSSqlServer.csproj", "{10324DD3-99D3-490C-869D-F020E67E4ECA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{8C5C7B03-AC06-4DD2-8EC9-CF25CB45FAB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C5C7B03-AC06-4DD2-8EC9-CF25CB45FAB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C5C7B03-AC06-4DD2-8EC9-CF25CB45FAB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10324DD3-99D3-490C-869D-F020E67E4ECA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10324DD3-99D3-490C-869D-F020E67E4ECA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10324DD3-99D3-490C-869D-F020E67E4ECA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10324DD3-99D3-490C-869D-F020E67E4ECA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

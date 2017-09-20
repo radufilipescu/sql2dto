@@ -137,7 +137,7 @@ namespace sql2dto.Core
                 }
                 
                 Expression getValueExpr = Expression.Call(readHelperConstExpr, 
-                    ReadHelper.GetValueOrdinalDefaultMethodInfo, new Expression[] 
+                    ReadHelper.GetValueOrDefaultMethodInfo, new Expression[] 
                         {
                             Expression.Constant(ordinal, typeof(int)),
                             Expression.Constant(propMapConfig.DefaultValue, typeof(object))

@@ -14,13 +14,13 @@ namespace sql2dto.Core.UnitTests.MappingTests
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public double? Ratio { get; set; }
+            public double? Age { get; set; }
         }
 
         [Fact]
         public void Test()
         {
-            var fakeReader = new FakeDataReader("Id", "Name", "RATIO");
+            var fakeReader = new FakeDataReader("Id", "Name", "AGE");
             MappingTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);

@@ -14,18 +14,18 @@ namespace sql2dto.Core.UnitTests.MappingTests
         {
             public int Id { get; set; }
             public string Name { get; set; }
-            public double? Ratio { get; set; }
+            public double? Age { get; set; }
         }
 
         private DtoMapper<Employee_WithMapper> _employeeMapper = new DtoMapper<Employee_WithMapper>()
             .MapProp(nameof(Employee_WithMapper.Id), "EmpId")
             .MapProp(nameof(Employee_WithMapper.Name), "emp_Name")
-            .MapProp(nameof(Employee_WithMapper.Ratio), "RATIO");
+            .MapProp(nameof(Employee_WithMapper.Age), "AGE");
 
         [Fact]
         public void Test()
         {
-            var fakeReader = new FakeDataReader("EmpId", "emp_Name", "RATIO");
+            var fakeReader = new FakeDataReader("EmpId", "emp_Name", "AGE");
             MappingTestsData.SetupEmployeesData(fakeReader);
 
             var h = new ReadHelper(fakeReader);
