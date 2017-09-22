@@ -10,10 +10,38 @@ namespace sql2dto.Core
     {
         #region STATIC
         internal static MethodInfo GetValueOrDefaultMethodInfo { get; private set; }
+        private static Dictionary<string, MethodInfo> _cachedGetterOrdinalMethodInfos;
+
+        internal static MethodInfo GetGetterOrdinalMethodInfo(string getterMethodName)
+        {
+            if (_cachedGetterOrdinalMethodInfos.TryGetValue(getterMethodName, out MethodInfo mi))
+            {
+                return mi;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(getterMethodName), $"MethodInfo '{getterMethodName}' was not found on ReadHelper's cache");
+            }
+        }
 
         static ReadHelper()
         {
             GetValueOrDefaultMethodInfo = typeof(ReadHelper).GetMethod("GetValueOrDefault", BindingFlags.Instance | BindingFlags.NonPublic);
+            _cachedGetterOrdinalMethodInfos = new Dictionary<string, MethodInfo>();
+            foreach (MethodInfo getterMethodInfo in typeof(ReadHelper).GetMethods(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if (getterMethodInfo.GetCustomAttribute<CacheGetterOrdinalMethodInfoAttribute>() == null)
+                {
+                    continue;
+                }
+
+                if (_cachedGetterOrdinalMethodInfos.ContainsKey(getterMethodInfo.Name))
+                {
+                    continue;
+                }
+
+                _cachedGetterOrdinalMethodInfos.Add(getterMethodInfo.Name, getterMethodInfo);
+            }
         }
         #endregion
 
@@ -83,6 +111,7 @@ namespace sql2dto.Core
             return Reader.GetValue(ordinal);
         }
 
+        #region DATA GETTERS
         #region GetValue
         public object GetValue(int ordinal)
         {
@@ -148,6 +177,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetBoolean
+        [CacheGetterOrdinalMethodInfo]
+        public bool GetBoolean(int ordinal)
+        {
+            return Reader.GetBoolean(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public bool? GetNullableBoolean(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetBoolean(ordinal);
+            }
+        }
+
         public bool GetBoolean(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -499,6 +547,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetDateTime
+        [CacheGetterOrdinalMethodInfo]
+        public DateTime GetDateTime(int ordinal)
+        {
+            return Reader.GetDateTime(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public DateTime? GetNullableDateTime(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetDateTime(ordinal);
+            }
+        }
+
         public DateTime GetDateTime(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -598,6 +665,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetDecimal
+        [CacheGetterOrdinalMethodInfo]
+        public decimal GetDecimal(int ordinal)
+        {
+            return Reader.GetDecimal(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public decimal? GetNullableDecimal(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetDecimal(ordinal);
+            }
+        }
+
         public decimal GetDecimal(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -697,6 +783,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetDouble
+        [CacheGetterOrdinalMethodInfo]
+        public double GetDouble(int ordinal)
+        {
+            return Reader.GetDouble(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public double? GetNullableDouble(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetDouble(ordinal);
+            }
+        }
+
         public double GetDouble(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -836,6 +941,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetFloat
+        [CacheGetterOrdinalMethodInfo]
+        public float GetFloat(int ordinal)
+        {
+            return Reader.GetFloat(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public float? GetNullableFloat(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetFloat(ordinal);
+            }
+        }
+
         public float GetFloat(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -935,6 +1059,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetGuid
+        [CacheGetterOrdinalMethodInfo]
+        public Guid GetGuid(int ordinal)
+        {
+            return Reader.GetGuid(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public Guid? GetNullableGuid(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetGuid(ordinal);
+            }
+        }
+
         public Guid GetGuid(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1034,6 +1177,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetInt16
+        [CacheGetterOrdinalMethodInfo]
+        public short GetInt16(int ordinal)
+        {
+            return Reader.GetInt16(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public short? GetNullableInt16(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetInt16(ordinal);
+            }
+        }
+
         public short GetInt16(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1133,6 +1295,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetInt32
+        [CacheGetterOrdinalMethodInfo]
+        public int GetInt32(int ordinal)
+        {
+            return Reader.GetInt32(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public int? GetNullableInt32(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetInt32(ordinal);
+            }
+        }
+
         public int GetInt32(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1232,6 +1413,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetInt64
+        [CacheGetterOrdinalMethodInfo]
+        public long GetInt64(int ordinal)
+        {
+            return Reader.GetInt64(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public long? GetNullableInt64(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetInt64(ordinal);
+            }
+        }
+
         public long GetInt64(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1331,6 +1531,25 @@ namespace sql2dto.Core
         #endregion
 
         #region GetString
+        [CacheGetterOrdinalMethodInfo]
+        public string GetString(int ordinal)
+        {
+            return Reader.GetString(ordinal);
+        }
+
+        [CacheGetterOrdinalMethodInfo]
+        public string GetNullableString(int ordinal)
+        {
+            if (Reader.IsDBNull(ordinal))
+            {
+                return null;
+            }
+            else
+            {
+                return Reader.GetString(ordinal);
+            }
+        }
+
         public string GetString(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1437,6 +1656,11 @@ namespace sql2dto.Core
         #endregion
 
         #region IsDBNull
+        public bool IsDBNull(int ordinal)
+        {
+            return Reader.IsDBNull(ordinal);
+        }
+
         public bool IsDBNull(string columnName)
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
@@ -1474,6 +1698,9 @@ namespace sql2dto.Core
                 throw new ArgumentOutOfRangeException(nameof(propName));
             }
         }
+        #endregion
+
+        private class CacheGetterOrdinalMethodInfoAttribute : Attribute { }
         #endregion
     }
 }

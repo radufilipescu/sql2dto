@@ -123,8 +123,6 @@ namespace sql2dto.Core
 
         private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, string columnsPrefix = null)
         {
-            //TODO: use GetInt32, GetDouble instead.. also cache them
-
             var readHelperConstExpr = Expression.Constant(helper, typeof(ReadHelper));
 
             List<MemberBinding> memberBindings = new List<MemberBinding>();
@@ -135,23 +133,35 @@ namespace sql2dto.Core
                 {
                     continue;
                 }
-                
-                Expression getValueExpr = Expression.Call(readHelperConstExpr, 
-                    ReadHelper.GetValueOrDefaultMethodInfo, new Expression[] 
-                        {
-                            Expression.Constant(ordinal, typeof(int)),
-                            Expression.Constant(propMapConfig.DefaultValue, typeof(object))
-                        }
-                );
 
-                if (propMapConfig.Converter != null)
+                if (propMapConfig.Converter == null)
                 {
+                    Expression getValueExpr = Expression.Call(readHelperConstExpr,
+                        propMapConfig.ReadHelperGetterMethodInfo, new Expression[]
+                            {
+                                Expression.Constant(ordinal, typeof(int))
+                            }
+                    );
+
+                    var memberBinding = Expression.Bind(propMapConfig.Info, getValueExpr);
+                    memberBindings.Add(memberBinding);
+                }
+                else
+                {
+                    Expression getValueExpr = Expression.Call(readHelperConstExpr,
+                        ReadHelper.GetValueOrDefaultMethodInfo, new Expression[]
+                            {
+                                Expression.Constant(ordinal, typeof(int)),
+                                Expression.Constant(propMapConfig.DefaultValue, typeof(object))
+                            }
+                    );
+
                     Expression<Func<object, object>> converterExpr = (v) => propMapConfig.Converter(v);
                     getValueExpr = Expression.Invoke(converterExpr, getValueExpr);
-                }
 
-                var memberBinding = Expression.Bind(propMapConfig.Info, Expression.Convert(getValueExpr, propMapConfig.Info.PropertyType));
-                memberBindings.Add(memberBinding);
+                    var memberBinding = Expression.Bind(propMapConfig.Info, Expression.Convert(getValueExpr, propMapConfig.Info.PropertyType));
+                    memberBindings.Add(memberBinding);
+                }
             }
 
             var newItemExpr = Expression.New(typeof(TDto));
