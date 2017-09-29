@@ -32,7 +32,7 @@ namespace sql2dto.Core
                 DefaultOrderedKeyPropNames = keyPropsAttribute.KeyPropNames;
             }
 
-            foreach (var propInfo in dtoType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            foreach (var propInfo in dtoType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (!propInfo.CanWrite)
                 {

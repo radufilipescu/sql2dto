@@ -57,17 +57,36 @@ namespace sql2dto.Core
             return dto;
         }
 
+        protected bool IsDBNullKeyPart(string keyPartPropName, string columnPrefix = null)
+        {
+            try
+            {
+                if (_mapper == null)
+                {
+                    return _helper.IsDBNull<TDto>(keyPartPropName, columnPrefix ?? _columnsPrefix);
+                }
+                else
+                {
+                    return _helper.IsDBNull(_mapper, keyPartPropName, columnPrefix ?? _columnsPrefix);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Could not check if DBNull for key property {keyPartPropName}. See inner exception for details.", ex);
+            }
+        }
+
         protected TKeyPart FetchKeyPart<TKeyPart>(string keyPartPropName, string columnPrefix = null)
         {
             try
             {
                 if (_mapper == null)
                 {
-                    return (TKeyPart)_helper.GetValue<TDto>(keyPartPropName, columnPrefix);
+                    return (TKeyPart)_helper.GetValue<TDto>(keyPartPropName, columnPrefix ?? _columnsPrefix);
                 }
                 else
                 {
-                    return (TKeyPart)_helper.GetValue(_mapper, keyPartPropName, columnPrefix);
+                    return (TKeyPart)_helper.GetValue(_mapper, keyPartPropName, columnPrefix ?? _columnsPrefix);
                 }
             }
             catch(Exception ex)
@@ -97,6 +116,10 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue(TKey key)
         {
+            if (key.Equals(default(TKey)))
+            {
+                return default(TDto);
+            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -112,6 +135,10 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName, string columnPrefix = null)
         {
+            if (IsDBNullKeyPart(keyPropName, columnPrefix))
+            {
+                return default(TDto);
+            }
             TKey key = FetchKeyPart<TKey>(keyPropName, columnPrefix);
             return FetchByKeyValue(key);
         }
@@ -168,6 +195,11 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2) key)
         {
+            if (key.Item1.Equals(default(TKey1))
+                || key.Item2.Equals(default(TKey2)))
+            {
+                return default(TDto);
+            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -183,6 +215,11 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string columnsPrefix = null)
         {
+            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnsPrefix))
+            {
+                return default(TDto);
+            }
             TKey1 key1 = FetchKeyPart<TKey1>(keyPropName1, columnsPrefix);
             TKey2 key2 = FetchKeyPart<TKey2>(keyPropName2, columnsPrefix);
             return FetchByKeyValue((key1, key2));
@@ -243,6 +280,12 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2, TKey3) key)
         {
+            if (key.Item1.Equals(default(TKey1))
+                || key.Item2.Equals(default(TKey2))
+                || key.Item3.Equals(default(TKey3)))
+            {
+                return default(TDto);
+            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -258,6 +301,12 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string columnsPrefix = null)
         {
+            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnsPrefix))
+            {
+                return default(TDto);
+            }
             TKey1 key1 = FetchKeyPart<TKey1>(keyPropName1, columnsPrefix);
             TKey2 key2 = FetchKeyPart<TKey2>(keyPropName2, columnsPrefix);
             TKey3 key3 = FetchKeyPart<TKey3>(keyPropName3, columnsPrefix);
@@ -273,7 +322,7 @@ namespace sql2dto.Core
                     return FetchByKeyProps(
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[0],
                         DtoMapper<TDto>.DefaultOrderedKeyPropNames[1],
-                        DtoMapper<TDto>.DefaultOrderedKeyPropNames[3],
+                        DtoMapper<TDto>.DefaultOrderedKeyPropNames[2],
                         DtoMapper<TDto>.DefaultColumnsPrefix
                     );
                 }
@@ -287,7 +336,7 @@ namespace sql2dto.Core
                     return FetchByKeyProps(
                         _mapper.OrderedKeyPropNames[0],
                         _mapper.OrderedKeyPropNames[1],
-                        _mapper.OrderedKeyPropNames[3],
+                        _mapper.OrderedKeyPropNames[2],
                         _mapper.ColumnsPrefix
                     );
                 }
@@ -322,6 +371,13 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2, TKey3, TKey4) key)
         {
+            if (key.Item1.Equals(default(TKey1))
+                || key.Item2.Equals(default(TKey2))
+                || key.Item3.Equals(default(TKey3))
+                || key.Item4.Equals(default(TKey4)))
+            {
+                return default(TDto);
+            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -337,6 +393,13 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string columnsPrefix = null)
         {
+            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName4, columnsPrefix))
+            {
+                return default(TDto);
+            }
             TKey1 key1 = FetchKeyPart<TKey1>(keyPropName1, columnsPrefix);
             TKey2 key2 = FetchKeyPart<TKey2>(keyPropName2, columnsPrefix);
             TKey3 key3 = FetchKeyPart<TKey3>(keyPropName3, columnsPrefix);
