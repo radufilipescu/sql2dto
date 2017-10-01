@@ -15,6 +15,30 @@ namespace sql2dto.Core
         internal static string DefaultColumnsPrefix { get; private set; }
         internal static string[] DefaultOrderedKeyPropNames { get; private set; }
 
+        internal static string GetDefaultInnerPropTypeName(string propName)
+        {
+            if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
+            {
+                return cfg.InnerPropTypeName;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        internal static Type GetDefaultInnerPropType(string propName)
+        {
+            if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
+            {
+                return cfg.InnerPropType;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
         protected static void InitDefault()
         {
             _defaultPropMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
@@ -180,6 +204,30 @@ namespace sql2dto.Core
         protected Dictionary<string, PropMapConfig> _propMapConfigs;
         internal string ColumnsPrefix { get; private set; }
         internal string[] OrderedKeyPropNames { get; private set; }
+
+        internal string GetInnerPropTypeName(string propName)
+        {
+            if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
+            {
+                return cfg.InnerPropTypeName;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
+
+        internal Type GetInnerPropType(string propName)
+        {
+            if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
+            {
+                return cfg.InnerPropType;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName));
+            }
+        }
 
         private void Init(string columnsPrefix = null)
         {

@@ -92,18 +92,24 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             var h = new ReadHelper(fakeReader);
 
-            var headFetch = FetchOp<Employee>.Create<int>(h, "head")
-                .Include<Executive, int>((emp, ex) => { emp.Direct = ex; });
+            var fetch = 
+                h.Fetch<Employee>()
+                    .Include<HolidayRequest>((emp, hreq) => { emp.HolidayRequests.Add(hreq); })
+                    .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) =>  { depFetchOp
+                        .Include<Location>((dep, loc) => { dep.Locations.Add(loc); })
+                        .Include<Employee>("head", (dep, head) => { dep.Head = head; }, (empFetchOp) => { empFetchOp
+                            .Include<Executive>((emp, ex) => { emp.Direct = ex; });
+                        });
+                    });
 
-            var depFetch = FetchOp<Department>.Create<string>(h)
-                .Include<Location, string, string>((dep, loc) => { dep.Locations.Add(loc); })
-                .Include(headFetch, (dep, head) => { dep.Head = head; });
+            //var fetch =
+            //    h.Fetch<Employee>()
+            //        .Include<Department>((emp, dep) => { emp.Department = dep; });
 
-            var empFetch = FetchOp<Employee>.Create<int>(h)
-                .Include(depFetch, (emp, dep) => { emp.Department = dep; })
-                .Include<HolidayRequest, int, DateTime, DateTime>((emp, hreq) => { emp.HolidayRequests.Add(hreq); });
+            //var fetch = h.Fetch<Department>()
+            //    .Include<Location>((dep, loc) => { dep.Locations.Add(loc); });
 
-            var result = empFetch.All();
+            var result = fetch.All();
         }
     }
 }

@@ -15,20 +15,32 @@ namespace sql2dto.Core
             this.Info = info;
             this.DefaultValue = defaultValue;
 
+            Type stringType = typeof(string);
+
+            Type innerPropType = null;
+            string innerPropTypeName = null;
             string getterName = "Get";
             if (this.Info.PropertyType.IsGenericType
                 && this.Info.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                getterName += "Nullable" + Nullable.GetUnderlyingType(this.Info.PropertyType).Name;
+                innerPropType = Nullable.GetUnderlyingType(this.Info.PropertyType);
+                innerPropTypeName = innerPropType.Name;
+                getterName += "Nullable" + innerPropTypeName;
             }
-            else if (this.Info.PropertyType == typeof(string))
+            else if (this.Info.PropertyType == stringType)
             {
-                getterName += "NullableString";
+                innerPropType = stringType;
+                innerPropTypeName = stringType.Name;
+                getterName += "Nullable" + innerPropTypeName;
             }
             else
             {
-                getterName += this.Info.PropertyType.Name;
+                innerPropType = this.Info.PropertyType;
+                innerPropTypeName = innerPropType.Name;
+                getterName += innerPropTypeName;
             }
+            this.InnerPropType = innerPropType;
+            this.InnerPropTypeName = innerPropTypeName;
             this.ReadHelperGetterMethodName = getterName;
             this.ReadHelperGetterMethodInfo = ReadHelper.GetGetterOrdinalMethodInfo(this.ReadHelperGetterMethodName);
         }
@@ -46,6 +58,8 @@ namespace sql2dto.Core
         public int? ColumnOrdinal { get; set; }
         public Func<object, object> Converter { get; set; }
 
+        internal readonly Type InnerPropType;
+        internal readonly string InnerPropTypeName;
         internal readonly string ReadHelperGetterMethodName;
         internal readonly MethodInfo ReadHelperGetterMethodInfo;
     }
