@@ -167,10 +167,6 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue(TKey key)
         {
-            if (key.Equals(default(TKey)))
-            {
-                return default(TDto);
-            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -256,11 +252,6 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2) key)
         {
-            if (key.Item1.Equals(default(TKey1))
-                || key.Item2.Equals(default(TKey2)))
-            {
-                return default(TDto);
-            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -356,12 +347,6 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2, TKey3) key)
         {
-            if (key.Item1.Equals(default(TKey1))
-                || key.Item2.Equals(default(TKey2))
-                || key.Item3.Equals(default(TKey3)))
-            {
-                return default(TDto);
-            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {
@@ -467,13 +452,6 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyValue((TKey1, TKey2, TKey3, TKey4) key)
         {
-            if (key.Item1.Equals(default(TKey1))
-                || key.Item2.Equals(default(TKey2))
-                || key.Item3.Equals(default(TKey3))
-                || key.Item4.Equals(default(TKey4)))
-            {
-                return default(TDto);
-            }
             TDto dto;
             if (KeyesToIndexes.TryGetValue(key, out int index))
             {

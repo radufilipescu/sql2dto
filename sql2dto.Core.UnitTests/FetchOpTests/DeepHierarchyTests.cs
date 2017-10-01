@@ -102,13 +102,6 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
                         });
                     });
 
-            //var fetch =
-            //    h.Fetch<Employee>()
-            //        .Include<Department>((emp, dep) => { emp.Department = dep; });
-
-            //var fetch = h.Fetch<Department>()
-            //    .Include<Location>((dep, loc) => { dep.Locations.Add(loc); });
-
             var result = fetch.All();
         }
     }

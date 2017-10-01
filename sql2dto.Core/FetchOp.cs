@@ -473,16 +473,6 @@ namespace sql2dto.Core
         #region INCLUDE
 
         #region MAIN INCLUDE
-        private FetchResult<TDto> FetchFromCurrentRow()
-        {
-            FetchResult<TDto> result = _fetchFunc();
-            foreach (var include in _includes)
-            {
-                include(result);
-            }
-            return result;
-        }
-
         public FetchOp<TDto> Include<TChildDto>(FetchOp<TChildDto> childOp, Action<TDto, TChildDto> map)
             where TChildDto : new()
         {
@@ -715,6 +705,16 @@ namespace sql2dto.Core
         #endregion
 
         #endregion
+
+        private FetchResult<TDto> FetchFromCurrentRow()
+        {
+            FetchResult<TDto> result = _fetchFunc();
+            foreach (var include in _includes)
+            {
+                include(result);
+            }
+            return result;
+        }
 
         public TDto One()
         {
