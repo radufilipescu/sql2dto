@@ -33,7 +33,7 @@ namespace sql2dto.Core
             _parentChildrenBounds = new Dictionary<int, Dictionary<int, HashSet<int>>>();
         }
 
-        private static DtoCollection<TDto> CreateKeyedCollection(ReadHelper readHelper, string columnsPrefix = null, DtoMapper<TDto> mapper = null)
+        private static DtoCollection<TDto> CreateKeyedDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
         {
             var keyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.DefaultOrderedKeyPropNames;
             var genericArguments = new List<Type>
@@ -68,39 +68,59 @@ namespace sql2dto.Core
             var collectionType = collectionGenericType.MakeGenericType(genericArguments.ToArray());
             if (mapper != null)
             {
-                return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, mapper);
-            }
-            if (columnsPrefix != null)
-            {
-                return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, columnsPrefix);
+                if (columnsPrefix != null)
+                {
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper, mapper);
+                }
+                else
+                {
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, mapper);
+                }
             }
             else
             {
-                return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper);
+                if (columnsPrefix != null)
+                {
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper);
+                }
+                else
+                {
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper);
+                }
             }
         }
 
-        private static DtoCollection<TDto> CreateCollection(ReadHelper readHelper, DtoMapper<TDto> mapper = null, string columnsPrefix = null)
+        private static DtoCollection<TDto> CreateDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
         {
             DtoCollection<TDto> collection;
             var orderedKeyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.DefaultOrderedKeyPropNames;
             if (orderedKeyPropNames.Length > 0)
             {
-                collection = CreateKeyedCollection(readHelper, columnsPrefix, mapper);
+                collection = CreateKeyedDtoCollection(columnsPrefix, readHelper, mapper);
             }
             else
             {
                 if (mapper != null)
                 {
-                    collection = new DtoCollection<TDto>(readHelper, mapper);
-                }
-                else if (columnsPrefix != null)
-                {
-                    collection = new DtoCollection<TDto>(readHelper, columnsPrefix);
+                    if (columnsPrefix != null)
+                    {
+                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper, mapper);
+                    }
+                    else
+                    {
+                        collection = new DtoCollection<TDto>(readHelper, mapper);
+                    }
                 }
                 else
                 {
-                    collection = new DtoCollection<TDto>(readHelper);
+                    if (columnsPrefix != null)
+                    {
+                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper);
+                    }
+                    else
+                    {
+                        collection = new DtoCollection<TDto>(readHelper);
+                    }
                 }
             }
             return collection;
@@ -230,7 +250,11 @@ namespace sql2dto.Core
         public static FetchOp<TDto> Create(ReadHelper readHelper)
         {
             var result = new FetchOp<TDto>(readHelper);
-            DtoCollection<TDto> collection = CreateCollection(readHelper, null, null);
+            DtoCollection<TDto> collection = CreateDtoCollection(
+                columnsPrefix: null, 
+                readHelper: readHelper, 
+                mapper: null
+            );
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -238,7 +262,23 @@ namespace sql2dto.Core
         public static FetchOp<TDto> Create(ReadHelper readHelper, DtoMapper<TDto> mapper)
         {
             var result = new FetchOp<TDto>(readHelper);
-            DtoCollection<TDto> collection = CreateCollection(readHelper, mapper, null);
+            DtoCollection<TDto> collection = CreateDtoCollection(
+                columnsPrefix: null, 
+                readHelper: readHelper, 
+                mapper: mapper
+            );
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            DtoCollection<TDto> collection = CreateDtoCollection(
+                columnsPrefix: columnsPrefix,
+                readHelper: readHelper, 
+                mapper: mapper
+            );
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -246,7 +286,11 @@ namespace sql2dto.Core
         public static FetchOp<TDto> Create(string columnsPrefix, ReadHelper readHelper)
         {
             var result = new FetchOp<TDto>(readHelper);
-            DtoCollection<TDto> collection = CreateCollection(readHelper, null, columnsPrefix);
+            DtoCollection<TDto> collection = CreateDtoCollection(
+                columnsPrefix: columnsPrefix,
+                readHelper: readHelper, 
+                mapper: null
+            );
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -271,11 +315,20 @@ namespace sql2dto.Core
             return result;
         }
 
+        public static FetchOp<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey : IComparable, IConvertible, IEquatable<TKey>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
         public static FetchOp<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -293,7 +346,7 @@ namespace sql2dto.Core
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
             return result;
         }
@@ -311,7 +364,7 @@ namespace sql2dto.Core
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName);
             return result;
         }
@@ -338,12 +391,22 @@ namespace sql2dto.Core
             return result;
         }
 
+        public static FetchOp<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
         public static FetchOp<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -363,7 +426,7 @@ namespace sql2dto.Core
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
             return result;
         }
@@ -383,7 +446,7 @@ namespace sql2dto.Core
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2);
             return result;
         }
@@ -412,13 +475,24 @@ namespace sql2dto.Core
             return result;
         }
 
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
         public static FetchOp<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
             SetupDefaultFetchAndCollectFuncs(result, collection);
             return result;
         }
@@ -440,7 +514,7 @@ namespace sql2dto.Core
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
             return result;
         }
@@ -462,7 +536,7 @@ namespace sql2dto.Core
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
             var result = new FetchOp<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, columnsPrefix);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3);
             return result;
         }
@@ -521,6 +595,14 @@ namespace sql2dto.Core
             return this.Include(childFetchOp, map);
         }
 
+        public FetchOp<TDto> Include<TChildDto>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create(columnsPrefix, this._readHelper, childMapper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
         public FetchOp<TDto> Include<TChildDto>(string columnsPrefix, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
             where TChildDto : new()
         {
@@ -543,6 +625,13 @@ namespace sql2dto.Core
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             return this.Include(FetchOp<TChildDto>.Create<TKey>(this._readHelper, childMapper), map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper)
+            where TChildDto : new()
+            where TKey : IComparable, IConvertible, IEquatable<TKey>
+        {
+            return this.Include(FetchOp<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, childMapper), map);
         }
 
         public FetchOp<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> map)
@@ -596,6 +685,14 @@ namespace sql2dto.Core
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             return this.Include(FetchOp<TChildDto>.Create<TKey1, TKey2>(this._readHelper, childMapper), map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+        {
+            return this.Include(FetchOp<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, childMapper), map);
         }
 
         public FetchOp<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> map)
@@ -656,6 +753,15 @@ namespace sql2dto.Core
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
             return this.Include(FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, childMapper), map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+        {
+            return this.Include(FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, childMapper), map);
         }
 
         public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> map)

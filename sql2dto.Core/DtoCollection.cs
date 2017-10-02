@@ -37,6 +37,17 @@ namespace sql2dto.Core
             InnerList = new List<TDto>();
             _helper = helper;
             _mapper = null;
+            _columnsPrefix = null;
+            SetupMapFunc();
+            SetupColumnNamesToOrdinalsChangedHandler();
+        }
+
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+        {
+            InnerList = new List<TDto>();
+            _helper = helper;
+            _mapper = null;
+            _columnsPrefix = columnsPrefix;
             SetupMapFunc();
             SetupColumnNamesToOrdinalsChangedHandler();
         }
@@ -46,15 +57,16 @@ namespace sql2dto.Core
             InnerList = new List<TDto>();
             _helper = helper;
             _mapper = mapper;
+            _columnsPrefix = null;
             SetupMapFunc();
             SetupColumnNamesToOrdinalsChangedHandler();
         }
 
-        public DtoCollection(ReadHelper helper, string columnsPrefix)
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
         {
             InnerList = new List<TDto>();
             _helper = helper;
-            _mapper = null;
+            _mapper = mapper;
             _columnsPrefix = columnsPrefix;
             SetupMapFunc();
             SetupColumnNamesToOrdinalsChangedHandler();
@@ -153,14 +165,20 @@ namespace sql2dto.Core
             KeyesToIndexes = new Dictionary<TKey, int>();
         }
 
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<TKey, int>();
+        }
+
         public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
             : base(helper, mapper)
         {
             KeyesToIndexes = new Dictionary<TKey, int>();
         }
 
-        public DtoCollection(ReadHelper helper, string columnsPrefix)
-            : base(helper, columnsPrefix)
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
         {
             KeyesToIndexes = new Dictionary<TKey, int>();
         }
@@ -238,14 +256,20 @@ namespace sql2dto.Core
             KeyesToIndexes = new Dictionary<(TKey1, TKey2), int>();
         }
 
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2), int>();
+        }
+
         public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
             : base(helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2), int>();
         }
 
-        public DtoCollection(ReadHelper helper, string columnsPrefix)
-            : base(helper, columnsPrefix)
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2), int>();
         }
@@ -333,14 +357,20 @@ namespace sql2dto.Core
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3), int>();
         }
 
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3), int>();
+        }
+
         public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
             : base(helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3), int>();
         }
 
-        public DtoCollection(ReadHelper helper, string columnsPrefix)
-            : base(helper, columnsPrefix)
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3), int>();
         }
@@ -438,14 +468,20 @@ namespace sql2dto.Core
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4), int>();
         }
 
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4), int>();
+        }
+
         public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
             : base(helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4), int>();
         }
 
-        public DtoCollection(ReadHelper helper, string columnsPrefix)
-            : base(helper, columnsPrefix)
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
         {
             KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4), int>();
         }

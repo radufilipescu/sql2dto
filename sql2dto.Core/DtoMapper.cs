@@ -300,7 +300,7 @@ namespace sql2dto.Core
 
         public Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
         {
-            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix);
+            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix ?? DefaultColumnsPrefix);
         }
 
         public int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)

@@ -95,7 +95,7 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
             var fetch = 
                 h.Fetch<Employee>()
                     .Include<HolidayRequest>((emp, hreq) => { emp.HolidayRequests.Add(hreq); })
-                    .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) =>  { depFetchOp
+                    .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) => { depFetchOp
                         .Include<Location>((dep, loc) => { dep.Locations.Add(loc); })
                         .Include<Employee>("head", (dep, head) => { dep.Head = head; }, (empFetchOp) => { empFetchOp
                             .Include<Executive>((emp, ex) => { emp.Direct = ex; });
