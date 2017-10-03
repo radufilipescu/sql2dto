@@ -94,7 +94,8 @@ namespace sql2dto.Core
         {
             DtoCollection<TDto> collection;
             var orderedKeyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.DefaultOrderedKeyPropNames;
-            if (orderedKeyPropNames.Length > 0)
+            if (orderedKeyPropNames != null 
+                && orderedKeyPropNames.Length > 0)
             {
                 collection = CreateKeyedDtoCollection(columnsPrefix, readHelper, mapper);
             }
