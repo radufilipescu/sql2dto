@@ -118,6 +118,11 @@ namespace sql2dto.Core
             return Reader.GetValue(ordinal);
         }
 
+        public T GetValue<T>(int ordinal)
+        {
+            return (T)Reader.GetValue(ordinal);
+        }
+
         public object GetNullableValue(int ordinal)
         {
             return Reader.IsDBNull(ordinal) ? null : Reader.GetValue(ordinal);
@@ -1900,5 +1905,72 @@ namespace sql2dto.Core
         #endregion
 
         #endregion
+
+        public Dictionary<string, List<object>> FetchDataDictionary()
+        {
+            var result = new Dictionary<string, List<object>>();
+            foreach (var header in ColumnNamesToOrdinals.Keys)
+            {
+                result.Add(header, new List<object>());
+            }
+            while (Reader.Read())
+            {
+                foreach (var kvp in ColumnNamesToOrdinals)
+                {
+                    result[kvp.Key].Add(GetValue(kvp.Value));
+                }
+            }
+            return result;
+        }
+
+        public List<object> FetchColumnDataAsList(string columnName)
+        {
+            if (!ColumnNamesToOrdinals.ContainsKey(columnName))
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+            int columnOrdinal = ColumnNamesToOrdinals[columnName];
+            var result = new List<object>();
+            while (Reader.Read())
+            {
+                result.Add(GetValue(columnOrdinal));
+            }
+            return result;
+        }
+
+        public List<object> FetchColumnDataAsList(int columnOrdinal)
+        {
+            var result = new List<object>();
+            while (Reader.Read())
+            {
+                result.Add(GetValue(columnOrdinal));
+            }
+            return result;
+        }
+
+        public List<T> FetchColumnDataAsList<T>(string columnName)
+        {
+            if (!ColumnNamesToOrdinals.ContainsKey(columnName))
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnName));
+            }
+            int columnOrdinal = ColumnNamesToOrdinals[columnName];
+            var result = new List<T>();
+            while (Reader.Read())
+            {
+                result.Add(GetValue<T>(columnOrdinal));
+            }
+            return result;
+        }
+
+        public List<T> FetchColumnDataAsList<T>(int columnOrdinal)
+        {
+            var result = new List<T>();
+            while (Reader.Read())
+            {
+                result.Add(GetValue<T>(columnOrdinal));
+            }
+            return result;
+        }
     }
 }
