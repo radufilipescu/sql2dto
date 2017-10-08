@@ -8,4 +8,8 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\sql2dto.Core\sql2dto.Core.csproj" />
+  </ItemGroup>
+
 </Project>

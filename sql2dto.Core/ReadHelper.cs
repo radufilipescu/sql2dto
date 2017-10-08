@@ -1709,8 +1709,6 @@ namespace sql2dto.Core
         #endregion
 
         #region Fetch Operations
-
-        #region No Keys
         public FetchOp<TDto> Fetch<TDto>()
             where TDto : new()
         {
@@ -1728,182 +1726,12 @@ namespace sql2dto.Core
         {
             return FetchOp<TDto>.Create(columnsPrefix, this);
         }
-        #endregion
 
-        #region 1 Key
-        public FetchOp<TDto> Fetch<TDto, TKey>(ReadHelper readHelper)
+        public FetchOp<TDto> Fetch<TDto>(string columnsPrefix, DtoMapper<TDto> mapper)
             where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            return FetchOp<TDto>.Create<TKey>(this);
+            return FetchOp<TDto>.Create(columnsPrefix, this, mapper);
         }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(ReadHelper readHelper, DtoMapper<TDto> mapper)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(this, mapper);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(string columnsPrefix, ReadHelper readHelper)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(columnsPrefix, this);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(columnsPrefix, this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(ReadHelper readHelper, string keyPropName)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(this, keyPropName);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey>(string columnsPrefix, ReadHelper readHelper, string keyPropName)
-            where TDto : new()
-            where TKey : IComparable, IConvertible, IEquatable<TKey>
-        {
-            return FetchOp<TDto>.Create<TKey>(columnsPrefix, this, keyPropName);
-        }
-        #endregion
-
-        #region 2 Keys
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(ReadHelper readHelper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(this);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(ReadHelper readHelper, DtoMapper<TDto> mapper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(this, mapper);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(columnsPrefix, this);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(columnsPrefix, this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(ReadHelper readHelper, string keyPropName1, string keyPropName2)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(this, keyPropName1, keyPropName2);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2>(columnsPrefix, this, keyPropName1, keyPropName2);
-        }
-        #endregion
-
-        #region 3 Keys
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(ReadHelper readHelper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(this);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(ReadHelper readHelper, DtoMapper<TDto> mapper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(this, mapper);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this, keyReadFunc);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(this, keyPropName1, keyPropName2, keyPropName3);
-        }
-
-        public FetchOp<TDto> Fetch<TDto, TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3)
-            where TDto : new()
-            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
-            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
-            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
-        {
-            return FetchOp<TDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this, keyPropName1, keyPropName2, keyPropName3);
-        }
-        #endregion
-
         #endregion
 
         public Dictionary<string, List<object>> FetchDataDictionary()
