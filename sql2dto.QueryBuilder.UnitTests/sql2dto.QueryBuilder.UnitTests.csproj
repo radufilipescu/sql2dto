@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\sql2dto.DML\sql2dto.QueryBuilder.csproj" />
+    <ProjectReference Include="..\sql2dto.QueryBuilder\sql2dto.QueryBuilder.csproj" />
   </ItemGroup>
 
 </Project>

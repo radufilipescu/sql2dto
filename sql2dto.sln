@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Core", "sql2dto.Core\sql2dto.Core.csproj", "{86D047D1-2F44-4056-93F0-70BDD5F5FB5B}"
 EndProject
@@ -13,9 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.MSSqlServer", "sql2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.MSSqlServer.UnitTests", "sql2dto.MSSqlServer.UnitTests\sql2dto.MSSqlServer.UnitTests.csproj", "{AD8630F0-C9B7-44A8-804D-19FB1F92E631}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.QueryBuilder", "sql2dto.DML\sql2dto.QueryBuilder.csproj", "{6A158528-79A5-4C1C-A0A0-3DB54F41A51A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.QueryBuilder", "sql2dto.QueryBuilder\sql2dto.QueryBuilder.csproj", "{6A158528-79A5-4C1C-A0A0-3DB54F41A51A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.QueryBuilder.UnitTests", "sql2dto.QueryBuilder.UnitTests\sql2dto.QueryBuilder.UnitTests.csproj", "{4387BFBD-6DE3-417A-9FAF-EE72FD37951B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.QueryBuilder.UnitTests", "sql2dto.QueryBuilder.UnitTests\sql2dto.QueryBuilder.UnitTests.csproj", "{4387BFBD-6DE3-417A-9FAF-EE72FD37951B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
