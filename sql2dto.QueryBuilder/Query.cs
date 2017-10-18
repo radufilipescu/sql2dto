@@ -4,12 +4,17 @@ using System.Text;
 
 namespace sql2dto.QueryBuilder
 {
-    public class Query
+    public abstract class Query
     {
+        private List<Param> _parameters;
         private StringBuilder _sb;
 
-        internal Query()
+        public DatabaseType DatabaseType { get; private set; }
+
+        protected Query(DatabaseType databaseType)
         {
+            DatabaseType = databaseType;
+            _parameters = new List<Param>();
             _sb = new StringBuilder();
         }
 
@@ -20,16 +25,14 @@ namespace sql2dto.QueryBuilder
             _sb.Append(sqlPart);
         }
 
-        public static SelectClause SelectAll()
+        protected static SelectClause SelectAll(Query query)
         {
-            var q = new Query();
-            return new SelectClause(q).All();
+            return new SelectClause(query).All();
         }
 
-        public static SelectClause SelectColumns(string tableAlias, params string[] columnNames)
+        protected static SelectClause SelectColumns(Query query, string tableAlias, params string[] columnNames)
         {
-            var q = new Query();
-            return new SelectClause(q).Columns(tableAlias, columnNames);
+            return new SelectClause(query).Columns(tableAlias, columnNames);
         }
 
         public FromClause From(string tableName)
@@ -59,7 +62,44 @@ namespace sql2dto.QueryBuilder
 
         public override string ToString()
         {
-            return _sb.ToString();
+            return _sb.ToString().Trim();
+        }
+
+        public Query UsingParameter(string parameterName, object value)
+        {
+            _parameters.Add(new Param
+            {
+                Name = parameterName,
+                Value = value
+            });
+            return this;
+        }
+
+        public Query UsingParametersRange(params (string, object)[] tuples)
+        {
+            foreach (var tuple in tuples)
+            {
+                _parameters.Add(new Param
+                {
+                    Name = tuple.Item1,
+                    Value = tuple.Item2
+                });
+            }
+            return this;
+        }
+
+        public Query UsingParametersRange(params (string, object, DataType)[] tuples)
+        {
+            foreach (var tuple in tuples)
+            {
+                _parameters.Add(new Param
+                {
+                    Name = tuple.Item1,
+                    Value = tuple.Item2,
+                    DataType = tuple.Item3
+                });
+            }
+            return this;
         }
     }
 }
