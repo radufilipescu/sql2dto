@@ -1,5 +1,6 @@
 ﻿using sql2dto.Core;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -212,6 +213,30 @@ namespace sql2dto.MSSqlServer
         public static async Task<ReadHelper> ExecSPReadHelperAsync(this SqlConnection conn, string spName, params (string, object)[] parameters)
         {
             return await conn.ExecSPReadHelperAsync(null, spName, parameters);
+        }
+        #endregion
+
+        #region EXEC QUERY
+        public static async Task<ReadHelper> ExecQueryReadHelperAsync(this SqlConnection conn, SqlTransaction trans, Query query)
+        {
+            var sqlParametersList = new List<SqlParameter>();
+            foreach (var param in query.Parameters)
+            {
+                var sqlParam = new SqlParameter(param.Name, param.Value);
+                if (param.DataType != QueryBuilder.DataType.UNKOWN)
+                {
+                    //TODO set DbType
+                }
+
+                sqlParametersList.Add(sqlParam);
+            }
+
+            return await conn.ExecSqlReadHelperAsync(trans, query.ToString(), sqlParametersList.ToArray());
+        }
+
+        public static async Task<ReadHelper> ExecQueryReadHelperAsync(this SqlConnection conn, Query query)
+        {
+            return await conn.ExecQueryReadHelperAsync(null, query);
         }
         #endregion
         #endregion

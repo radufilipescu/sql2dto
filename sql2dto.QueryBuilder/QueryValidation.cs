@@ -4,9 +4,10 @@ using System.Text;
 
 namespace sql2dto.QueryBuilder
 {
-    internal class QueryValidation
+    internal class QueryValidation<TQueryImpl>
+        where TQueryImpl : Query<TQueryImpl>
     {
-        internal static string JoinPath(Query query, params string[] path)
+        internal static string JoinPath(TQueryImpl query, params string[] path)
         {
             var sb = new StringBuilder();
             bool isFirstPart = false;

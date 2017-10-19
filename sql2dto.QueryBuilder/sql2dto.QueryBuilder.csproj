@@ -4,4 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\sql2dto.Core\sql2dto.Core.csproj" />
+  </ItemGroup>
+
 </Project>

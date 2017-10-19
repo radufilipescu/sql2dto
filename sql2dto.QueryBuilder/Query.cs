@@ -1,15 +1,28 @@
-﻿using System;
+﻿using sql2dto.Core;
+using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace sql2dto.QueryBuilder
 {
-    public abstract class Query
+    public abstract class Query<TQueryImpl> 
+        where TQueryImpl : Query<TQueryImpl>
     {
-        private List<Param> _parameters;
+        protected List<Param> _parameters;
         private StringBuilder _sb;
 
         public DatabaseType DatabaseType { get; private set; }
+        public List<Param> Parameters
+        {
+            get
+            {
+                return new List<Param>(_parameters);
+            }
+        }
+
+        public string ColumnPrefixTableAliasFormat { get; private set; } = "{0}_";
 
         protected Query(DatabaseType databaseType)
         {
@@ -18,46 +31,46 @@ namespace sql2dto.QueryBuilder
             _sb = new StringBuilder();
         }
 
-        internal Query Parent { get; set; }
+        internal TQueryImpl Parent { get; set; }
 
         internal void AddSqlPart(string sqlPart)
         {
             _sb.Append(sqlPart);
         }
 
-        protected static SelectClause SelectAll(Query query)
+        protected static SelectClause<TQueryImpl> SelectAll(TQueryImpl query)
         {
-            return new SelectClause(query).All();
+            return new SelectClause<TQueryImpl>(query).All();
         }
 
-        protected static SelectClause SelectColumns(Query query, string tableAlias, params string[] columnNames)
+        protected static SelectClause<TQueryImpl> SelectColumns(TQueryImpl query, string tableAlias, params string[] columnNames)
         {
-            return new SelectClause(query).Columns(tableAlias, columnNames);
+            return new SelectClause<TQueryImpl>(query).Columns(tableAlias, columnNames);
         }
 
-        public FromClause From(string tableName)
+        public FromClause<TQueryImpl> From(string tableName)
         {
-            return new FromClause(this, tableName);
+            return new FromClause<TQueryImpl>((TQueryImpl)this, tableName);
         }
 
-        public JoinClause Join(string tableName)
+        public JoinClause<TQueryImpl> Join(string tableName)
         {
-            return new JoinClause(this, tableName);
+            return new JoinClause<TQueryImpl>((TQueryImpl)this, tableName);
         }
 
-        public SqlExpressionBuilder Where(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> Where(params string[] path)
         {
-            return new WhereClause(this).ToExpressionBuilder(path);
+            return new WhereClause<TQueryImpl>((TQueryImpl)this).ToExpressionBuilder(path);
         }
 
-        public SqlExpressionBuilder WhereSub()
+        public SqlExpressionBuilder<TQueryImpl> WhereSub()
         {
-            return new WhereClause(this).ToExpressionBuilderSub();
+            return new WhereClause<TQueryImpl>((TQueryImpl)this).ToExpressionBuilderSub();
         }
 
-        public SqlExpressionBuilder WhereSub(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> WhereSub(params string[] path)
         {
-            return new WhereClause(this).ToExpressionBuilderSub(path);
+            return new WhereClause<TQueryImpl>((TQueryImpl)this).ToExpressionBuilderSub(path);
         }
 
         public override string ToString()
@@ -65,41 +78,34 @@ namespace sql2dto.QueryBuilder
             return _sb.ToString().Trim();
         }
 
-        public Query UsingParameter(string parameterName, object value)
+        public TQueryImpl UsingParameter(string parameterName, object value)
         {
-            _parameters.Add(new Param
-            {
-                Name = parameterName,
-                Value = value
-            });
-            return this;
+            _parameters.Add(new Param(parameterName, value));
+            return (TQueryImpl)this;
         }
 
-        public Query UsingParametersRange(params (string, object)[] tuples)
+        public TQueryImpl UsingParameter(string parameterName, object value, DataType dataType)
+        {
+            _parameters.Add(new Param(parameterName, value, dataType));
+            return (TQueryImpl)this;
+        }
+
+        public TQueryImpl UsingParametersRange(params (string, object)[] tuples)
         {
             foreach (var tuple in tuples)
             {
-                _parameters.Add(new Param
-                {
-                    Name = tuple.Item1,
-                    Value = tuple.Item2
-                });
+                _parameters.Add(new Param(tuple.Item1, tuple.Item2));
             }
-            return this;
+            return (TQueryImpl)this;
         }
 
-        public Query UsingParametersRange(params (string, object, DataType)[] tuples)
+        public TQueryImpl UsingParametersRange(params (string, object, DataType)[] tuples)
         {
             foreach (var tuple in tuples)
             {
-                _parameters.Add(new Param
-                {
-                    Name = tuple.Item1,
-                    Value = tuple.Item2,
-                    DataType = tuple.Item3
-                });
+                _parameters.Add(new Param(tuple.Item1, tuple.Item2, tuple.Item3));
             }
-            return this;
+            return (TQueryImpl)this;
         }
     }
 }

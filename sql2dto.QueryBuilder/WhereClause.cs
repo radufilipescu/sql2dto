@@ -4,27 +4,28 @@ using System.Text;
 
 namespace sql2dto.QueryBuilder
 {
-    public class WhereClause : Clause
+    public class WhereClause<TQueryImpl> : Clause<TQueryImpl>
+        where TQueryImpl : Query<TQueryImpl>
     {
-        internal WhereClause(Query query)
+        internal WhereClause(TQueryImpl query)
             : base(query, "WHERE ")
         {
 
         }
 
-        internal SqlExpressionBuilder ToExpressionBuilder(string[] path)
+        internal SqlExpressionBuilder<TQueryImpl> ToExpressionBuilder(string[] path)
         {
-            return new SqlExpressionBuilder(_, path);
+            return new SqlExpressionBuilder<TQueryImpl>(_, path);
         }
 
-        internal SqlExpressionBuilder ToExpressionBuilderSub()
+        internal SqlExpressionBuilder<TQueryImpl> ToExpressionBuilderSub()
         {
-            return new SqlExpressionBuilder(_).Sub();
+            return new SqlExpressionBuilder<TQueryImpl>(_).Sub();
         }
 
-        internal SqlExpressionBuilder ToExpressionBuilderSub(string[] path)
+        internal SqlExpressionBuilder<TQueryImpl> ToExpressionBuilderSub(string[] path)
         {
-            return new SqlExpressionBuilder(_).Sub(path);
+            return new SqlExpressionBuilder<TQueryImpl>(_).Sub(path);
         }
     }
 }

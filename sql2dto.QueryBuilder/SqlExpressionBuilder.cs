@@ -4,12 +4,13 @@ using System.Text;
 
 namespace sql2dto.QueryBuilder
 {
-    public class SqlExpressionBuilder
+    public class SqlExpressionBuilder<TQueryImpl>
+        where TQueryImpl : Query<TQueryImpl>
     {
         private StringBuilder _sb;
 
-        private Query _query;
-        public Query _
+        private TQueryImpl _query;
+        public TQueryImpl _
         {
             get
             {
@@ -19,81 +20,81 @@ namespace sql2dto.QueryBuilder
             private set { _query = value; }
         }
 
-        internal SqlExpressionBuilder(Query query)
+        internal SqlExpressionBuilder(TQueryImpl query)
         {
             _query = query;
             _sb = new StringBuilder();
         }
 
-        internal SqlExpressionBuilder(Query query, string[] path)
+        internal SqlExpressionBuilder(TQueryImpl query, string[] path)
         {
             _query = query;
-            _sb = new StringBuilder(QueryValidation.JoinPath(_query, path));
+            _sb = new StringBuilder(QueryValidation<TQueryImpl>.JoinPath(_query, path));
         }
 
-        public SqlExpressionBuilder And(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> And(params string[] path)
         {
             _sb.Append(" AND ");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
 
-        public SqlExpressionBuilder AndSub()
+        public SqlExpressionBuilder<TQueryImpl> AndSub()
         {
             _sb.Append(" AND (");
             return this;
         }
 
-        public SqlExpressionBuilder AndSub(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> AndSub(params string[] path)
         {
             _sb.Append(" AND (");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
 
-        public SqlExpressionBuilder Or(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> Or(params string[] path)
         {
             _sb.Append(" OR ");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
 
-        public SqlExpressionBuilder OrSub()
+        public SqlExpressionBuilder<TQueryImpl> OrSub()
         {
             _sb.Append(" OR (");
             return this;
         }
 
-        public SqlExpressionBuilder OrSub(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> OrSub(params string[] path)
         {
             _sb.Append(" OR (");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
 
-        public SqlExpressionBuilder Sub()
+        public SqlExpressionBuilder<TQueryImpl> Sub()
         {
             _sb.Append(" (");
             return this;
         }
 
-        public SqlExpressionBuilder Sub(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> Sub(params string[] path)
         {
             _sb.Append(" (");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
 
-        public SqlExpressionBuilder EndSub()
+        public SqlExpressionBuilder<TQueryImpl> EndSub()
         {
             _sb.Append(") ");
             return this;
         }
 
-        public SqlExpressionBuilder IsEqualTo(params string[] path)
+        public SqlExpressionBuilder<TQueryImpl> IsEqualTo(params string[] path)
         {
             _sb.Append(" = ");
-            _sb.Append(QueryValidation.JoinPath(_query, path));
+            _sb.Append(QueryValidation<TQueryImpl>.JoinPath(_query, path));
             return this;
         }
     }

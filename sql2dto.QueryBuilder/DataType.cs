@@ -6,6 +6,8 @@ namespace sql2dto.QueryBuilder
 {
     public enum DataType
     {
+        UNKOWN,
+
         SMALLINT,
         INT,
         BIGINT,

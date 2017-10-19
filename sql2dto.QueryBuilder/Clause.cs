@@ -4,12 +4,13 @@ using System.Text;
 
 namespace sql2dto.QueryBuilder
 {
-    public abstract class Clause
+    public abstract class Clause<TQueryImpl>
+        where TQueryImpl : Query<TQueryImpl>
     {
         protected StringBuilder _sb;
 
-        protected Query _query;
-        public Query _
+        protected TQueryImpl _query;
+        public TQueryImpl _
         {
             get
             {
@@ -19,7 +20,7 @@ namespace sql2dto.QueryBuilder
             private set { _query = value; }
         }
 
-        public Clause(Query query, string init = null)
+        public Clause(TQueryImpl query, string init = null)
         {
             _sb = new StringBuilder($"{Environment.NewLine}{init}");
             _query = query;
