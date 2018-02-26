@@ -14,21 +14,28 @@ namespace sql2dto.Core
     {
         public static SqlFuncExpression Sum(SqlExpression expression)
         {
-            return new SqlFuncExpression(SqlFunctionName.SUM, expression);
+            return new SqlFuncExpression(SqlFunctionName.SUM, expression, distinct: false);
+        }
+
+        public static SqlFuncExpression SumDistinct(SqlExpression expression)
+        {
+            return new SqlFuncExpression(SqlFunctionName.SUM, expression, distinct: true);
         }
     }
 
     public class SqlFuncExpression : SqlExpression
     {
-        public SqlFuncExpression(SqlFunctionName functionName, SqlExpression innerExpression)
+        internal SqlFuncExpression(SqlFunctionName functionName, SqlExpression innerExpression, bool distinct)
         {
-            _functionName = functionName;
-            _innerExpression = innerExpression;
+            FunctionName = functionName;
+            InnerExpression = innerExpression;
+            IsDistinct = distinct;
         }
 
-        private SqlFunctionName _functionName;
-        private SqlExpression _innerExpression;
+        public SqlFunctionName FunctionName { get; private set; }
+        public SqlExpression InnerExpression { get; private set; }
+        public bool IsDistinct { get; private set; }
 
-        public override SqlExpressionType GetExpressionType() => SqlExpressionType.FUNCTION;
+        public override SqlExpressionType GetExpressionType() => SqlExpressionType.FUNCTION_CALL;
     }
 }

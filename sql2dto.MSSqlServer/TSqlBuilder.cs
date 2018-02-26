@@ -44,6 +44,16 @@ namespace sql2dto.MSSqlServer
                         }
                         return result;
                     }
+                case SqlExpressionType.FUNCTION_CALL:
+                    {
+                        var functionCallExpression = (SqlFuncExpression)expression;
+                        string result = $"{BuildSqlFuncNameString(functionCallExpression.FunctionName)}({(functionCallExpression.IsDistinct ? "DISTINCT " : "")}{BuildExpressionString(functionCallExpression.InnerExpression)})";
+                        if (!String.IsNullOrWhiteSpace(expressionAlias))
+                        {
+                            result += $" AS [{expressionAlias}]";
+                        }
+                        return result;
+                    }
                 default:
                     throw new NotImplementedException($"SqlExpressionType: {type}");
             }
@@ -137,6 +147,19 @@ $@"SELECT
                     return "!=";
                 default:
                     throw new NotImplementedException($"SqlOperator: {op}");
+            }
+        }
+
+        public override string BuildSqlFuncNameString(SqlFunctionName func)
+        {
+            switch (func)
+            {
+                case SqlFunctionName.SUM:
+                    return "SUM";
+                case SqlFunctionName.AVERAGE:
+                    return "AVG";
+                default:
+                    throw new NotImplementedException($"SqlFunctionName: {func}");
             }
         }
     }

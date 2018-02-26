@@ -14,5 +14,6 @@ namespace sql2dto.Core
         public abstract string BuildQueryAsAliasString(SqlQuery query, SqlJoinType joinType, SqlExpression condition = null);
         public abstract string BuildSqlJoinTypeString(SqlJoinType joinType);
         public abstract string BuildSqlOperatorString(SqlOperator op);
+        public abstract string BuildSqlFuncNameString(SqlFunctionName func);
     }
 }

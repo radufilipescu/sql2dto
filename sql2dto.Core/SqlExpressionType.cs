@@ -7,7 +7,7 @@ namespace sql2dto.Core
     public enum SqlExpressionType
     {
         COLUMN,
-        FUNCTION,
+        FUNCTION_CALL,
         UNARY,
         BINARY,
     }

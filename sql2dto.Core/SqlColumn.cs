@@ -10,7 +10,6 @@ namespace sql2dto.Core
         {
             _table = table;
             _columnName = columnName;
-            _columnAlias = null;
         }
 
         public override SqlExpressionType GetExpressionType() => SqlExpressionType.COLUMN;
@@ -20,8 +19,5 @@ namespace sql2dto.Core
 
         private string _columnName;
         public string GetColumnName() => _columnName;
-
-        private string _columnAlias;
-        public string GetColumnAlias() => _columnAlias;
     }
 }
