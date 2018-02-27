@@ -8,7 +8,9 @@ namespace sql2dto.Core
     {
         COLUMN,
         FUNCTION_CALL,
-        UNARY,
+        CONSTANT,
         BINARY,
+        CASE_WHEN,
+        PARAMETER,
     }
 }

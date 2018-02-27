@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace sql2dto.MSSqlServer
 {
@@ -15,18 +16,36 @@ namespace sql2dto.MSSqlServer
         public override string BuildExpressionString(SqlExpression expression, string expressionAlias = null)
         {
             var type = expression.GetExpressionType();
+            string result = null;
             switch (type)
             {
                 case SqlExpressionType.COLUMN:
                     {
                         var column = (SqlColumn)expression;
-                        var result = $"{BuildTableAliasString(column.GetSqlTable())}.{$"[{column.GetColumnName()}]"}";
-                        if (!String.IsNullOrWhiteSpace(expressionAlias))
-                        {
-                            result += $" AS [{expressionAlias}]";
-                        }
-                        return result;
+
+                        result = $"{BuildTableAliasString(column.GetSqlTable())}.{$"[{column.GetColumnName()}]"}";
                     }
+                    break;
+                case SqlExpressionType.FUNCTION_CALL:
+                    {
+                        var functionCallExpression = (SqlFunctionCallExpression)expression;
+
+                        var functionName = BuildSqlFuncNameString(functionCallExpression.GetFunctionName());
+                        var distinct = functionCallExpression.GetIsDistinct() ? "DISTINCT " : "";
+                        var innerExpression = BuildExpressionString(functionCallExpression.GetInnerExpression());
+
+                        result = $"{functionName}({distinct}{innerExpression})";
+                    }
+                    break;
+                case SqlExpressionType.CONSTANT:
+                    {
+                        var constantExpression = (SqlConstantExpression)expression;
+
+                        result = constantExpression.GetConstantType() == SqlConstantType.NUMBER 
+                            ? constantExpression.GetValue() 
+                            : $"'{EscapeConstantValue(constantExpression.GetValue())}'";
+                    }
+                    break;
                 case SqlExpressionType.BINARY:
                     {
                         var binaryExpression = (SqlBinaryExpression)expression;
@@ -35,28 +54,68 @@ namespace sql2dto.MSSqlServer
                         var secondTerm = binaryExpression.GetSecondTerm();
 
                         string firstTermString = BuildExpressionString(firstTerm);
+                        switch (firstTerm.GetExpressionType())
+                        {
+                            case SqlExpressionType.BINARY:
+                                {
+                                    firstTermString = $"({firstTermString})";
+                                }
+                                break;
+                        }
                         string secondTermString = BuildExpressionString(secondTerm);
+                        switch (secondTerm.GetExpressionType())
+                        {
+                            case SqlExpressionType.BINARY:
+                                {
+                                    secondTermString = $"({secondTermString})";
+                                }
+                                break;
+                        }
 
-                        string result = $"({firstTermString}) {BuildSqlOperatorString(op)} ({secondTermString})";
-                        if (!String.IsNullOrWhiteSpace(expressionAlias))
-                        {
-                            result = $"({result}) AS [{expressionAlias}]";
-                        }
-                        return result;
+                        result = $"{firstTermString} {BuildSqlOperatorString(op)} {secondTermString}";
                     }
-                case SqlExpressionType.FUNCTION_CALL:
+                    break;
+                case SqlExpressionType.CASE_WHEN:
                     {
-                        var functionCallExpression = (SqlFuncExpression)expression;
-                        string result = $"{BuildSqlFuncNameString(functionCallExpression.FunctionName)}({(functionCallExpression.IsDistinct ? "DISTINCT " : "")}{BuildExpressionString(functionCallExpression.InnerExpression)})";
-                        if (!String.IsNullOrWhiteSpace(expressionAlias))
+                        var caseWhenExpression = (SqlCaseWhenExpression)expression;
+                        var onExpression = caseWhenExpression.GetOnExpression();
+                        var elseExpression = caseWhenExpression.GetElseExpression();
+
+                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(onExpression)}";
+                        result = $"CASE{onExpressionString}";
+                        foreach (var whenThenExpression in caseWhenExpression.GetWhenThenExpressions())
                         {
-                            result += $" AS [{expressionAlias}]";
+                            result += $" WHEN {BuildExpressionString(whenThenExpression.Item1)} THEN {BuildExpressionString(whenThenExpression.Item2)}";
                         }
-                        return result;
+                        if (!(elseExpression is null))
+                        {
+                            result += $" ELSE {BuildExpressionString(elseExpression)}";
+                        }
+                        result += " END";
                     }
+                    break;
+                case SqlExpressionType.PARAMETER:
+                    {
+                        var parameterExpression = (SqlParameterExpression)expression;
+                        var dbParameter = parameterExpression.GetDbParameter();
+
+                        result = dbParameter.ParameterName;
+                        if (!result.StartsWith("@"))
+                        {
+                            result = $"@{result}";
+                        }
+                    }
+                    break;
                 default:
                     throw new NotImplementedException($"SqlExpressionType: {type}");
             }
+
+            if (!String.IsNullOrWhiteSpace(expressionAlias))
+            {
+                result += $" AS [{expressionAlias}]";
+            }
+
+            return result;
         }
 
         public override string BuildTableAliasString(SqlTable table)
@@ -161,6 +220,16 @@ $@"SELECT
                 default:
                     throw new NotImplementedException($"SqlFunctionName: {func}");
             }
+        }
+
+        public override string EscapeConstantValue(string value)
+        {
+            if (Regex.IsMatch(value, "[()[]]"))
+            {
+                throw new InvalidOperationException($"Constant value not safe: {value}");
+            }
+
+            return value.Replace("'", "''"); //TODO
         }
     }
 }

@@ -15,5 +15,6 @@ namespace sql2dto.Core
         public abstract string BuildSqlJoinTypeString(SqlJoinType joinType);
         public abstract string BuildSqlOperatorString(SqlOperator op);
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
+        public abstract string EscapeConstantValue(string value);
     }
 }

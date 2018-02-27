@@ -32,24 +32,6 @@ namespace sql2dto.Core
             return _builder.BuildQueryString(this);
         }
 
-        //public SqlQuery Select(SqlColumn column, string columnAlias = null)
-        //{
-        //    _selectExpressions.Add((column, columnAlias ?? column.GetColumnName()));
-        //    return this;
-        //}
-
-        //public SqlQuery Select(params SqlColumn[] selectColumns)
-        //{
-        //    _selectExpressions.AddRange(selectColumns.Select(c => ((SqlExpression)c, c.GetColumnName())));
-        //    return this;
-        //}
-
-        //public SqlQuery Select(params (SqlColumn, string)[] selectColumns)
-        //{
-        //    _selectExpressions.AddRange(selectColumns.Select(c => ((SqlExpression)c.Item1, c.Item2)));
-        //    return this;
-        //}
-
         public SqlQuery Select(SqlExpression expression, string columnAlias = null)
         {
             if (expression.GetExpressionType() == SqlExpressionType.COLUMN)

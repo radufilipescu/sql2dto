@@ -49,27 +49,42 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public void Test1()
         {
+            var param1 = Sql.Parameter(new SqlParameter("param1", 5));
+            var param2 = Sql.Parameter(new SqlParameter("param2", "foo"));
+
             var u = Users.As("u");
             var a = Addresses.As("a");
 
             var q = new SqlQuery(TSqlBuilder.Instance)
                 .Select(a.Street)
-                .Select(SqlFuncs.Sum(a.Id), "SUM_AdrressId")
+                .Select(param1, "PARAM_1")
+                .Select(Sql.Sum(a.Id), "SUM_AdrressId")
                 .Select(
                     u.Id,
-                    u.Name
+                    Sql.Case()
+                        .When(Sql.Const("panda") == a.Street, "bear")
+                    .End()
                 )
                 .Select(u.Id & u.Name)
                 .Select(
-                    (SqlFuncs.Sum(u.Id), "SUM_UserId"),
-                    (SqlFuncs.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
-                    (SqlFuncs.Sum(u.Id & u.Name), "SUM_UserId_AND_Name"),
+                    (Sql.Sum(u.Id), "SUM_UserId"),
+                    (Sql.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
+                    (Sql.Sum(u.Id & u.Name), "SUM_UserId_AND_Name"),
                     (u.Id & u.Name, "exp1"), 
                     (a.UserId == u.Id, "exp2"), 
-                    ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3")
+                    ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3"),
+                    (Sql.Case(u.Name)
+                        .When("panda", "bear")
+                        .When("koala", "bear")
+                        .When("mastiff", "dog")
+                        .When("terra nova", "dog")
+                        .Else("unkown")
+                    .End(), "ANIMAL_TYPE")
                 )
                 .From(u)
-                .InnerJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street);
+                .InnerJoin(a, on: a.UserId == u.Id & u.Id == a.UserId | a.Street == param2)
+                .InnerJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2)
+                .InnerJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2));
 
             string result = q.BuildQueryString();
         }
