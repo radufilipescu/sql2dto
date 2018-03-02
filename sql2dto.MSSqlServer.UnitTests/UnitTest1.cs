@@ -70,8 +70,8 @@ namespace sql2dto.MSSqlServer.UnitTests
                     (Sql.Sum(u.Id + a.Id), "SUM_UserId_PLUS_AddressId"),
                     (Sql.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
                     (Sql.Sum(u.Id & u.Name), "SUM_UserId_AND_Name"),
-                    (u.Id & u.Name, "exp1"), 
-                    (a.UserId == u.Id, "exp2"), 
+                    (u.Id & u.Name, "exp1"),
+                    (a.UserId == u.Id, "exp2"),
                     ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3"),
                     (Sql.Case(u.Name)
                         .When("panda", "bear")
@@ -82,9 +82,15 @@ namespace sql2dto.MSSqlServer.UnitTests
                     .End(), "ANIMAL_TYPE")
                 )
                 .From(u)
-                .InnerJoin(a, on: a.UserId == u.Id & u.Id == a.UserId | a.Street == param2 + param1)
-                .InnerJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2 + param1)
-                .InnerJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2 + param1));
+                .Join(a, on: a.UserId == u.Id & u.Id == a.UserId | a.Street == param2 + param1)
+                .LeftJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2 + param1)
+                .FullJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2 + param1))
+                .CrossJoin(a)
+
+                .Where(a.Street - a.Id == u.Id | u.Id * u.Name == param1 & a.Street == param2 + Sql.Const("FOO"))
+
+                .GroupBy(a.Street, u.Name)
+                .Having(Sql.Sum(u.Id) == Sql.Const(5) | Sql.SumDistinct(a.Id) == param2);
 
             string result = q.BuildQueryString();
         }

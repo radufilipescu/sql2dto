@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Text;
 
 namespace sql2dto.Core
@@ -15,6 +16,8 @@ namespace sql2dto.Core
         public abstract string BuildSqlJoinTypeString(SqlJoinType joinType);
         public abstract string BuildSqlOperatorString(SqlOperator op);
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
+        public abstract string BuildSqlOrderByDirectionString(SqlOrderByDirection direction);
         public abstract string EscapeConstantValue(string value);
+        public abstract DbCommand BuildDbCommand(SqlQuery query);
     }
 }

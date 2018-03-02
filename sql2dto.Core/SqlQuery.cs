@@ -12,6 +12,10 @@ namespace sql2dto.Core
             _builder = builder;
             _selectExpressions = new List<(SqlExpression, string)>();
             _fromAndJoinClauses = new List<(SqlJoinType, SqlTabularSource, SqlExpression)>();
+            _whereExpression = null;
+            _groupByExpressions = new List<SqlExpression>();
+            _havingExpression = null;
+            _orderByExpressions = new List<(SqlExpression, SqlOrderByDirection)>();
         }
 
         private SqlBuilder _builder;
@@ -24,6 +28,18 @@ namespace sql2dto.Core
 
         private List<(SqlJoinType, SqlTabularSource, SqlExpression)> _fromAndJoinClauses;
         public List<(SqlJoinType, SqlTabularSource, SqlExpression)> GetFromAndJoinClauses() => _fromAndJoinClauses;
+
+        private SqlExpression _whereExpression;
+        public SqlExpression GetWhereExpression() => _whereExpression;
+
+        public List<SqlExpression> _groupByExpressions;
+        public List<SqlExpression> GetGroupByExpressions() => _groupByExpressions;
+
+        public SqlExpression _havingExpression;
+        public SqlExpression GetHavingExpressions() => _havingExpression;
+
+        private List<(SqlExpression, SqlOrderByDirection)> _orderByExpressions;
+        public List<(SqlExpression, SqlOrderByDirection)> GetOrderByExpressions() => _orderByExpressions;
 
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
 
@@ -82,9 +98,63 @@ namespace sql2dto.Core
             return this;
         }
 
-        public SqlQuery InnerJoin(SqlTabularSource innerJoinPart, SqlExpression on)
+        public SqlQuery Join(SqlTabularSource innerJoinPart, SqlExpression on)
         {
             _fromAndJoinClauses.Add((SqlJoinType.INNER, innerJoinPart, on));
+            return this;
+        }
+
+        public SqlQuery LeftJoin(SqlTabularSource innerJoinPart, SqlExpression on)
+        {
+            _fromAndJoinClauses.Add((SqlJoinType.LEFT, innerJoinPart, on));
+            return this;
+        }
+
+        public SqlQuery RightJoin(SqlTabularSource innerJoinPart, SqlExpression on)
+        {
+            _fromAndJoinClauses.Add((SqlJoinType.RIGHT, innerJoinPart, on));
+            return this;
+        }
+
+        public SqlQuery FullJoin(SqlTabularSource innerJoinPart, SqlExpression on)
+        {
+            _fromAndJoinClauses.Add((SqlJoinType.FULL, innerJoinPart, on));
+            return this;
+        }
+
+        public SqlQuery CrossJoin(SqlTabularSource innerJoinPart)
+        {
+            _fromAndJoinClauses.Add((SqlJoinType.CROSS, innerJoinPart, (SqlExpression)null));
+            return this;
+        }
+
+        public SqlQuery Where(SqlExpression condition)
+        {
+            _whereExpression = condition;
+            return this;
+        }
+
+        public SqlQuery GroupBy(params SqlExpression[] by)
+        {
+            _groupByExpressions.AddRange(by);
+            return this;
+        }
+
+        public SqlQuery Having(SqlExpression having)
+        {
+            _havingExpression = having;
+            return this;
+        }
+
+        public SqlQuery OrderBy(params SqlExpression[] by)
+        {
+            _orderByExpressions.AddRange(by.Select(item => (item, SqlOrderByDirection.ASCENDING)));
+            return this;
+        }
+
+        public SqlQuery OrderByDescending(params SqlExpression[] by)
+        {
+            _orderByExpressions.AddRange(by.Select(item => (item, SqlOrderByDirection.DESCENDING)));
             return this;
         }
     }

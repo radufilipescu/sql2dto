@@ -1,6 +1,7 @@
 ﻿using sql2dto.Core;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -140,25 +141,58 @@ namespace sql2dto.MSSqlServer
 
         public override string BuildQueryString(SqlQuery query)
         {
-            string result =
+            var fromAndJoinClauses = query.GetFromAndJoinClauses();
+            if (fromAndJoinClauses.Count == 0)
+            {
+                throw new InvalidOperationException("FROM clause was not specified");
+            }
+            if (fromAndJoinClauses[0].Item1 != SqlJoinType.NONE)
+            {
+                throw new InvalidOperationException("FROM clause must be specified before any JOINS");
+            }
 
-$@"SELECT
-    {String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(e.Item1, e.Item2)))}
-{String.Join(Environment.NewLine, query.GetFromAndJoinClauses().Select(fj =>
-{
-    switch (fj.Item2.TabularType)
-    {
-        case SqlTabularSourceType.TABLE:
-            return BuildTableAsAliasString((SqlTable)fj.Item2, fj.Item1, fj.Item3);
-        case SqlTabularSourceType.QUERY:
-            return BuildQueryAsAliasString((SqlQuery)fj.Item2, fj.Item1, fj.Item3);
-        default:
-            throw new NotImplementedException($"SqlTabularSourceType: {fj.Item2.TabularType}");
-    }
-}))}
-";
+            var sb = new StringBuilder();
+            sb.AppendLine("SELECT");
+            sb.Append("    ");
+            sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(e.Item1, e.Item2))));
+            sb.AppendLine(String.Join(Environment.NewLine, query.GetFromAndJoinClauses().Select(fj =>
+            {
+                switch (fj.Item2.TabularType)
+                {
+                    case SqlTabularSourceType.TABLE:
+                        return BuildTableAsAliasString((SqlTable)fj.Item2, fj.Item1, fj.Item3);
+                    case SqlTabularSourceType.QUERY:
+                        return BuildQueryAsAliasString((SqlQuery)fj.Item2, fj.Item1, fj.Item3);
+                    default:
+                        throw new NotImplementedException($"SqlTabularSourceType: {fj.Item2.TabularType}");
+                }
+            })));
 
-            return result;
+            var whereExpression = query.GetWhereExpression();
+            if (!(whereExpression is null))
+            {
+                sb.AppendLine($"WHERE {BuildExpressionString(whereExpression)}");
+            }
+
+            var groupByExpressions = query.GetGroupByExpressions();
+            if (groupByExpressions.Count > 0)
+            {
+                sb.AppendLine($"GROUP BY {String.Join(", ", groupByExpressions.Select(item => BuildExpressionString(item)))}");
+            }
+
+            var havingExpression = query.GetHavingExpressions();
+            if (!(havingExpression is null))
+            {
+                sb.AppendLine($"HAVING {String.Join(", ", BuildExpressionString(havingExpression))}");
+            }
+
+            var orderByExpressions = query.GetOrderByExpressions();
+            if (orderByExpressions.Count > 0)
+            {
+                sb.AppendLine($"ORDER BY {String.Join(", ", orderByExpressions.Select(item => $"{BuildExpressionString(item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}");
+            }
+
+            return sb.ToString();
         }
 
         public override string BuildQueryAliasString(SqlQuery query)
@@ -237,6 +271,19 @@ $@"SELECT
             }
         }
 
+        public override string BuildSqlOrderByDirectionString(SqlOrderByDirection direction)
+        {
+            switch (direction)
+            {
+                case SqlOrderByDirection.ASCENDING:
+                    return "ASC";
+                case SqlOrderByDirection.DESCENDING:
+                    return "DESC";
+                default:
+                    throw new NotImplementedException($"SqlOrderByDirection: {direction}");
+            }
+        }
+
         public override string EscapeConstantValue(string value)
         {
             if (Regex.IsMatch(value, "[()[]]"))
@@ -245,6 +292,14 @@ $@"SELECT
             }
 
             return value.Replace("'", "''"); //TODO
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query)
+        {
+            var sqlCommand = new SqlCommand();
+            sqlCommand.CommandText = BuildQueryString(query);
+            
+            return sqlCommand;
         }
     }
 }
