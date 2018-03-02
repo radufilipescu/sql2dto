@@ -1,6 +1,7 @@
 ﻿using sql2dto.Core;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -98,8 +99,12 @@ namespace sql2dto.MSSqlServer
                     {
                         var parameterExpression = (SqlParameterExpression)expression;
                         var dbParameter = parameterExpression.GetDbParameter();
+                        if (!(dbParameter is SqlParameter))
+                        {
+                            throw new InvalidOperationException("Expected System.Data.SqlClient.SqlParameter");
+                        }
 
-                        result = dbParameter.ParameterName;
+                        result = ((SqlParameter)dbParameter).ParameterName;
                         if (!result.StartsWith("@"))
                         {
                             result = $"@{result}";
@@ -204,6 +209,16 @@ $@"SELECT
                     return "=";
                 case SqlOperator.NOT_EQUALS:
                     return "!=";
+                case SqlOperator.PLUS:
+                    return "+";
+                case SqlOperator.MINUS:
+                    return "-";
+                case SqlOperator.TIMES:
+                    return "*";
+                case SqlOperator.DIVIDE:
+                    return "/";
+                case SqlOperator.MOD:
+                    return "%";
                 default:
                     throw new NotImplementedException($"SqlOperator: {op}");
             }

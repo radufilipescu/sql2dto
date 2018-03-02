@@ -10,5 +10,10 @@ namespace sql2dto.Core
         NOT_EQUALS,
         AND,
         OR,
+        PLUS,
+        MINUS,
+        TIMES,
+        DIVIDE,
+        MOD,
     }
 }

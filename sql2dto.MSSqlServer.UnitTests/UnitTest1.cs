@@ -67,7 +67,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                 )
                 .Select(u.Id & u.Name)
                 .Select(
-                    (Sql.Sum(u.Id), "SUM_UserId"),
+                    (Sql.Sum(u.Id + a.Id), "SUM_UserId_PLUS_AddressId"),
                     (Sql.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
                     (Sql.Sum(u.Id & u.Name), "SUM_UserId_AND_Name"),
                     (u.Id & u.Name, "exp1"), 
@@ -82,9 +82,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                     .End(), "ANIMAL_TYPE")
                 )
                 .From(u)
-                .InnerJoin(a, on: a.UserId == u.Id & u.Id == a.UserId | a.Street == param2)
-                .InnerJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2)
-                .InnerJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2));
+                .InnerJoin(a, on: a.UserId == u.Id & u.Id == a.UserId | a.Street == param2 + param1)
+                .InnerJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2 + param1)
+                .InnerJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2 + param1));
 
             string result = q.BuildQueryString();
         }

@@ -31,5 +31,35 @@ namespace sql2dto.Core
             var result = new SqlBinaryExpression(a, SqlOperator.OR, b);
             return result;
         }
+
+        public static SqlExpression operator +(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.PLUS, b);
+            return result;
+        }
+
+        public static SqlExpression operator -(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.PLUS, b);
+            return result;
+        }
+
+        public static SqlExpression operator *(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.TIMES, b);
+            return result;
+        }
+
+        public static SqlExpression operator /(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.DIVIDE, b);
+            return result;
+        }
+
+        public static SqlExpression operator %(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.MOD, b);
+            return result;
+        }
     }
 }
