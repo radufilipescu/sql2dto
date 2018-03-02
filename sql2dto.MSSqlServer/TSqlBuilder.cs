@@ -15,7 +15,7 @@ namespace sql2dto.MSSqlServer
 
         private TSqlBuilder() { }
 
-        public override string BuildExpressionString(SqlExpression expression, string expressionAlias = null)
+        public override string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null)
         {
             var type = expression.GetExpressionType();
             string result = null;
@@ -25,7 +25,7 @@ namespace sql2dto.MSSqlServer
                     {
                         var column = (SqlColumn)expression;
 
-                        result = $"{BuildTableAliasString(column.GetSqlTable())}.{$"[{column.GetColumnName()}]"}";
+                        result = $"{BuildAliasString(column.GetSqlTable())}.{$"[{column.GetColumnName()}]"}";
                     }
                     break;
                 case SqlExpressionType.FUNCTION_CALL:
@@ -34,7 +34,7 @@ namespace sql2dto.MSSqlServer
 
                         var functionName = BuildSqlFuncNameString(functionCallExpression.GetFunctionName());
                         var distinct = functionCallExpression.GetIsDistinct() ? "DISTINCT " : "";
-                        var innerExpression = BuildExpressionString(functionCallExpression.GetInnerExpression());
+                        var innerExpression = BuildExpressionString(query, functionCallExpression.GetInnerExpression());
 
                         result = $"{functionName}({distinct}{innerExpression})";
                     }
@@ -55,7 +55,7 @@ namespace sql2dto.MSSqlServer
                         var op = binaryExpression.GetOperator();
                         var secondTerm = binaryExpression.GetSecondTerm();
 
-                        string firstTermString = BuildExpressionString(firstTerm);
+                        string firstTermString = BuildExpressionString(query, firstTerm);
                         switch (firstTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -64,7 +64,7 @@ namespace sql2dto.MSSqlServer
                                 }
                                 break;
                         }
-                        string secondTermString = BuildExpressionString(secondTerm);
+                        string secondTermString = BuildExpressionString(query, secondTerm);
                         switch (secondTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -83,15 +83,15 @@ namespace sql2dto.MSSqlServer
                         var onExpression = caseWhenExpression.GetOnExpression();
                         var elseExpression = caseWhenExpression.GetElseExpression();
 
-                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(onExpression)}";
+                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(query, onExpression)}";
                         result = $"CASE{onExpressionString}";
                         foreach (var whenThenExpression in caseWhenExpression.GetWhenThenExpressions())
                         {
-                            result += $" WHEN {BuildExpressionString(whenThenExpression.Item1)} THEN {BuildExpressionString(whenThenExpression.Item2)}";
+                            result += $" WHEN {BuildExpressionString(query, whenThenExpression.Item1)} THEN {BuildExpressionString(query, whenThenExpression.Item2)}";
                         }
                         if (!(elseExpression is null))
                         {
-                            result += $" ELSE {BuildExpressionString(elseExpression)}";
+                            result += $" ELSE {BuildExpressionString(query, elseExpression)}";
                         }
                         result += " END";
                     }
@@ -105,7 +105,8 @@ namespace sql2dto.MSSqlServer
                             throw new InvalidOperationException("Expected System.Data.SqlClient.SqlParameter");
                         }
 
-                        result = ((SqlParameter)dbParameter).ParameterName;
+                        result = dbParameter.ParameterName;
+                        query.AddDbParameterIfNotFound(dbParameter);
                         if (!result.StartsWith("@"))
                         {
                             result = $"@{result}";
@@ -124,17 +125,17 @@ namespace sql2dto.MSSqlServer
             return result;
         }
 
-        public override string BuildTableAliasString(SqlTable table)
+        public override string BuildAliasString(SqlTable table)
         {
             return $"[{table.GetTableAlias()}]";
         }
 
-        public override string BuildTableAsAliasString(SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
+        public override string BuildTableAsString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
         {
             string result = $"{BuildSqlJoinTypeString(joinType)} [{table.GetTableSchema()}].[{table.GetTableName()}] AS [{table.GetTableAlias()}]";
             if (!(condition is null))
             {
-                result += $" ON {BuildExpressionString(condition)}";
+                result += $" ON {BuildExpressionString(query, condition)}";
             }
             return result;
         }
@@ -154,15 +155,15 @@ namespace sql2dto.MSSqlServer
             var sb = new StringBuilder();
             sb.AppendLine("SELECT");
             sb.Append("    ");
-            sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(e.Item1, e.Item2))));
+            sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(query, e.Item1, e.Item2))));
             sb.AppendLine(String.Join(Environment.NewLine, query.GetFromAndJoinClauses().Select(fj =>
             {
                 switch (fj.Item2.TabularType)
                 {
                     case SqlTabularSourceType.TABLE:
-                        return BuildTableAsAliasString((SqlTable)fj.Item2, fj.Item1, fj.Item3);
+                        return BuildTableAsString(query, (SqlTable)fj.Item2, fj.Item1, fj.Item3);
                     case SqlTabularSourceType.QUERY:
-                        return BuildQueryAsAliasString((SqlQuery)fj.Item2, fj.Item1, fj.Item3);
+                        return BuildQueryAsString(query, (SqlQuery)fj.Item2, fj.Item1, fj.Item3);
                     default:
                         throw new NotImplementedException($"SqlTabularSourceType: {fj.Item2.TabularType}");
                 }
@@ -171,41 +172,50 @@ namespace sql2dto.MSSqlServer
             var whereExpression = query.GetWhereExpression();
             if (!(whereExpression is null))
             {
-                sb.AppendLine($"WHERE {BuildExpressionString(whereExpression)}");
+                sb.AppendLine($"WHERE {BuildExpressionString(query, whereExpression)}");
             }
 
             var groupByExpressions = query.GetGroupByExpressions();
             if (groupByExpressions.Count > 0)
             {
-                sb.AppendLine($"GROUP BY {String.Join(", ", groupByExpressions.Select(item => BuildExpressionString(item)))}");
+                sb.AppendLine($"GROUP BY {String.Join(", ", groupByExpressions.Select(item => BuildExpressionString(query, item)))}");
             }
 
             var havingExpression = query.GetHavingExpressions();
             if (!(havingExpression is null))
             {
-                sb.AppendLine($"HAVING {String.Join(", ", BuildExpressionString(havingExpression))}");
+                sb.AppendLine($"HAVING {String.Join(", ", BuildExpressionString(query, havingExpression))}");
             }
 
             var orderByExpressions = query.GetOrderByExpressions();
             if (orderByExpressions.Count > 0)
             {
-                sb.AppendLine($"ORDER BY {String.Join(", ", orderByExpressions.Select(item => $"{BuildExpressionString(item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}");
+                sb.AppendLine($"ORDER BY {String.Join(", ", orderByExpressions.Select(item => $"{BuildExpressionString(query, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}");
             }
 
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
 
-        public override string BuildQueryAliasString(SqlQuery query)
+        public override string BuildAliasString(SqlQuery query)
         {
             return $"[{query.GetQueryAlias()}]";
         }
 
-        public override string BuildQueryAsAliasString(SqlQuery query, SqlJoinType joinType, SqlExpression condition = null)
+        public override string BuildQueryAsString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null)
         {
-            string result = $"{BuildSqlJoinTypeString(joinType)} ({BuildQueryString(query)}) AS [{BuildQueryAliasString(query)}]";
+            string result = 
+$@"{BuildSqlJoinTypeString(joinType)} 
+(
+{BuildQueryString(subQuery)}
+) AS [{BuildAliasString(subQuery)}]";
+
             if (!(condition is null))
             {
-                result += $" ON {BuildExpressionString(condition)}";
+                result += $" ON {BuildExpressionString(query, condition)}";
+            }
+            foreach (var innerDbParam in subQuery.GetDbParameters().Values)
+            {
+                query.AddDbParameterIfNotFound(innerDbParam);
             }
             return result;
         }
@@ -297,9 +307,25 @@ namespace sql2dto.MSSqlServer
         public override DbCommand BuildDbCommand(SqlQuery query)
         {
             var sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
             sqlCommand.CommandText = BuildQueryString(query);
-            
+            sqlCommand.Parameters.AddRange(query.GetDbParameters().Values.ToArray());
+
             return sqlCommand;
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection)
+        {
+            var cmd = BuildDbCommand(query);
+            cmd.Connection = connection;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction)
+        {
+            var cmd = BuildDbCommand(query, connection);
+            cmd.Transaction = transaction;
+            return cmd;
         }
     }
 }

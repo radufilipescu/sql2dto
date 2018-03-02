@@ -51,14 +51,23 @@ namespace sql2dto.MSSqlServer.UnitTests
         {
             var param1 = Sql.Parameter(new SqlParameter("param1", 5));
             var param2 = Sql.Parameter(new SqlParameter("param2", "foo"));
+            var innerParam1 = Sql.Parameter(new SqlParameter("innerParam1", -1));
+            var innerParam2 = Sql.Parameter(new SqlParameter("innerParam2", -2));
 
             var u = Users.As("u");
             var a = Addresses.As("a");
 
-            var q = new SqlQuery(TSqlBuilder.Instance)
+            var innerQuery = new SqlQuery(TSqlBuilder.Instance)
+                .Select(a.Street)
+                .From(a)
+                .Where(a.Id == innerParam1)
+                .As("INNER_Q");
+
+            var query = new SqlQuery(TSqlBuilder.Instance)
                 .Select(a.Street)
                 .Select(param1, "PARAM_1")
                 .Select(Sql.Sum(a.Id), "SUM_AdrressId")
+                .Select(Sql.Sum(a.Id))
                 .Select(
                     u.Id,
                     Sql.Case()
@@ -69,7 +78,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .Select(
                     (Sql.Sum(u.Id + a.Id), "SUM_UserId_PLUS_AddressId"),
                     (Sql.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
-                    (Sql.Sum(u.Id & u.Name), "SUM_UserId_AND_Name"),
+                    (Sql.Sum(u.Id * u.Name), "SUM_UserId_AND_Name"),
                     (u.Id & u.Name, "exp1"),
                     (a.UserId == u.Id, "exp2"),
                     ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3"),
@@ -86,13 +95,17 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .LeftJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2 + param1)
                 .FullJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2 + param1))
                 .CrossJoin(a)
+                .RightJoin(innerQuery, innerParam2 == Sql.Const(-1)) //TODO
 
                 .Where(a.Street - a.Id == u.Id | u.Id * u.Name == param1 & a.Street == param2 + Sql.Const("FOO"))
 
                 .GroupBy(a.Street, u.Name)
-                .Having(Sql.Sum(u.Id) == Sql.Const(5) | Sql.SumDistinct(a.Id) == param2);
+                .Having(Sql.Sum(u.Id) == Sql.Const(5) | Sql.SumDistinct(a.Id) == param2 & Sql.Sum(param1));
 
-            string result = q.BuildQueryString();
+            var cmd = query.BuildDbCommand();
+
+            string cmdText = cmd.CommandText;
+            var parameters = cmd.Parameters;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace sql2dto.Core
         public SqlQuery(SqlBuilder builder)
         {
             _builder = builder;
+            _dbParameters = new Dictionary<string, DbParameter>();
             _selectExpressions = new List<(SqlExpression, string)>();
             _fromAndJoinClauses = new List<(SqlJoinType, SqlTabularSource, SqlExpression)>();
             _whereExpression = null;
@@ -19,6 +21,16 @@ namespace sql2dto.Core
         }
 
         private SqlBuilder _builder;
+
+        private Dictionary<string, DbParameter> _dbParameters;
+        public Dictionary<string, DbParameter> GetDbParameters() => _dbParameters;
+        public void AddDbParameterIfNotFound(DbParameter parameter)
+        {
+            if (!_dbParameters.ContainsKey(parameter.ParameterName))
+            {
+                _dbParameters.Add(parameter.ParameterName, parameter);
+            }
+        }
 
         private string _queryAlias;
         public string GetQueryAlias() => _queryAlias;
@@ -42,11 +54,6 @@ namespace sql2dto.Core
         public List<(SqlExpression, SqlOrderByDirection)> GetOrderByExpressions() => _orderByExpressions;
 
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
-
-        public string BuildQueryString()
-        {
-            return _builder.BuildQueryString(this);
-        }
 
         public SqlQuery Select(SqlExpression expression, string columnAlias = null)
         {
@@ -156,6 +163,26 @@ namespace sql2dto.Core
         {
             _orderByExpressions.AddRange(by.Select(item => (item, SqlOrderByDirection.DESCENDING)));
             return this;
+        }
+
+        public string BuildQueryString()
+        {
+            return _builder.BuildQueryString(this);
+        }
+
+        public DbCommand BuildDbCommand()
+        {
+            return _builder.BuildDbCommand(this);
+        }
+
+        public DbCommand BuildDbCommand(DbConnection connection)
+        {
+            return _builder.BuildDbCommand(this, connection);
+        }
+
+        public DbCommand BuildDbCommand(DbConnection connection, DbTransaction transaction)
+        {
+            return _builder.BuildDbCommand(this, connection, transaction);
         }
     }
 }
