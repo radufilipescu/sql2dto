@@ -10,6 +10,7 @@ namespace sql2dto.MSSqlServer
 {
     public static class Extensions
     {
+        #region SQL COMMAND EXTENSIONS
         public static ReadHelper ExecReadHelper(this SqlCommand cmd)
         {
             var reader = cmd.ExecuteReader();
@@ -23,6 +24,7 @@ namespace sql2dto.MSSqlServer
             var readHelper = new ReadHelper(reader);
             return readHelper;
         }
+        #endregion
 
         #region SQL CONNECTION EXTENSIONS
         #region EXEC SQL
@@ -214,6 +216,34 @@ namespace sql2dto.MSSqlServer
             return await conn.ExecSPReadHelperAsync(null, spName, parameters);
         }
         #endregion
+        #endregion
+
+        #region SQL QUERY EXTENSIONS
+        public static SqlCommand BuildSqlCommand(this SqlQuery query)
+        {
+            EnsureTSqlLanguageImplementations(query);
+            return (SqlCommand)query.BuildDbCommand();
+        }
+
+        public static SqlCommand BuildSqlCommand(this SqlQuery query, DbConnection connection)
+        {
+            EnsureTSqlLanguageImplementations(query);
+            return (SqlCommand)query.BuildDbCommand(connection);
+        }
+
+        public static SqlCommand BuildSqlCommand(this SqlQuery query, DbConnection connection, DbTransaction transaction)
+        {
+            EnsureTSqlLanguageImplementations(query);
+            return (SqlCommand)query.BuildDbCommand(connection, transaction);
+        }
+
+        private static void EnsureTSqlLanguageImplementations(SqlQuery query)
+        {
+            if (query.GetSqlBuilderLanguageImplementation() != TSqlBuilder.LANGUAGE_IMPLEMENTATION)
+            {
+                throw new InvalidOperationException("SqlQuery's builder is not a TSqlBuilder")
+            }
+        }
         #endregion
     }
 }

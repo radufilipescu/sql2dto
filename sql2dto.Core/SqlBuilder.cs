@@ -7,6 +7,8 @@ namespace sql2dto.Core
 {
     public abstract class SqlBuilder
     {
+        public abstract string GetLanguageImplementation();
+
         public abstract string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null);
         public abstract string BuildAliasString(SqlTable table);
         public abstract string BuildTableAsString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null);

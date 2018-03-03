@@ -12,6 +12,9 @@ namespace sql2dto.MSSqlServer
     public class TSqlBuilder : SqlBuilder
     {
         public static readonly TSqlBuilder Instance = new TSqlBuilder();
+        public const string LANGUAGE_IMPLEMENTATION = "T-SQL";
+
+        public override string GetLanguageImplementation() => LANGUAGE_IMPLEMENTATION;
 
         private TSqlBuilder() { }
 

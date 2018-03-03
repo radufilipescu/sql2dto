@@ -76,6 +76,16 @@ namespace sql2dto.Core
         {
             return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: true);
         }
+
+        public static SqlFunctionCallExpression Avg(SqlExpression expression)
+        {
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: false);
+        }
+
+        public static SqlFunctionCallExpression AvgDistinct(SqlExpression expression)
+        {
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true);
+        }
         #endregion
 
         #region PARAMETER
