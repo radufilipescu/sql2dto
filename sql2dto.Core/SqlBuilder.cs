@@ -23,5 +23,6 @@ namespace sql2dto.Core
         public abstract DbCommand BuildDbCommand(SqlQuery query);
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection);
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction);
+        public abstract SqlParameterExpression Parameter(string name, object value);
     }
 }

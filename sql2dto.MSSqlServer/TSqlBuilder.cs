@@ -11,12 +11,9 @@ namespace sql2dto.MSSqlServer
 {
     public class TSqlBuilder : SqlBuilder
     {
-        public static readonly TSqlBuilder Instance = new TSqlBuilder();
         public const string LANGUAGE_IMPLEMENTATION = "T-SQL";
 
         public override string GetLanguageImplementation() => LANGUAGE_IMPLEMENTATION;
-
-        private TSqlBuilder() { }
 
         public override string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null)
         {
@@ -329,6 +326,11 @@ $@"{BuildSqlJoinTypeString(joinType)}
             var cmd = BuildDbCommand(query, connection);
             cmd.Transaction = transaction;
             return cmd;
+        }
+
+        public override SqlParameterExpression Parameter(string name, object value)
+        {
+            return new SqlParameterExpression(new SqlParameter(name, value));
         }
     }
 }

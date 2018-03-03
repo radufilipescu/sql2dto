@@ -87,12 +87,5 @@ namespace sql2dto.Core
             return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true);
         }
         #endregion
-
-        #region PARAMETER
-        public static SqlParameterExpression Parameter(DbParameter dbParameter)
-        {
-            return new SqlParameterExpression(dbParameter);
-        }
-        #endregion
     }
 }

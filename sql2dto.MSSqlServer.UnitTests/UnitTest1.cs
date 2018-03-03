@@ -8,62 +8,78 @@ namespace sql2dto.MSSqlServer.UnitTests
 {
     public class UnitTest1
     {
-        public class Users : SqlTable
+        public class DataBaseName
         {
-            public static Users As(string alias)
+            public static readonly SqlBuilder DefaultSqlBuilder = new TSqlBuilder();
+            public static SqlParameterExpression Parameter(string name, object value)
             {
-                return new Users(alias);
+                return new SqlParameterExpression(new SqlParameter(name, value));
+            }
+            public static SqlQuery Query()
+            {
+                return new SqlQuery(DefaultSqlBuilder);
             }
 
-            private Users(string alias)
-                : base("dbo", "Users", alias)
+            public class dbo
             {
-                Id = DefineColumn(nameof(Id));
-                Name = DefineColumn(nameof(Name));
+                public class Users : SqlTable
+                {
+                    public static Users As(string alias)
+                    {
+                        return new Users(alias);
+                    }
+
+                    private Users(string alias)
+                        : base(nameof(dbo), nameof(Users), alias)
+                    {
+                        Id = DefineColumn(nameof(Id));
+                        Name = DefineColumn(nameof(Name));
+                    }
+
+                    public SqlColumn Id;
+                    public SqlColumn Name;
+                }
+
+                public class Addresses : SqlTable
+                {
+                    public static Addresses As(string alias)
+                    {
+                        return new Addresses(alias);
+                    }
+
+                    private Addresses(string alias)
+                        : base(nameof(dbo), nameof(Addresses), alias)
+                    {
+                        Id = DefineColumn(nameof(Id));
+                        UserId = DefineColumn(nameof(UserId));
+                        Street = DefineColumn(nameof(Street));
+                    }
+
+                    public SqlColumn Id;
+                    public SqlColumn UserId;
+                    public SqlColumn Street;
+                }
             }
-
-            public SqlColumn Id;
-            public SqlColumn Name;
-        }
-
-        public class Addresses : SqlTable
-        {
-            public static Addresses As(string alias)
-            {
-                return new Addresses(alias);
-            }
-
-            private Addresses(string alias)
-                : base("dbo", "Addresses", alias)
-            {
-                Id = DefineColumn(nameof(Id));
-                UserId = DefineColumn(nameof(UserId));
-                Street = DefineColumn(nameof(Street));
-            }
-
-            public SqlColumn Id;
-            public SqlColumn UserId;
-            public SqlColumn Street;
         }
 
         [Fact]
         public void Test1()
         {
-            var param1 = Sql.Parameter(new SqlParameter("param1", 5));
-            var param2 = Sql.Parameter(new SqlParameter("param2", "foo"));
-            var innerParam1 = Sql.Parameter(new SqlParameter("innerParam1", -1));
-            var innerParam2 = Sql.Parameter(new SqlParameter("innerParam2", -2));
+            var param1 = DataBaseName.Parameter("param1", 5);
+            var param2 = DataBaseName.Parameter("param2", "foo");
+            var innerParam1 = DataBaseName.Parameter("innerParam1", -1);
+            var innerParam2 = DataBaseName.Parameter("innerParam2", -2);
 
-            var u = Users.As("u");
-            var a = Addresses.As("a");
+            var u = DataBaseName.dbo.Users.As("u");
+            var a = DataBaseName.dbo.Addresses.As("a");
 
-            var innerQuery = new SqlQuery(TSqlBuilder.Instance)
+            var innerQuery = DataBaseName.Query()
                 .Select(a.Street)
                 .From(a)
                 .Where(a.Id == innerParam1)
                 .As("INNER_Q");
 
-            var query = new SqlQuery(TSqlBuilder.Instance)
+            var query = DataBaseName.Query()
                 .Select(a.Street)
                 .Select(param1, "PARAM_1")
                 .Select(Sql.Sum(a.Id), "SUM_AdrressId")

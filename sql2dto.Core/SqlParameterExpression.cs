@@ -7,7 +7,7 @@ namespace sql2dto.Core
 {
     public class SqlParameterExpression : SqlExpression
     {
-        internal SqlParameterExpression(DbParameter dbParameter)
+        public SqlParameterExpression(DbParameter dbParameter)
         {
             _dbParameter = dbParameter;
         }

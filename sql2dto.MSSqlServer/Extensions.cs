@@ -225,13 +225,13 @@ namespace sql2dto.MSSqlServer
             return (SqlCommand)query.BuildDbCommand();
         }
 
-        public static SqlCommand BuildSqlCommand(this SqlQuery query, DbConnection connection)
+        public static SqlCommand BuildSqlCommand(this SqlQuery query, SqlConnection connection)
         {
             EnsureTSqlLanguageImplementations(query);
             return (SqlCommand)query.BuildDbCommand(connection);
         }
 
-        public static SqlCommand BuildSqlCommand(this SqlQuery query, DbConnection connection, DbTransaction transaction)
+        public static SqlCommand BuildSqlCommand(this SqlQuery query, SqlConnection connection, SqlTransaction transaction)
         {
             EnsureTSqlLanguageImplementations(query);
             return (SqlCommand)query.BuildDbCommand(connection, transaction);
@@ -241,7 +241,7 @@ namespace sql2dto.MSSqlServer
         {
             if (query.GetSqlBuilderLanguageImplementation() != TSqlBuilder.LANGUAGE_IMPLEMENTATION)
             {
-                throw new InvalidOperationException("SqlQuery's builder is not a TSqlBuilder")
+                throw new InvalidOperationException("SqlQuery's builder is not a TSqlBuilder");
             }
         }
         #endregion
