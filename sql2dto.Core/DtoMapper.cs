@@ -312,7 +312,10 @@ namespace sql2dto.Core
         {
             var clone = new DtoMapper<TDto>(this.ColumnsPrefix);
             clone.OrderedKeyPropNames = this.OrderedKeyPropNames.ToArray();
-            clone._propMapConfigs = this._propMapConfigs.ToDictionary(keySelector => keySelector.Key, valueSelector => valueSelector.Value);
+            foreach (var propMapConfig in this._propMapConfigs)
+            {
+                clone._propMapConfigs.Add(propMapConfig.Key, propMapConfig.Value.Clone());
+            }
             return clone;
         }
     }
