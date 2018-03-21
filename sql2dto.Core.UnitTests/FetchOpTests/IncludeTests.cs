@@ -21,6 +21,7 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             public int Id { get; set; }
             public string Name { get; set; }
+
             public List<LevelB> BLevels { get; set; }
         }
 
@@ -35,6 +36,8 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             public int Id { get; set; }
             public string Name { get; set; }
+
+            public LevelA ALevel;
             public List<LevelC> CLevels { get; set; }
         }
 
@@ -49,6 +52,8 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             public int Id { get; set; }
             public string Name { get; set; }
+
+            public LevelB BLevel;
             public List<LevelD> DLevels { get; set; }
         }
 
@@ -58,6 +63,67 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
         {
             public int Id { get; set; }
             public string Name { get; set; }
+
+            public LevelC CLevel;
+        }
+
+        [Fact]
+        public void Do_Not_Include_Null_Children()
+        {
+            var fakeReader = new FakeDataReader("a_Id", "a_Name", "b_Id", "b_Name", "c_Id", "c_Name", "d_Id", "d_Name");
+
+            fakeReader.AddRow(1, "A", 1, "B", 1, "C", 1, "D");
+            fakeReader.AddRow(1, "A", 2, "B", 2, "C", 2, "D");
+
+            fakeReader.AddRow(2, "A", null, null, null, null, null, null);
+            fakeReader.AddRow(2, "A", null, null, null, null, null, null);
+
+            fakeReader.AddRow(3, "A", 3, "B", null, null, null, null);
+            fakeReader.AddRow(3, "A", 4, "B", 4, "C", null, null);
+
+            fakeReader.AddRow(4, "A", 5, "B", 5, "C", null, null);
+            fakeReader.AddRow(4, "A", 6, "B", null, null, null, null);
+
+            fakeReader.AddRow(5, "A", 7, "B", null, null, null, null);
+            fakeReader.AddRow(5, "A", 7, "B", null, null, null, null);
+
+            fakeReader.AddRow(6, "A", 8, "B", null, null, null, null);
+            fakeReader.AddRow(6, "A", 8, "B", 6, "C", null, null);
+            fakeReader.AddRow(6, "A", 8, "B", 7, "C", null, null);
+
+            using (var h = new ReadHelper(fakeReader))
+            {
+                var fetch = 
+                    h.Fetch<LevelA>()
+                        .Include<LevelB>((a, b) => { a.BLevels.Add(b); b.ALevel = a; }, (bLevelOp) => { bLevelOp
+                            .Include<LevelC>((b, c) => { b.CLevels.Add(c); c.BLevel = b; }, (cLevelOp) => { cLevelOp
+                                .Include<LevelD>((c, d) => { c.DLevels.Add(d); d.CLevel = c; });
+                            });
+                        });
+
+                var result = fetch.All();
+
+                Assert.True(result.Count == 6);
+
+                Assert.True(result[0].BLevels.Count == 2);
+                Assert.True(result[0].BLevels[0].CLevels.Count == 1);
+                Assert.True(result[0].BLevels[1].CLevels.Count == 1);
+
+                Assert.True(result[1].BLevels.Count == 0);
+
+                Assert.True(result[2].BLevels.Count == 2);
+                Assert.True(result[2].BLevels[0].CLevels.Count == 0);
+                Assert.True(result[2].BLevels[1].CLevels.Count == 1);
+
+                Assert.True(result[3].BLevels.Count == 2);
+                Assert.True(result[3].BLevels[0].CLevels.Count == 1);
+                Assert.True(result[3].BLevels[1].CLevels.Count == 0);
+
+                Assert.True(result[4].BLevels.Count == 1);
+
+                Assert.True(result[5].BLevels.Count == 1);
+                Assert.True(result[5].BLevels[0].CLevels.Count == 2);
+            }
         }
 
         [Fact]
@@ -69,9 +135,9 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
             {
                 var fetch = 
                     h.Fetch<LevelA>()
-                        .Include<LevelB>((a, b) => { a.BLevels.Add(b); }, (bLevelOp) => { bLevelOp
-                            .Include<LevelC>((b, c) => { b.CLevels.Add(c); }, (cLevelOp) => { cLevelOp
-                                .Include<LevelD>((c, d) => { c.DLevels.Add(d); });
+                        .Include<LevelB>((a, b) => { a.BLevels.Add(b); b.ALevel = a; }, (bLevelOp) => { bLevelOp
+                            .Include<LevelC>((b, c) => { b.CLevels.Add(c); c.BLevel = b; }, (cLevelOp) => { cLevelOp
+                                .Include<LevelD>((c, d) => { c.DLevels.Add(d); d.CLevel = c; });
                             });
                         });
 

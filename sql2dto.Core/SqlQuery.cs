@@ -94,6 +94,49 @@ namespace sql2dto.Core
             return this;
         }
 
+        public SqlQuery Project<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
+            foreach (var col in table.ListAllColumns())
+            {
+                string colName = col.GetColumnName();
+                if (except.Contains(colName))
+                {
+                    continue;
+                }
+
+                if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(colName, out PropMapConfig propMapConfig)) // TODO: match based on same property names rather than (sql column name) - (dto property name)
+                {
+                    _selectExpressions.Add((
+                        col,
+                        DtoMapper<TDto>.DefaultColumnsPrefix + (propMapConfig.ColumnName ?? col.GetColumnName())
+                    ));
+                }
+            }
+            return this;
+        }
+
+        public SqlQuery Project<TDto>(params (SqlExpression, string)[] selectExpressions)
+            where TDto : new()
+        {
+            //TODO: ability to override the mappings from previous projections
+            //REASON: the user might want to use a SqlExpression instead of column that matches in a previous projection
+            if (selectExpressions.Length == 0)
+            {
+                throw new ArgumentException("No select expressions found", nameof(selectExpressions));
+            }
+
+            foreach (var tuple in selectExpressions)
+            {
+                _selectExpressions.Add((
+                    tuple.Item1,
+                    DtoMapper<TDto>.DefaultColumnsPrefix + (DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)
+                ));
+            }
+            return this;
+        }
+
         public SqlQuery As(string subqueryAlias)
         {
             _queryAlias = subqueryAlias;

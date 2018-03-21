@@ -42,7 +42,7 @@ namespace sql2dto.Core
             };
             foreach (string keyPropName in keyPropNames)
             {
-                var keyInnerPropTypeName = mapper?.GetInnerPropType(keyPropName) ?? DtoMapper<TDto>.GetDefaultInnerPropType(keyPropName);
+                var keyInnerPropTypeName = mapper?.GetInnerPropMapConfig(keyPropName).InnerPropType ?? DtoMapper<TDto>.GetDefaultInnerPropMapConfig(keyPropName).InnerPropType;
                 genericArguments.Add(keyInnerPropTypeName);
             }
 
@@ -692,6 +692,12 @@ namespace sql2dto.Core
             var include = new Action<FetchResult<TDto>>((parent) =>
             {
                 var child = childOp.FetchFromCurrentRow();
+                if (child.Current == null)
+                {
+                    // no child to map
+                    return;
+                }
+
                 if (_parentChildrenBounds[boundIndex].ContainsKey(parent.CurrentIndex))
                 {
                     if (_parentChildrenBounds[boundIndex][parent.CurrentIndex].Contains(child.CurrentIndex))

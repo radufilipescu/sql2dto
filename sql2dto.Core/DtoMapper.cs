@@ -15,11 +15,11 @@ namespace sql2dto.Core
         internal static string DefaultColumnsPrefix { get; private set; }
         internal static string[] DefaultOrderedKeyPropNames { get; private set; }
 
-        internal static string GetDefaultInnerPropTypeName(string propName)
+        internal static PropMapConfig GetDefaultInnerPropMapConfig(string propName)
         {
             if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
             {
-                return cfg.InnerPropTypeName;
+                return cfg;
             }
             else
             {
@@ -27,15 +27,17 @@ namespace sql2dto.Core
             }
         }
 
-        internal static Type GetDefaultInnerPropType(string propName)
+        internal static bool TryGetDefaultInnerPropMapConfig(string propName, out PropMapConfig result)
         {
             if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
             {
-                return cfg.InnerPropType;
+                result = cfg;
+                return true;
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(propName));
+                result = null;
+                return false;
             }
         }
 
@@ -205,11 +207,11 @@ namespace sql2dto.Core
         internal string ColumnsPrefix { get; private set; }
         internal string[] OrderedKeyPropNames { get; private set; }
 
-        internal string GetInnerPropTypeName(string propName)
+        internal PropMapConfig GetInnerPropMapConfig(string propName)
         {
             if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
             {
-                return cfg.InnerPropTypeName;
+                return cfg;
             }
             else
             {
@@ -217,15 +219,17 @@ namespace sql2dto.Core
             }
         }
 
-        internal Type GetInnerPropType(string propName)
+        internal bool TryGetInnerPropMapConfig(string propName, out PropMapConfig result)
         {
             if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
             {
-                return cfg.InnerPropType;
+                result = cfg;
+                return true;
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(propName));
+                result = null;
+                return false;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace sql2dto.Core
@@ -27,8 +28,17 @@ namespace sql2dto.Core
         public string GetTableAlias() => _tableAlias;
 
         private Dictionary<string, int> _columnNamesToIndexes;
+        public SqlColumn GetColumn(string columnName)
+        {
+            if (_columnNamesToIndexes.TryGetValue(columnName, out int index))
+            {
+                return _columns[index];
+            }
+            throw new ArgumentOutOfRangeException(nameof(columnName));
+        }
 
         private List<SqlColumn> _columns;
+        public List<SqlColumn> ListAllColumns() => _columns.ToList();
 
         public SqlColumn DefineColumn(string columnName)
         {

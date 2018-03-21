@@ -6,7 +6,7 @@ using Xunit;
 
 namespace sql2dto.MSSqlServer.UnitTests
 {
-    public class UnitTest1
+    public class SimpleSelectTests
     {
         public class DataBaseName
         {
@@ -33,11 +33,13 @@ namespace sql2dto.MSSqlServer.UnitTests
                         : base(nameof(dbo), nameof(Users), alias)
                     {
                         Id = DefineColumn(nameof(Id));
-                        Name = DefineColumn(nameof(Name));
+                        FirstName = DefineColumn(nameof(FirstName));
+                        LastName = DefineColumn(nameof(LastName));
                     }
 
                     public SqlColumn Id;
-                    public SqlColumn Name;
+                    public SqlColumn FirstName;
+                    public SqlColumn LastName;
                 }
 
                 public class Addresses : SqlTable
@@ -90,15 +92,15 @@ namespace sql2dto.MSSqlServer.UnitTests
                         .When(Sql.Const("panda") == a.Street, "bear")
                     .End()
                 )
-                .Select(u.Id & u.Name)
+                .Select(u.Id & u.FirstName)
                 .Select(
                     (Sql.Sum(u.Id + a.Id), "SUM_UserId_PLUS_AddressId"),
                     (Sql.SumDistinct(u.Id), "SUM_DISTINCT_UserId"),
-                    (Sql.Sum(u.Id * u.Name), "SUM_UserId_AND_Name"),
-                    (u.Id & u.Name, "exp1"),
+                    (Sql.Sum(u.Id * u.FirstName), "SUM_UserId_AND_Name"),
+                    (u.Id & u.FirstName, "exp1"),
                     (a.UserId == u.Id, "exp2"),
                     ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3"),
-                    (Sql.Case(u.Name)
+                    (Sql.Case(u.FirstName)
                         .When("panda", "bear")
                         .When("koala", "bear")
                         .When("mastiff", "dog")
@@ -113,9 +115,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .CrossJoin(a)
                 .RightJoin(innerQuery, innerParam2 == Sql.Const(-1)) //TODO
 
-                .Where(a.Street - a.Id == u.Id | u.Id * u.Name == param1 & a.Street == param2 + Sql.Const("FOO"))
+                .Where(a.Street - a.Id == u.Id | u.Id * u.FirstName == param1 & a.Street == param2 + Sql.Const("FOO"))
 
-                .GroupBy(a.Street, u.Name)
+                .GroupBy(a.Street, u.FirstName)
                 .Having(Sql.Sum(u.Id) == Sql.Const(5) | Sql.SumDistinct(a.Id) == param2 & Sql.Sum(param1));
 
             var cmd = query.BuildDbCommand();
