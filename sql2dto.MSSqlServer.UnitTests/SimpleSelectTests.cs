@@ -32,9 +32,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                     private Users(string alias)
                         : base(nameof(dbo), nameof(Users), alias)
                     {
-                        Id = DefineColumn(nameof(Id));
-                        FirstName = DefineColumn(nameof(FirstName));
-                        LastName = DefineColumn(nameof(LastName));
+                        Id = DefineColumn(nameof(Id), nameof(Id));
+                        FirstName = DefineColumn(nameof(FirstName), nameof(FirstName));
+                        LastName = DefineColumn(nameof(LastName), nameof(LastName));
                     }
 
                     public SqlColumn Id;
@@ -52,9 +52,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                     private Addresses(string alias)
                         : base(nameof(dbo), nameof(Addresses), alias)
                     {
-                        Id = DefineColumn(nameof(Id));
-                        UserId = DefineColumn(nameof(UserId));
-                        Street = DefineColumn(nameof(Street));
+                        Id = DefineColumn(nameof(Id), nameof(Id));
+                        UserId = DefineColumn(nameof(UserId), nameof(UserId));
+                        Street = DefineColumn(nameof(Street), nameof(Street));
                     }
 
                     public SqlColumn Id;

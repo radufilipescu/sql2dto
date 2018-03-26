@@ -6,9 +6,10 @@ namespace sql2dto.Core
 {
     public class SqlColumn : SqlExpression
     {
-        internal SqlColumn(SqlTable table, string columnName)
+        internal SqlColumn(SqlTable table, string propertyName, string columnName)
         {
             _table = table;
+            _propertyName = propertyName;
             _columnName = columnName;
         }
 
@@ -16,6 +17,9 @@ namespace sql2dto.Core
 
         private readonly SqlTable _table;
         public SqlTable GetSqlTable() => _table;
+
+        private string _propertyName;
+        public string GetPropertyName() => _propertyName;
 
         private string _columnName;
         public string GetColumnName() => _columnName;

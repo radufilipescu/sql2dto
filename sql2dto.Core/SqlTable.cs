@@ -12,6 +12,7 @@ namespace sql2dto.Core
             _tableSchema = tableSchema;
             _tableName = tableName;
             _tableAlias = tableAlias;
+            _columnPropertyNamesToIndexes = new Dictionary<string, int>();
             _columnNamesToIndexes = new Dictionary<string, int>();
             _columns = new List<SqlColumn>();
         }
@@ -27,8 +28,18 @@ namespace sql2dto.Core
         private string _tableAlias;
         public string GetTableAlias() => _tableAlias;
 
+        private Dictionary<string, int> _columnPropertyNamesToIndexes;
+        public SqlColumn GetColumnByPropertyName(string propertyName)
+        {
+            if (_columnPropertyNamesToIndexes.TryGetValue(propertyName, out int index))
+            {
+                return _columns[index];
+            }
+            throw new ArgumentOutOfRangeException(nameof(propertyName));
+        }
+
         private Dictionary<string, int> _columnNamesToIndexes;
-        public SqlColumn GetColumn(string columnName)
+        public SqlColumn GetColumnByColumnName(string columnName)
         {
             if (_columnNamesToIndexes.TryGetValue(columnName, out int index))
             {
@@ -40,10 +51,11 @@ namespace sql2dto.Core
         private List<SqlColumn> _columns;
         public List<SqlColumn> ListAllColumns() => _columns.ToList();
 
-        public SqlColumn DefineColumn(string columnName)
+        public SqlColumn DefineColumn(string propertyName, string columnName)
         {
-            var col = new SqlColumn(this, columnName);
+            var col = new SqlColumn(this, propertyName, columnName);
             _columns.Add(col);
+            _columnPropertyNamesToIndexes.Add(propertyName, _columns.Count - 1);
             _columnNamesToIndexes.Add(columnName, _columns.Count - 1);
             return col;
         }

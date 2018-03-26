@@ -100,34 +100,34 @@ namespace sql2dto.Core
             var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
             foreach (var col in table.ListAllColumns())
             {
-                string colName = col.GetColumnName();
-                if (except.Contains(colName))
+                if (except.Contains(col.GetColumnName()))
                 {
                     continue;
                 }
 
-                if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(colName, out PropMapConfig propMapConfig)) // TODO: match based on same property names rather than (sql column name) - (dto property name)
+                string propName = col.GetPropertyName();
+                if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
                 {
                     _selectExpressions.Add((
                         col,
-                        DtoMapper<TDto>.DefaultColumnsPrefix + (propMapConfig.ColumnName ?? col.GetColumnName())
+                        DtoMapper<TDto>.DefaultColumnsPrefix + (propMapConfig.ColumnName ?? propName)
                     ));
                 }
             }
             return this;
         }
 
-        public SqlQuery Project<TDto>(params (SqlExpression, string)[] selectExpressions)
+        public SqlQuery Project<TDto>(params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
             //TODO: ability to override the mappings from previous projections
             //REASON: the user might want to use a SqlExpression instead of column that matches in a previous projection
-            if (selectExpressions.Length == 0)
+            if (projectExpressions.Length == 0)
             {
-                throw new ArgumentException("No select expressions found", nameof(selectExpressions));
+                throw new ArgumentException("No select expressions found", nameof(projectExpressions));
             }
 
-            foreach (var tuple in selectExpressions)
+            foreach (var tuple in projectExpressions)
             {
                 _selectExpressions.Add((
                     tuple.Item1,
