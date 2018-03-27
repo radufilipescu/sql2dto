@@ -38,12 +38,14 @@ namespace sql2dto.MSSqlServer.UnitTests
                         FirstName = DefineColumn(nameof(FirstName), nameof(FirstName));
                         LastName = DefineColumn(nameof(LastName), nameof(LastName));
                         UserType = DefineColumn(nameof(UserType), "USER_TYPE");
+                        ReportsToId = DefineColumn(nameof(ReportsToId), nameof(ReportsToId));
                     }
 
                     public SqlColumn Id;
                     public SqlColumn FirstName;
                     public SqlColumn LastName;
                     public SqlColumn UserType;
+                    public SqlColumn ReportsToId;
                 }
 
                 public class Addresses : SqlTable
@@ -81,8 +83,11 @@ namespace sql2dto.MSSqlServer.UnitTests
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string UserType { get; set; }
+            public Int64? ReportsToId { get; set; }
 
             public List<Address> Addresses { get; set; }
+
+            public User ReportsToUser { get; set; }
         }
 
         [KeyProps(nameof(Id))]
@@ -91,6 +96,7 @@ namespace sql2dto.MSSqlServer.UnitTests
         {
             public Int64 Id { get; set; }
             public Int64 UserId { get; set; }
+            [PropMap(ColumnName = "_STREET_")]
             public string Street { get; set; }
 
             public User User { get; set; }
@@ -102,6 +108,7 @@ namespace sql2dto.MSSqlServer.UnitTests
         {
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
+            var r = sql2dto.dbo.Users.As("r");
 
             var query = sql2dto.Query()
                 .Project<User>(u)
@@ -113,8 +120,10 @@ namespace sql2dto.MSSqlServer.UnitTests
                         .Else(0)
                     .End(), nameof(Address.IsCapitalCity))
                 )
+                .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
                 .From(u)
-                .LeftJoin(a, on: u.Id == a.UserId);
+                .LeftJoin(a, on: u.Id == a.UserId)
+                .LeftJoin(r, on: u.ReportsToId == r.Id);
 
             using (var conn = new SqlConnection("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             {
@@ -123,7 +132,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                 using (var h = await cmd.ExecReadHelperAsync())
                 {
                     var fetch = h.Fetch<User>()
-                        .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; });
+                        .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
+                        .Include<User>("ReportsToUser",(user, reportsToUser) => { user.ReportsToUser = reportsToUser; }); //TODO: if ReportsToId would have been NON-NULLABLE, this would crash
+                                                                                                                          //FIX: allow specifieng DtoCollection in include ?
 
                     var result = fetch.All();
                 }

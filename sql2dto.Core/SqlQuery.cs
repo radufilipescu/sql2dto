@@ -94,7 +94,26 @@ namespace sql2dto.Core
             return this;
         }
 
+        #region TABLE DIRECT PROJECTION
         public SqlQuery Project<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
+             where TDto : new()
+        {
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, table: table, exceptColumns: exceptColumns);
+        }
+
+        public SqlQuery Project<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+             where TDto : new()
+        {
+            return Project<TDto>(mapper: null, columnsPrefix: columnsPrefix, table: table, exceptColumns: exceptColumns);
+        }
+
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, table: table, exceptColumns: exceptColumns);
+        }
+
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
             where TDto : new()
         {
             var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
@@ -106,18 +125,52 @@ namespace sql2dto.Core
                 }
 
                 string propName = col.GetPropertyName();
-                if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
+                if (mapper == null)
                 {
-                    _selectExpressions.Add((
-                        col,
-                        DtoMapper<TDto>.DefaultColumnsPrefix + (propMapConfig.ColumnName ?? propName)
-                    ));
+                    if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
+                    {
+                        _selectExpressions.Add((
+                            col,
+                            $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}"
+                        ));
+                    }
+                }
+                else
+                {
+                    if (mapper.TryGetInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
+                    {
+                        _selectExpressions.Add((
+                            col,
+                            $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}"
+                        ));
+                    }
                 }
             }
             return this;
         }
 
+        #endregion
+
+        #region EXPRESSION PROJECTION
         public SqlQuery Project<TDto>(params (SqlExpression, string)[] projectExpressions)
+            where TDto : new()
+        {
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
+        }
+
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, params (SqlExpression, string)[] projectExpressions)
+            where TDto : new()
+        {
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
+        }
+
+        public SqlQuery Project<TDto>(string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
+            where TDto : new()
+        {
+            return Project<TDto>(mapper: null, columnsPrefix: columnsPrefix, projectExpressions: projectExpressions);
+        }
+
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
             //TODO: ability to override the mappings from previous projections
@@ -129,13 +182,25 @@ namespace sql2dto.Core
 
             foreach (var tuple in projectExpressions)
             {
-                _selectExpressions.Add((
-                    tuple.Item1,
-                    DtoMapper<TDto>.DefaultColumnsPrefix + (DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)
-                ));
+                if (mapper == null)
+                {
+                    _selectExpressions.Add((
+                        tuple.Item1,
+                        $"{columnsPrefix}{(DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}"
+                    ));
+                }
+                else
+                {
+                    _selectExpressions.Add((
+                        tuple.Item1,
+                        $"{columnsPrefix}{(mapper.GetInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}"
+                    ));
+                }
             }
             return this;
         }
+
+        #endregion
 
         public SqlQuery As(string subqueryAlias)
         {
