@@ -96,6 +96,14 @@ namespace sql2dto.MSSqlServer
                         result += " END";
                     }
                     break;
+                case SqlExpressionType.LIKE:
+                    {
+                        var likeExpression = (SqlLikeExpression)expression;
+                        var inputExpression = likeExpression.GetInputExpression();
+                        var patternExpression = likeExpression.GetPatternExpression();
+                        result = $"{BuildExpressionString(query, inputExpression)} LIKE {BuildExpressionString(query, patternExpression)}";
+                    }
+                    break;
                 case SqlExpressionType.PARAMETER:
                     {
                         var parameterExpression = (SqlParameterExpression)expression;

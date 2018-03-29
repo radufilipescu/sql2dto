@@ -66,6 +66,18 @@ namespace sql2dto.Core
         }
         #endregion
 
+        #region LIKE
+        public static SqlLikeExpression Like(SqlExpression inputExpression, string pattern)
+        {
+            return new SqlLikeExpression(inputExpression, Sql.Const(pattern));
+        }
+
+        public static SqlLikeExpression Like(SqlExpression inputExpression, SqlExpression patternExpression)
+        {
+            return new SqlLikeExpression(inputExpression, patternExpression);
+        }
+        #endregion
+
         #region FUNCTIONS
         public static SqlFunctionCallExpression Sum(SqlExpression expression)
         {

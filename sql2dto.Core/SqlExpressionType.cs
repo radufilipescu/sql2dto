@@ -12,5 +12,6 @@ namespace sql2dto.Core
         BINARY,
         CASE_WHEN,
         PARAMETER,
+        LIKE,
     }
 }

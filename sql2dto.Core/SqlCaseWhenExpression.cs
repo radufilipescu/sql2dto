@@ -17,12 +17,6 @@ namespace sql2dto.Core
             _onExpression = onExpression;
         }
 
-        internal SqlCaseWhenExpression(string constant)
-            : this()
-        {
-            
-        }
-
         private SqlExpression _onExpression;
         public SqlExpression GetOnExpression() => _onExpression;
 
