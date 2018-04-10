@@ -215,7 +215,7 @@ namespace sql2dto.MSSqlServer
 $@"{BuildSqlJoinTypeString(joinType)} 
 (
 {BuildQueryString(subQuery)}
-) AS [{BuildAliasString(subQuery)}]";
+) AS {BuildAliasString(subQuery)}";
 
             if (!(condition is null))
             {

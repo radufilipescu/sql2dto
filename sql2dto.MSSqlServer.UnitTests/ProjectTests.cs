@@ -113,19 +113,22 @@ namespace sql2dto.MSSqlServer.UnitTests
             var query = sql2dto.Query()
                 .Project<User>(u)
                 .Project<Address>(a)
-                //.Project<Address>(
-                //    (Sql.Case(a.Street)
-                //        .When("B. Colentina", 1)
-                //        .When("B. Stefan Cel Mare", 1)
-                //        .Else(0)
-                //    .End(), nameof(Address.IsCapitalCity))
-                //)
+
+                .Project<Address>(
+                    (Sql.Case(a.Street)
+                        .When("B. Colentina", 1)
+                        .When("B. Stefan Cel Mare", 1)
+                        .Else(0)
+                    .End(), nameof(Address.IsCapitalCity))
+                )
+
                 .Project<Address>(
                     (Sql.Case()
                         .When(Sql.Like(a.Street, "B.%"), 1)
                         .Else(0)
-                    .End(), nameof(Address.IsCapitalCity))
+                    .End(), dto => dto.IsCapitalCity)
                 )
+
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
@@ -139,13 +142,11 @@ namespace sql2dto.MSSqlServer.UnitTests
                 {
                     var fetch = h.Fetch<User>()
                         .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
-                        .Include<User>("ReportsToUser",(user, reportsToUser) => { user.ReportsToUser = reportsToUser; }); //TODO: if ReportsToId would have been NON-NULLABLE, this would crash
-                                                                                                                          //FIX: allow specifieng DtoCollection in include ?
+                        .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
                     var result = fetch.All();
                 }
             }
         }
-
     }
 }

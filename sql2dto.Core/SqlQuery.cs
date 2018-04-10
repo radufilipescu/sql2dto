@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace sql2dto.Core
@@ -13,6 +14,7 @@ namespace sql2dto.Core
             _builder = builder;
             _dbParameters = new Dictionary<string, DbParameter>();
             _selectExpressions = new List<(SqlExpression, string)>();
+            _selectExpresionAliasesToIndexes = new Dictionary<string, int>();
             _fromAndJoinClauses = new List<(SqlJoinType, SqlTabularSource, SqlExpression)>();
             _whereExpression = null;
             _groupByExpressions = new List<SqlExpression>();
@@ -39,6 +41,27 @@ namespace sql2dto.Core
         private List<(SqlExpression, string)> _selectExpressions;
         public List<(SqlExpression, string)> GetSelectExpressions() => _selectExpressions;
 
+        private Dictionary<string, int> _selectExpresionAliasesToIndexes;
+        private void AddSelectExpression(SqlExpression sqlExpression, string alias = null)
+        {
+            if (!String.IsNullOrWhiteSpace(alias))
+            {
+                if (_selectExpresionAliasesToIndexes.TryGetValue(alias, out int foundIndex))
+                {
+                    _selectExpressions[foundIndex] = (sqlExpression, alias);
+                }
+                else
+                {
+                    _selectExpressions.Add((sqlExpression, alias));
+                    _selectExpresionAliasesToIndexes.Add(alias, _selectExpressions.Count - 1);
+                }
+            }
+            else
+            {
+                _selectExpressions.Add((sqlExpression, null));
+            }
+        }
+
         private List<(SqlJoinType, SqlTabularSource, SqlExpression)> _fromAndJoinClauses;
         public List<(SqlJoinType, SqlTabularSource, SqlExpression)> GetFromAndJoinClauses() => _fromAndJoinClauses;
 
@@ -56,16 +79,24 @@ namespace sql2dto.Core
 
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
 
+        #region SELECT
         public SqlQuery Select(SqlExpression expression, string columnAlias = null)
         {
-            if (expression.GetExpressionType() == SqlExpressionType.COLUMN)
+            if (String.IsNullOrEmpty(columnAlias))
             {
-                var column = (SqlColumn)expression;
-                _selectExpressions.Add((column, columnAlias ?? column.GetColumnName()));
+                if (expression.GetExpressionType() == SqlExpressionType.COLUMN)
+                {
+                    var column = (SqlColumn)expression;
+                    AddSelectExpression(column, column.GetColumnName());
+                }
+                else
+                {
+                    AddSelectExpression(expression, null);
+                }
             }
             else
             {
-                _selectExpressions.Add((expression, columnAlias));
+                AddSelectExpression(expression, columnAlias);
             }
             
             return this;
@@ -78,11 +109,11 @@ namespace sql2dto.Core
                 if (expression.GetExpressionType() == SqlExpressionType.COLUMN)
                 {
                     var column = (SqlColumn)expression;
-                    _selectExpressions.Add((column, column.GetColumnName()));
+                    AddSelectExpression(column, column.GetColumnName());
                 }
                 else
                 {
-                    _selectExpressions.Add((expression, null));
+                    AddSelectExpression(expression, null);
                 }
             }
             return this;
@@ -90,9 +121,13 @@ namespace sql2dto.Core
 
         public SqlQuery Select(params (SqlExpression, string)[] selectExpressions)
         {
-            _selectExpressions.AddRange(selectExpressions);
+            foreach (var expression in selectExpressions)
+            {
+                AddSelectExpression(expression.Item1, expression.Item2);
+            }
             return this;
         }
+        #endregion
 
         #region TABLE DIRECT PROJECTION
         public SqlQuery Project<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
@@ -129,20 +164,14 @@ namespace sql2dto.Core
                 {
                     if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
                     {
-                        _selectExpressions.Add((
-                            col,
-                            $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}"
-                        ));
+                        AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
                     }
                 }
                 else
                 {
                     if (mapper.TryGetInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
                     {
-                        _selectExpressions.Add((
-                            col,
-                            $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}"
-                        ));
+                        AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
                     }
                 }
             }
@@ -152,10 +181,24 @@ namespace sql2dto.Core
         #endregion
 
         #region EXPRESSION PROJECTION
+        public SqlQuery Project<TDto>(params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
+            where TDto : new()
+        {
+            var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: expressions);
+        }
+
         public SqlQuery Project<TDto>(params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
             return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
+        }
+
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
+            where TDto : new()
+        {
+            var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: expressions);
         }
 
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, params (SqlExpression, string)[] projectExpressions)
@@ -164,17 +207,29 @@ namespace sql2dto.Core
             return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
         }
 
+        public SqlQuery Project<TDto>(string columnsPrefix, params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
+            where TDto : new()
+        {
+            var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
+            return Project<TDto>(mapper: null, columnsPrefix: columnsPrefix, projectExpressions: expressions);
+        }
+
         public SqlQuery Project<TDto>(string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
             return Project<TDto>(mapper: null, columnsPrefix: columnsPrefix, projectExpressions: projectExpressions);
         }
 
+        public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
+            where TDto : new()
+        {
+            var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
+            return Project<TDto>(mapper: mapper, columnsPrefix: columnsPrefix, projectExpressions: expressions);
+        }
+
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
-            //TODO: ability to override the mappings from previous projections
-            //REASON: the user might want to use a SqlExpression instead of column that matches in a previous projection
             if (projectExpressions.Length == 0)
             {
                 throw new ArgumentException("No select expressions found", nameof(projectExpressions));
@@ -184,22 +239,15 @@ namespace sql2dto.Core
             {
                 if (mapper == null)
                 {
-                    _selectExpressions.Add((
-                        tuple.Item1,
-                        $"{columnsPrefix}{(DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}"
-                    ));
+                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}");
                 }
                 else
                 {
-                    _selectExpressions.Add((
-                        tuple.Item1,
-                        $"{columnsPrefix}{(mapper.GetInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}"
-                    ));
+                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(mapper.GetInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}");
                 }
             }
             return this;
         }
-
         #endregion
 
         public SqlQuery As(string subqueryAlias)
