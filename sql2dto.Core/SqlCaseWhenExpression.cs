@@ -30,229 +30,229 @@ namespace sql2dto.Core
 
         #region WHEN
         #region (expr, ...)
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, SqlExpression then)
         {
-            _whenThenExpressions.Add((whenExpression, thenExpression));
+            _whenThenExpressions.Add((whenExpression, then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, int thenConstant)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, int then)
         {
-            _whenThenExpressions.Add((whenExpression, Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, double thenConstant)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, double then)
         {
-            _whenThenExpressions.Add((whenExpression, Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, float thenConstant)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, float then)
         {
-            _whenThenExpressions.Add((whenExpression, Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, decimal thenConstant)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, decimal then)
         {
-            _whenThenExpressions.Add((whenExpression, Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(SqlExpression whenExpression, string thenConstant)
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, string then)
         {
-            _whenThenExpressions.Add((whenExpression, Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
         #endregion
 
         #region (int, ...)
-        public SqlCaseWhenExpression When(int whenConstant, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(int whenConstant, SqlExpression then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), thenExpression));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(int whenConstant, int thenConstant)
+        public SqlCaseWhenExpression When(int whenConstant, int then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(int whenConstant, double thenConstant)
+        public SqlCaseWhenExpression When(int whenConstant, double then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(int whenConstant, float thenConstant)
+        public SqlCaseWhenExpression When(int whenConstant, float then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(int whenConstant, decimal thenConstant)
+        public SqlCaseWhenExpression When(int whenConstant, decimal then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(int whenConstant, string thenConstant)
+        public SqlCaseWhenExpression When(int whenConstant, string then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
         #endregion
 
         #region (double, ...)
-        public SqlCaseWhenExpression When(double whenConstant, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(double whenConstant, SqlExpression then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), thenExpression));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(double whenConstant, int thenConstant)
+        public SqlCaseWhenExpression When(double whenConstant, int then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(double whenConstant, double thenConstant)
+        public SqlCaseWhenExpression When(double whenConstant, double then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(double whenConstant, float thenConstant)
+        public SqlCaseWhenExpression When(double whenConstant, float then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(double whenConstant, decimal thenConstant)
+        public SqlCaseWhenExpression When(double whenConstant, decimal then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(double whenConstant, string thenConstant)
+        public SqlCaseWhenExpression When(double whenConstant, string then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
         #endregion
 
         #region (float, ...)
-        public SqlCaseWhenExpression When(float whenConstant, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(float whenConstant, SqlExpression then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), thenExpression));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(float whenConstant, int thenConstant)
+        public SqlCaseWhenExpression When(float whenConstant, int then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(float whenConstant, double thenConstant)
+        public SqlCaseWhenExpression When(float whenConstant, double then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(float whenConstant, float thenConstant)
+        public SqlCaseWhenExpression When(float whenConstant, float then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(float whenConstant, decimal thenConstant)
+        public SqlCaseWhenExpression When(float whenConstant, decimal then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(float whenConstant, string thenConstant)
+        public SqlCaseWhenExpression When(float whenConstant, string then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
         #endregion
 
         #region (decimal, ...)
-        public SqlCaseWhenExpression When(decimal whenConstant, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(decimal whenConstant, SqlExpression then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), thenExpression));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(decimal whenConstant, int thenConstant)
+        public SqlCaseWhenExpression When(decimal whenConstant, int then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(decimal whenConstant, double thenConstant)
+        public SqlCaseWhenExpression When(decimal whenConstant, double then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(decimal whenConstant, float thenConstant)
+        public SqlCaseWhenExpression When(decimal whenConstant, float then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(decimal whenConstant, decimal thenConstant)
+        public SqlCaseWhenExpression When(decimal whenConstant, decimal then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(decimal whenConstant, string thenConstant)
+        public SqlCaseWhenExpression When(decimal whenConstant, string then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
         #endregion
 
         #region (string, ...)
-        public SqlCaseWhenExpression When(string whenConstant, SqlExpression thenExpression)
+        public SqlCaseWhenExpression When(string whenConstant, SqlExpression then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), thenExpression));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), then));
             return this;
         }
 
-        public SqlCaseWhenExpression When(string whenConstant, int thenConstant)
+        public SqlCaseWhenExpression When(string whenConstant, int then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(string whenConstant, double thenConstant)
+        public SqlCaseWhenExpression When(string whenConstant, double then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(string whenConstant, float thenConstant)
+        public SqlCaseWhenExpression When(string whenConstant, float then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(string whenConstant, decimal thenConstant)
+        public SqlCaseWhenExpression When(string whenConstant, decimal then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
 
-        public SqlCaseWhenExpression When(string whenConstant, string thenConstant)
+        public SqlCaseWhenExpression When(string whenConstant, string then)
         {
-            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(thenConstant)));
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
         #endregion

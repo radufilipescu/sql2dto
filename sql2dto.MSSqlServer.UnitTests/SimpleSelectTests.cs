@@ -89,7 +89,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .Select(
                     u.Id,
                     Sql.Case()
-                        .When(Sql.Const("panda") == a.Street, "bear")
+                        .When(Sql.Const("panda") == a.Street, then: "bear")
                     .End()
                 )
                 .Select(u.Id & u.FirstName)
@@ -101,10 +101,10 @@ namespace sql2dto.MSSqlServer.UnitTests
                     (a.UserId == u.Id, "exp2"),
                     ((a.UserId == u.Id & u.Id == a.UserId) | a.Street, "exp3"),
                     (Sql.Case(u.FirstName)
-                        .When("panda", "bear")
-                        .When("koala", "bear")
-                        .When("mastiff", "dog")
-                        .When("terra nova", "dog")
+                        .When("panda", then: "bear")
+                        .When("koala", then: "bear")
+                        .When("mastiff", then: "dog")
+                        .When("terra nova", then: "dog")
                         .Else("unkown")
                     .End(), "ANIMAL_TYPE")
                 )

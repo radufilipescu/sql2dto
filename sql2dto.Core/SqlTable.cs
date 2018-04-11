@@ -39,7 +39,7 @@ namespace sql2dto.Core
         }
 
         private Dictionary<string, int> _columnNamesToIndexes;
-        public SqlColumn GetColumnByColumnName(string columnName)
+        public SqlColumn GetColumnByName(string columnName)
         {
             if (_columnNamesToIndexes.TryGetValue(columnName, out int index))
             {

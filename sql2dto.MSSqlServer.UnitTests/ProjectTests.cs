@@ -116,15 +116,15 @@ namespace sql2dto.MSSqlServer.UnitTests
 
                 .Project<Address>(
                     (Sql.Case(a.Street)
-                        .When("B. Colentina", 1)
-                        .When("B. Stefan Cel Mare", 1)
+                        .When("B. Colentina", then: 1)
+                        .When("B. Stefan Cel Mare", then: 1)
                         .Else(0)
                     .End(), nameof(Address.IsCapitalCity))
                 )
 
                 .Project<Address>(
                     (Sql.Case()
-                        .When(Sql.Like(a.Street, "B.%"), 1)
+                        .When(Sql.Like(a.Street, "B.%"), then: 1)
                         .Else(0)
                     .End(), dto => dto.IsCapitalCity)
                 )
