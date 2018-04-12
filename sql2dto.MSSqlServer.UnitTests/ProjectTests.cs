@@ -39,6 +39,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                         LastName = DefineColumn(nameof(LastName), nameof(LastName));
                         UserType = DefineColumn(nameof(UserType), "USER_TYPE");
                         ReportsToId = DefineColumn(nameof(ReportsToId), nameof(ReportsToId));
+                        Age = DefineColumn(nameof(Age), nameof(Age));
                     }
 
                     public SqlColumn Id;
@@ -46,6 +47,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                     public SqlColumn LastName;
                     public SqlColumn UserType;
                     public SqlColumn ReportsToId;
+                    public SqlColumn Age;
                 }
 
                 public class Addresses : SqlTable
@@ -84,6 +86,9 @@ namespace sql2dto.MSSqlServer.UnitTests
             public string LastName { get; set; }
             public string UserType { get; set; }
             public Int64? ReportsToId { get; set; }
+            public int? Age { get; set; }
+
+            public string LifePeriod { get; set; }
 
             public List<Address> Addresses { get; set; }
 
@@ -106,6 +111,18 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public async void Test1()
         {
+            var ulp = sql2dto.dbo.Users.As("ulp");
+
+            var innerQuery = sql2dto.Query()
+                .Select(ulp.Id, "ULPId")
+                .Select(Sql.Case()
+                           .When(Sql.IsNull(ulp.Age), then: "UNKOWN")
+                           .When(ulp.Age >= Sql.Const(18), then: "Adult")
+                           .Else("Teenage")
+                        .End(), nameof(User.LifePeriod))
+                .From(ulp)
+                .As("ulp");
+
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
@@ -130,9 +147,11 @@ namespace sql2dto.MSSqlServer.UnitTests
                 )
 
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
+                .Project<User>((innerQuery.GetColumn(nameof(User.LifePeriod)), nameof(User.LifePeriod)))
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
-                .LeftJoin(r, on: u.ReportsToId == r.Id);
+                .LeftJoin(r, on: u.ReportsToId == r.Id)
+                .Join(innerQuery, on: innerQuery.GetColumn("ULPId") == u.Id);
 
             using (var conn = new SqlConnection("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             {

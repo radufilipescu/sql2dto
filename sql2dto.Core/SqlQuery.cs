@@ -36,7 +36,7 @@ namespace sql2dto.Core
         }
 
         private string _queryAlias;
-        public string GetQueryAlias() => _queryAlias;
+        public override string GetAlias() => _queryAlias;
 
         private List<(SqlExpression, string)> _selectExpressions;
         public List<(SqlExpression, string)> GetSelectExpressions() => _selectExpressions;
@@ -249,6 +249,12 @@ namespace sql2dto.Core
             return this;
         }
         #endregion
+
+        public override SqlColumn GetColumn(string columnNameOrAlias)
+        {
+            var col = new SqlColumn(this, null, columnNameOrAlias);
+            return col;
+        }
 
         public SqlQuery As(string subqueryAlias)
         {

@@ -8,6 +8,10 @@ namespace sql2dto.Core
     {
         EQUALS,
         NOT_EQUALS,
+        LESS_THAN,
+        GREATER_THAN,
+        LESS_OR_EQUAL_THAN,
+        GREATER_OR_EQUAL_THAN,
         AND,
         OR,
         PLUS,

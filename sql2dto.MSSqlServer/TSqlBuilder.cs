@@ -25,7 +25,7 @@ namespace sql2dto.MSSqlServer
                     {
                         var column = (SqlColumn)expression;
 
-                        result = $"{BuildAliasString(column.GetSqlTable())}.{$"[{column.GetColumnName()}]"}";
+                        result = $"{BuildAliasString(column.GetSqlTabularSource())}.{$"[{column.GetColumnName()}]"}";
                     }
                     break;
                 case SqlExpressionType.FUNCTION_CALL:
@@ -121,6 +121,13 @@ namespace sql2dto.MSSqlServer
                         }
                     }
                     break;
+                case SqlExpressionType.IS_NULL:
+                    {
+                        var isNullExpression = (SqlIsNullExpression)expression;
+                        var innerExpression = isNullExpression.GetInnerExpression();
+                        result = $"{BuildExpressionString(query, innerExpression)} IS NULL";
+                    }
+                    break;
                 default:
                     throw new NotImplementedException($"SqlExpressionType: {type}");
             }
@@ -133,14 +140,14 @@ namespace sql2dto.MSSqlServer
             return result;
         }
 
-        public override string BuildAliasString(SqlTable table)
+        public override string BuildAliasString(SqlTabularSource tabularSource)
         {
-            return $"[{table.GetTableAlias()}]";
+            return $"[{tabularSource.GetAlias()}]";
         }
 
         public override string BuildTableAsString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
         {
-            string result = $"{BuildSqlJoinTypeString(joinType)} [{table.GetTableSchema()}].[{table.GetTableName()}] AS [{table.GetTableAlias()}]";
+            string result = $"{BuildSqlJoinTypeString(joinType)} [{table.GetTableSchema()}].[{table.GetTableName()}] AS [{table.GetAlias()}]";
             if (!(condition is null))
             {
                 result += $" ON {BuildExpressionString(query, condition)}";
@@ -206,7 +213,7 @@ namespace sql2dto.MSSqlServer
 
         public override string BuildAliasString(SqlQuery query)
         {
-            return $"[{query.GetQueryAlias()}]";
+            return $"[{query.GetAlias()}]";
         }
 
         public override string BuildQueryAsString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null)
@@ -271,6 +278,14 @@ $@"{BuildSqlJoinTypeString(joinType)}
                     return "/";
                 case SqlOperator.MOD:
                     return "%";
+                case SqlOperator.GREATER_THAN:
+                    return ">";
+                case SqlOperator.GREATER_OR_EQUAL_THAN:
+                    return ">=";
+                case SqlOperator.LESS_THAN:
+                    return "<";
+                case SqlOperator.LESS_OR_EQUAL_THAN:
+                    return "<=";
                 default:
                     throw new NotImplementedException($"SqlOperator: {op}");
             }

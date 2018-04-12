@@ -10,7 +10,7 @@ namespace sql2dto.Core
         public abstract string GetLanguageImplementation();
 
         public abstract string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null);
-        public abstract string BuildAliasString(SqlTable table);
+        public abstract string BuildAliasString(SqlTabularSource table);
         public abstract string BuildTableAsString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null);
         public abstract string BuildQueryString(SqlQuery query);
         public abstract string BuildAliasString(SqlQuery query);

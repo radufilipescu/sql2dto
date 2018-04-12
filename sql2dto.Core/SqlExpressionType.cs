@@ -13,5 +13,6 @@ namespace sql2dto.Core
         CASE_WHEN,
         PARAMETER,
         LIKE,
+        IS_NULL,
     }
 }

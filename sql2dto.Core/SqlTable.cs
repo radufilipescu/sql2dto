@@ -26,7 +26,7 @@ namespace sql2dto.Core
         public string GetTableName() => _tableName;
 
         private string _tableAlias;
-        public string GetTableAlias() => _tableAlias;
+        public override string GetAlias() => _tableAlias;
 
         private Dictionary<string, int> _columnPropertyNamesToIndexes;
         public SqlColumn GetColumnByPropertyName(string propertyName)
@@ -39,13 +39,13 @@ namespace sql2dto.Core
         }
 
         private Dictionary<string, int> _columnNamesToIndexes;
-        public SqlColumn GetColumnByName(string columnName)
+        public override SqlColumn GetColumn(string columnNameOrAlias)
         {
-            if (_columnNamesToIndexes.TryGetValue(columnName, out int index))
+            if (_columnNamesToIndexes.TryGetValue(columnNameOrAlias, out int index))
             {
                 return _columns[index];
             }
-            throw new ArgumentOutOfRangeException(nameof(columnName));
+            throw new ArgumentOutOfRangeException(nameof(columnNameOrAlias));
         }
 
         private List<SqlColumn> _columns;

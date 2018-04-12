@@ -6,17 +6,17 @@ namespace sql2dto.Core
 {
     public class SqlColumn : SqlExpression
     {
-        internal SqlColumn(SqlTable table, string propertyName, string columnName)
+        internal SqlColumn(SqlTabularSource tabularSource, string propertyName, string columnName)
         {
-            _table = table;
+            _table = tabularSource;
             _propertyName = propertyName;
             _columnName = columnName;
         }
 
         public override SqlExpressionType GetExpressionType() => SqlExpressionType.COLUMN;
 
-        private readonly SqlTable _table;
-        public SqlTable GetSqlTable() => _table;
+        private readonly SqlTabularSource _table;
+        public SqlTabularSource GetSqlTabularSource() => _table;
 
         private string _propertyName;
         public string GetPropertyName() => _propertyName;

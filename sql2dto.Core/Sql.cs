@@ -34,6 +34,13 @@ namespace sql2dto.Core
         }
         #endregion
 
+        #region IS NULL
+        public static SqlIsNullExpression IsNull(SqlExpression expression)
+        {
+            return new SqlIsNullExpression(expression);
+        }
+        #endregion
+
         #region CASE
         public static SqlCaseWhenExpression Case(SqlExpression expression = null)
         {

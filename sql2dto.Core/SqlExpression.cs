@@ -61,5 +61,29 @@ namespace sql2dto.Core
             var result = new SqlBinaryExpression(a, SqlOperator.MOD, b);
             return result;
         }
+
+        public static SqlExpression operator <(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.LESS_THAN, b);
+            return result;
+        }
+
+        public static SqlExpression operator >(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_THAN, b);
+            return result;
+        }
+
+        public static SqlExpression operator <=(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.LESS_OR_EQUAL_THAN, b);
+            return result;
+        }
+
+        public static SqlExpression operator >=(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_OR_EQUAL_THAN, b);
+            return result;
+        }
     }
 }
