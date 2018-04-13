@@ -145,7 +145,17 @@ namespace sql2dto.MSSqlServer
             return $"[{tabularSource.GetAlias()}]";
         }
 
-        public override string BuildTableAsString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
+        public override string BuildCTEJoinString(SqlQuery query, SqlCTE cte, SqlJoinType joinType, SqlExpression condition = null)
+        {
+            string result = $"{BuildSqlJoinTypeString(joinType)} [{cte.GetAlias()}]";
+            if (!(condition is null))
+            {
+                result += $" ON {BuildExpressionString(query, condition)}";
+            }
+            return result;
+        }
+
+        public override string BuildTableJoinString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
         {
             string result = $"{BuildSqlJoinTypeString(joinType)} [{table.GetTableSchema()}].[{table.GetTableName()}] AS [{table.GetAlias()}]";
             if (!(condition is null))
@@ -168,6 +178,32 @@ namespace sql2dto.MSSqlServer
             }
 
             var sb = new StringBuilder();
+            var ctes = query.GetCommonTableExpressions();
+            if (ctes.Count > 0)
+            {
+                sb.Append(";WITH ");
+                for (int i = 0; i < ctes.Count; i++)
+                {
+                    var cte = ctes[i];
+
+                    sb.Append(cte.Item1);
+                    sb.AppendLine($" ({String.Join(", ", cte.Item3)}) ");
+                    sb.AppendLine(" AS ");
+                    sb.AppendLine("(");
+                    sb.AppendLine(BuildQueryString(cte.Item2));
+                    sb.Append(")");
+
+                    if (i != ctes.Count - 1)
+                    {
+                        sb.AppendLine(",");
+                    }
+                    else
+                    {
+                        sb.AppendLine();
+                    }
+                }
+            }
+
             sb.AppendLine("SELECT");
             sb.Append("    ");
             sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(query, e.Item1, e.Item2))));
@@ -176,9 +212,11 @@ namespace sql2dto.MSSqlServer
                 switch (fj.Item2.TabularType)
                 {
                     case SqlTabularSourceType.TABLE:
-                        return BuildTableAsString(query, (SqlTable)fj.Item2, fj.Item1, fj.Item3);
+                        return BuildTableJoinString(query, (SqlTable)fj.Item2, fj.Item1, fj.Item3);
                     case SqlTabularSourceType.QUERY:
                         return BuildQueryAsString(query, (SqlQuery)fj.Item2, fj.Item1, fj.Item3);
+                    case SqlTabularSourceType.CTE:
+                        return BuildCTEJoinString(query, (SqlCTE)fj.Item2, fj.Item1, fj.Item3);
                     default:
                         throw new NotImplementedException($"SqlTabularSourceType: {fj.Item2.TabularType}");
                 }

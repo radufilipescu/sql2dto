@@ -111,23 +111,41 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public async void Test1()
         {
-            var ulp = sql2dto.dbo.Users.As("ulp");
+            //var ulp = sql2dto.dbo.Users.As("ulp");
 
-            var innerQuery = sql2dto.Query()
-                .Select(ulp.Id, "ULPId")
-                .Select(Sql.Case()
-                           .When(Sql.IsNull(ulp.Age), then: "UNKOWN")
-                           .When(ulp.Age >= Sql.Const(18), then: "Adult")
-                           .Else("Teenage")
-                        .End(), nameof(User.LifePeriod))
-                .From(ulp)
-                .As("ulp");
+            //var innerQuery = sql2dto.Query()
+            //    .Select(ulp.Id, "ULPId")
+            //    .Select(Sql.Case()
+            //               .When(Sql.IsNull(ulp.Age), then: "UNKOWN")
+            //               .When(ulp.Age >= Sql.Const(18), then: "Adult")
+            //               .Else("Teenage")
+            //            .End(), nameof(User.LifePeriod))
+            //    .From(ulp)
+            //    .As("ulp");
 
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
 
             var query = sql2dto.Query()
+
+                .With("ulp_cte",
+                () =>
+                {
+                    var usr = sql2dto.dbo.Users.As("usr");
+
+                    return sql2dto.Query()
+                        .Select(usr.Id)
+                        .Select(Sql.Case()
+                                    .When(Sql.IsNull(usr.Age), then: "UNKOWN")
+                                    .When(usr.Age >= Sql.Const(18), then: "Adult")
+                                    .Else("Teenage")
+                                .End())
+                        .From(usr)
+                        .As("ulp");
+
+                }, "ULPId", nameof(User.LifePeriod))
+
                 .Project<User>(u)
                 .Project<Address>(a)
 
@@ -147,11 +165,18 @@ namespace sql2dto.MSSqlServer.UnitTests
                 )
 
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
-                .Project<User>((innerQuery.GetColumn(nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+
+                //.Project<User>((innerQuery.GetColumn(nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+                .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+
+
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
-                .Join(innerQuery, on: innerQuery.GetColumn("ULPId") == u.Id);
+
+                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", "ULPId") == u.Id)
+                ;
+                //.Join(innerQuery, on: innerQuery.GetColumn("ULPId") == u.Id);
 
             using (var conn = new SqlConnection("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             {

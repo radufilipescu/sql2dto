@@ -8,5 +8,6 @@ namespace sql2dto.Core
     {
         TABLE,
         QUERY,
+        CTE,
     }
 }

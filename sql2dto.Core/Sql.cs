@@ -106,5 +106,17 @@ namespace sql2dto.Core
             return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true);
         }
         #endregion
+
+        #region CTE
+        public static SqlCTE CTE(string cte)
+        {
+            return new SqlCTE(cte);
+        }
+
+        public static SqlColumn CTEColumn(string cte, string columnName)
+        {
+            return new SqlColumn(new SqlCTE(cte), null, columnName);
+        }
+        #endregion
     }
 }

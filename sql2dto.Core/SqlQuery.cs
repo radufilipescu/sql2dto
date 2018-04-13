@@ -20,6 +20,7 @@ namespace sql2dto.Core
             _groupByExpressions = new List<SqlExpression>();
             _havingExpression = null;
             _orderByExpressions = new List<(SqlExpression, SqlOrderByDirection)>();
+            _commonTableExpressions = new List<(string, SqlQuery, HashSet<string>)>();
         }
 
         private SqlBuilder _builder;
@@ -76,6 +77,9 @@ namespace sql2dto.Core
 
         private List<(SqlExpression, SqlOrderByDirection)> _orderByExpressions;
         public List<(SqlExpression, SqlOrderByDirection)> GetOrderByExpressions() => _orderByExpressions;
+
+        private List<(string, SqlQuery, HashSet<string>)> _commonTableExpressions;
+        public List<(string, SqlQuery, HashSet<string>)> GetCommonTableExpressions() => _commonTableExpressions;
 
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
 
@@ -325,6 +329,12 @@ namespace sql2dto.Core
         public SqlQuery OrderByDescending(params SqlExpression[] by)
         {
             _orderByExpressions.AddRange(by.Select(item => (item, SqlOrderByDirection.DESCENDING)));
+            return this;
+        }
+
+        public SqlQuery With(string expressionName, Func<SqlQuery> query, params string[] columnNames)
+        {
+            _commonTableExpressions.Add((expressionName, query(), new HashSet<string>(columnNames)));
             return this;
         }
 
