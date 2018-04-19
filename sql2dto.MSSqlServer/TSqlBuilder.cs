@@ -42,10 +42,25 @@ namespace sql2dto.MSSqlServer
                 case SqlExpressionType.CONSTANT:
                     {
                         var constantExpression = (SqlConstantExpression)expression;
+                        var constType = constantExpression.GetConstantType();
+                        var constRawValue = constantExpression.GetValue();
 
-                        result = constantExpression.GetConstantType() == SqlConstantType.NUMBER 
-                            ? constantExpression.GetValue() 
-                            : $"'{EscapeConstantValue(constantExpression.GetValue())}'";
+                        if (constType == SqlConstantType.STRING)
+                        {
+                            result = EscapeConstantValue(constRawValue);
+                        }
+                        else if (constType == SqlConstantType.NUMBER)
+                        {
+                            result = constRawValue;
+                        }
+                        else if (constType == SqlConstantType.BOOLEAN)
+                        {
+                            result = BuildBooleanMnemonicString(constantExpression.BooleanValue.Value);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException($"SqlConstantType: {constType}");
+                        }
                     }
                     break;
                 case SqlExpressionType.BINARY:
@@ -186,7 +201,7 @@ namespace sql2dto.MSSqlServer
                 {
                     var cte = ctes[i];
 
-                    sb.Append(cte.Item1);
+                    sb.Append($"[{cte.Item1}]");
                     sb.AppendLine($" ({String.Join(", ", cte.Item3)}) ");
                     sb.AppendLine(" AS ");
                     sb.AppendLine("(");
@@ -214,7 +229,7 @@ namespace sql2dto.MSSqlServer
                     case SqlTabularSourceType.TABLE:
                         return BuildTableJoinString(query, (SqlTable)fj.Item2, fj.Item1, fj.Item3);
                     case SqlTabularSourceType.QUERY:
-                        return BuildQueryAsString(query, (SqlQuery)fj.Item2, fj.Item1, fj.Item3);
+                        return BuildQueryJoinString(query, (SqlQuery)fj.Item2, fj.Item1, fj.Item3);
                     case SqlTabularSourceType.CTE:
                         return BuildCTEJoinString(query, (SqlCTE)fj.Item2, fj.Item1, fj.Item3);
                     default:
@@ -254,7 +269,7 @@ namespace sql2dto.MSSqlServer
             return $"[{query.GetAlias()}]";
         }
 
-        public override string BuildQueryAsString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null)
+        public override string BuildQueryJoinString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null)
         {
             string result = 
 $@"{BuildSqlJoinTypeString(joinType)} 
@@ -362,7 +377,7 @@ $@"{BuildSqlJoinTypeString(joinType)}
                 throw new InvalidOperationException($"Constant value not safe: {value}");
             }
 
-            return value.Replace("'", "''"); //TODO
+            return $"'{value.Replace("'", "''")}'"; //TODO
         }
 
         public override DbCommand BuildDbCommand(SqlQuery query)
@@ -392,6 +407,54 @@ $@"{BuildSqlJoinTypeString(joinType)}
         public override SqlParameterExpression Parameter(string name, object value)
         {
             return new SqlParameterExpression(new SqlParameter(name, value));
+        }
+
+        public override string BuildBooleanMnemonicString(bool value)
+        {
+            return value ? "1" : "0";
+        }
+
+        public override bool FromBooleanMnemonicToBoolean(int? value)
+        {
+            return value.HasValue 
+                ? (value.Value == 0 ? false : true)
+                : false;
+        }
+
+        public override bool FromBooleanMnemonicToBoolean(double? value)
+        {
+            return value.HasValue
+                ? (value.Value == 0 ? false : true)
+                : false;
+        }
+
+        public override bool FromBooleanMnemonicToBoolean(float? value)
+        {
+            return value.HasValue
+                ? (value.Value == 0 ? false : true)
+                : false;
+        }
+
+        public override bool FromBooleanMnemonicToBoolean(decimal? value)
+        {
+            return value.HasValue
+                ? (value.Value == 0 ? false : true)
+                : false;
+        }
+
+        public override bool FromBooleanMnemonicToBoolean(string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            if (Boolean.TryParse(value, out bool boolValue))
+            {
+                return boolValue;
+            }
+
+            return false;
         }
     }
 }

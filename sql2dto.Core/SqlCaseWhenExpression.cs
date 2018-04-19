@@ -65,6 +65,12 @@ namespace sql2dto.Core
             _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
             return this;
         }
+
+        public SqlCaseWhenExpression When(SqlExpression whenExpression, bool then)
+        {
+            _whenThenExpressions.Add((whenExpression, Sql.Const(then)));
+            return this;
+        }
         #endregion
 
         #region (int, ...)
@@ -99,6 +105,12 @@ namespace sql2dto.Core
         }
 
         public SqlCaseWhenExpression When(int whenConstant, string then)
+        {
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
+            return this;
+        }
+
+        public SqlCaseWhenExpression When(int whenConstant, bool then)
         {
             _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
@@ -141,6 +153,12 @@ namespace sql2dto.Core
             _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
+
+        public SqlCaseWhenExpression When(double whenConstant, bool then)
+        {
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
+            return this;
+        }
         #endregion
 
         #region (float, ...)
@@ -175,6 +193,12 @@ namespace sql2dto.Core
         }
 
         public SqlCaseWhenExpression When(float whenConstant, string then)
+        {
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
+            return this;
+        }
+
+        public SqlCaseWhenExpression When(float whenConstant, bool then)
         {
             _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
@@ -217,6 +241,12 @@ namespace sql2dto.Core
             _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
         }
+
+        public SqlCaseWhenExpression When(decimal whenConstant, bool then)
+        {
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
+            return this;
+        }
         #endregion
 
         #region (string, ...)
@@ -251,6 +281,12 @@ namespace sql2dto.Core
         }
 
         public SqlCaseWhenExpression When(string whenConstant, string then)
+        {
+            _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
+            return this;
+        }
+
+        public SqlCaseWhenExpression When(string whenConstant, bool then)
         {
             _whenThenExpressions.Add((Sql.Const(whenConstant), Sql.Const(then)));
             return this;
@@ -290,6 +326,12 @@ namespace sql2dto.Core
         }
 
         public SqlCaseWhenExpression Else(string elseConstant)
+        {
+            _elseExpression = Sql.Const(elseConstant);
+            return this;
+        }
+
+        public SqlCaseWhenExpression Else(bool elseConstant)
         {
             _elseExpression = Sql.Const(elseConstant);
             return this;

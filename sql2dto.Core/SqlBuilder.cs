@@ -15,7 +15,7 @@ namespace sql2dto.Core
         public abstract string BuildTableJoinString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null);
         public abstract string BuildQueryString(SqlQuery query);
         public abstract string BuildAliasString(SqlQuery query);
-        public abstract string BuildQueryAsString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null);
+        public abstract string BuildQueryJoinString(SqlQuery query, SqlQuery subQuery, SqlJoinType joinType, SqlExpression condition = null);
         public abstract string BuildSqlJoinTypeString(SqlJoinType joinType);
         public abstract string BuildSqlOperatorString(SqlOperator op);
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
@@ -25,5 +25,11 @@ namespace sql2dto.Core
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection);
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction);
         public abstract SqlParameterExpression Parameter(string name, object value);
+        public abstract string BuildBooleanMnemonicString(bool value);
+        public abstract bool FromBooleanMnemonicToBoolean(int? value);
+        public abstract bool FromBooleanMnemonicToBoolean(double? value);
+        public abstract bool FromBooleanMnemonicToBoolean(float? value);
+        public abstract bool FromBooleanMnemonicToBoolean(decimal? value);
+        public abstract bool FromBooleanMnemonicToBoolean(string value);
     }
 }

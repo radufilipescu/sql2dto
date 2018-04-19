@@ -18,6 +18,8 @@ namespace sql2dto.Core
         private SqlConstantType _constantType;
         public SqlConstantType GetConstantType() => _constantType;
 
+        public bool? BooleanValue { get; set; }
+
         public override SqlExpressionType GetExpressionType() => SqlExpressionType.CONSTANT;
     }
 }

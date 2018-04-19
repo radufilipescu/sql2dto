@@ -32,6 +32,13 @@ namespace sql2dto.Core
         {
             return new SqlConstantExpression(SqlConstantType.STRING, value);
         }
+
+        public static SqlConstantExpression Const(bool value)
+        {
+            var constExpression = new SqlConstantExpression(SqlConstantType.BOOLEAN, value.ToString());
+            constExpression.BooleanValue = value;
+            return constExpression;
+        }
         #endregion
 
         #region IS NULL
@@ -68,6 +75,11 @@ namespace sql2dto.Core
         }
 
         public static SqlCaseWhenExpression Case(string constant)
+        {
+            return new SqlCaseWhenExpression(Const(constant));
+        }
+
+        public static SqlCaseWhenExpression Case(bool constant)
         {
             return new SqlCaseWhenExpression(Const(constant));
         }

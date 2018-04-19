@@ -10,6 +10,11 @@ namespace sql2dto.MSSqlServer.UnitTests
 {
     public class ProjectTests
     {
+        public class NullableIntToBooleanConverterAttribute : ConverterAttribute
+        {
+            public override Func<object, object> Converter => (v) => Convert.ToBoolean(v ?? 0);
+        }
+
         public class sql2dto
         {
             public static readonly SqlBuilder DefaultSqlBuilder = new TSqlBuilder();
@@ -105,7 +110,9 @@ namespace sql2dto.MSSqlServer.UnitTests
             public string Street { get; set; }
 
             public User User { get; set; }
-            public int IsCapitalCity { get; set; }
+
+            [NullableIntToBooleanConverter]
+            public bool IsCapitalCity { get; set; }
         }
 
         [Fact]
@@ -151,16 +158,16 @@ namespace sql2dto.MSSqlServer.UnitTests
 
                 .Project<Address>(
                     (Sql.Case(a.Street)
-                        .When("B. Colentina", then: 1)
-                        .When("B. Stefan Cel Mare", then: 1)
-                        .Else(0)
+                        .When("B. Colentina", then: true)
+                        .When("B. Stefan Cel Mare", then: true)
+                        .Else(false)
                     .End(), nameof(Address.IsCapitalCity))
                 )
 
                 .Project<Address>(
                     (Sql.Case()
-                        .When(Sql.Like(a.Street, "B.%"), then: 1)
-                        .Else(0)
+                        .When(Sql.Like(a.Street, "B.%"), then: true)
+                        .Else(false)
                     .End(), dto => dto.IsCapitalCity)
                 )
 

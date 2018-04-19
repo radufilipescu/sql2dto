@@ -7,6 +7,7 @@ namespace sql2dto.Core
     public enum SqlConstantType
     {
         NUMBER,
-        STRING
+        STRING,
+        BOOLEAN,
     }
 }
