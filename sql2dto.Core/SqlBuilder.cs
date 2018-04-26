@@ -9,6 +9,9 @@ namespace sql2dto.Core
     {
         public abstract string GetLanguageImplementation();
 
+        public abstract SqlParameterExpression Parameter(string name, object value);
+        public abstract SqlQuery Query();
+
         public abstract string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null);
         public abstract string BuildAliasString(SqlTabularSource table);
         public abstract string BuildCTEJoinString(SqlQuery query, SqlCTE cte, SqlJoinType joinType, SqlExpression condition = null);
@@ -24,7 +27,6 @@ namespace sql2dto.Core
         public abstract DbCommand BuildDbCommand(SqlQuery query);
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection);
         public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction);
-        public abstract SqlParameterExpression Parameter(string name, object value);
         public abstract string BuildBooleanMnemonicString(bool value);
         public abstract bool FromBooleanMnemonicToBoolean(int? value);
         public abstract bool FromBooleanMnemonicToBoolean(double? value);

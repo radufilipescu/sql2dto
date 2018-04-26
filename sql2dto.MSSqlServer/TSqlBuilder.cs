@@ -15,6 +15,16 @@ namespace sql2dto.MSSqlServer
 
         public override string GetLanguageImplementation() => LANGUAGE_IMPLEMENTATION;
 
+        public override SqlParameterExpression Parameter(string name, object value)
+        {
+            return new SqlParameterExpression(new SqlParameter(name, value));
+        }
+
+        public override SqlQuery Query()
+        {
+            return new SqlQuery(this);
+        }
+
         public override string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null)
         {
             var type = expression.GetExpressionType();
@@ -402,11 +412,6 @@ $@"{BuildSqlJoinTypeString(joinType)}
             var cmd = BuildDbCommand(query, connection);
             cmd.Transaction = transaction;
             return cmd;
-        }
-
-        public override SqlParameterExpression Parameter(string name, object value)
-        {
-            return new SqlParameterExpression(new SqlParameter(name, value));
         }
 
         public override string BuildBooleanMnemonicString(bool value)

@@ -17,15 +17,7 @@ namespace sql2dto.MSSqlServer.UnitTests
 
         public class sql2dto
         {
-            public static readonly SqlBuilder DefaultSqlBuilder = new TSqlBuilder();
-            public static SqlParameterExpression Parameter(string name, object value)
-            {
-                return new SqlParameterExpression(new SqlParameter(name, value));
-            }
-            public static SqlQuery Query()
-            {
-                return new SqlQuery(DefaultSqlBuilder);
-            }
+            public static readonly SqlBuilder SqlBuilder = new TSqlBuilder();
 
             public class dbo
             {
@@ -118,30 +110,18 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public async void Test1()
         {
-            //var ulp = sql2dto.dbo.Users.As("ulp");
-
-            //var innerQuery = sql2dto.Query()
-            //    .Select(ulp.Id, "ULPId")
-            //    .Select(Sql.Case()
-            //               .When(Sql.IsNull(ulp.Age), then: "UNKOWN")
-            //               .When(ulp.Age >= Sql.Const(18), then: "Adult")
-            //               .Else("Teenage")
-            //            .End(), nameof(User.LifePeriod))
-            //    .From(ulp)
-            //    .As("ulp");
-
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
 
-            var query = sql2dto.Query()
+            var query = sql2dto.SqlBuilder.Query()
 
                 .With("ulp_cte",
                 () =>
                 {
                     var usr = sql2dto.dbo.Users.As("usr");
-
-                    return sql2dto.Query()
+                    
+                    return sql2dto.SqlBuilder.Query()
                         .Select(usr.Id)
                         .Select(Sql.Case()
                                     .When(Sql.IsNull(usr.Age), then: "UNKOWN")
@@ -151,11 +131,10 @@ namespace sql2dto.MSSqlServer.UnitTests
                         .From(usr)
                         .As("ulp");
 
-                }, "ULPId", nameof(User.LifePeriod))
+                }, nameof(User.Id), nameof(User.LifePeriod))
 
                 .Project<User>(u)
                 .Project<Address>(a)
-
                 .Project<Address>(
                     (Sql.Case(a.Street)
                         .When("B. Colentina", then: true)
@@ -163,27 +142,19 @@ namespace sql2dto.MSSqlServer.UnitTests
                         .Else(false)
                     .End(), nameof(Address.IsCapitalCity))
                 )
-
                 .Project<Address>(
                     (Sql.Case()
                         .When(Sql.Like(a.Street, "B.%"), then: true)
                         .Else(false)
                     .End(), dto => dto.IsCapitalCity)
                 )
-
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
-
-                //.Project<User>((innerQuery.GetColumn(nameof(User.LifePeriod)), nameof(User.LifePeriod)))
                 .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
-
 
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
-
-                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", "ULPId") == u.Id)
-                ;
-                //.Join(innerQuery, on: innerQuery.GetColumn("ULPId") == u.Id);
+                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id);
 
             using (var conn = new SqlConnection("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             {

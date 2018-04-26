@@ -10,15 +10,7 @@ namespace sql2dto.MSSqlServer.UnitTests
     {
         public class DataBaseName
         {
-            public static readonly SqlBuilder DefaultSqlBuilder = new TSqlBuilder();
-            public static SqlParameterExpression Parameter(string name, object value)
-            {
-                return new SqlParameterExpression(new SqlParameter(name, value));
-            }
-            public static SqlQuery Query()
-            {
-                return new SqlQuery(DefaultSqlBuilder);
-            }
+            public static readonly SqlBuilder SqlBuilder = new TSqlBuilder();
 
             public class dbo
             {
@@ -67,21 +59,21 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public void Test1()
         {
-            var param1 = DataBaseName.Parameter("param1", 5);
-            var param2 = DataBaseName.Parameter("param2", "foo");
-            var innerParam1 = DataBaseName.Parameter("innerParam1", -1);
-            var innerParam2 = DataBaseName.Parameter("innerParam2", -2);
+            var param1 = DataBaseName.SqlBuilder.Parameter("param1", 5);
+            var param2 = DataBaseName.SqlBuilder.Parameter("param2", "foo");
+            var innerParam1 = DataBaseName.SqlBuilder.Parameter("innerParam1", -1);
+            var innerParam2 = DataBaseName.SqlBuilder.Parameter("innerParam2", -2);
 
             var u = DataBaseName.dbo.Users.As("u");
             var a = DataBaseName.dbo.Addresses.As("a");
 
-            var innerQuery = DataBaseName.Query()
+            var innerQuery = DataBaseName.SqlBuilder.Query()
                 .Select(a.Street)
                 .From(a)
                 .Where(a.Id == innerParam1)
                 .As("INNER_Q");
 
-            var query = DataBaseName.Query()
+            var query = DataBaseName.SqlBuilder.Query()
                 .Select(a.Street)
                 .Select(param1, "PARAM_1")
                 .Select(Sql.Sum(a.Id), "SUM_AdrressId")

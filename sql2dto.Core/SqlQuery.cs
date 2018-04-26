@@ -88,15 +88,7 @@ namespace sql2dto.Core
         {
             if (String.IsNullOrEmpty(columnAlias))
             {
-                if (expression.GetExpressionType() == SqlExpressionType.COLUMN)
-                {
-                    var column = (SqlColumn)expression;
-                    AddSelectExpression(column, column.GetColumnName());
-                }
-                else
-                {
-                    AddSelectExpression(expression, null);
-                }
+                AddSelectExpression(expression, null);
             }
             else
             {
@@ -110,15 +102,7 @@ namespace sql2dto.Core
         {
             foreach (var expression in selectExpressions)
             {
-                if (expression.GetExpressionType() == SqlExpressionType.COLUMN)
-                {
-                    var column = (SqlColumn)expression;
-                    AddSelectExpression(column, column.GetColumnName());
-                }
-                else
-                {
-                    AddSelectExpression(expression, null);
-                }
+                AddSelectExpression(expression, null);
             }
             return this;
         }
