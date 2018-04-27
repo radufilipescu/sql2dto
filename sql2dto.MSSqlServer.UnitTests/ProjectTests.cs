@@ -110,6 +110,10 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public async void Test1()
         {
+            var param1 = sql2dto.SqlBuilder.Parameter("p_1", 1);
+            var param2 = sql2dto.SqlBuilder.Parameter("p_2", 2);
+            var param3 = sql2dto.SqlBuilder.Parameter("p_3", 3);
+
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
@@ -129,7 +133,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                                     .Else("Teenage")
                                 .End())
                         .From(usr)
-                        .As("ulp");
+                        .Where(Sql.Const(2) == param2);
 
                 }, nameof(User.Id), nameof(User.LifePeriod))
 
@@ -154,20 +158,17 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
-                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id);
+                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id & Sql.Const(3) == param3)
+                .Where(Sql.Const(1) == param1);
 
-            using (var conn = new SqlConnection("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
+            using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
+            using (var h = await query.ExecReadHelperAsync(conn))
             {
-                await conn.OpenAsync();
-                using (var cmd = query.BuildSqlCommand(conn))
-                using (var h = await cmd.ExecReadHelperAsync())
-                {
-                    var fetch = h.Fetch<User>()
-                        .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
-                        .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
+                var fetch = h.Fetch<User>()
+                                .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
+                                .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
-                    var result = fetch.All();
-                }
+                var result = fetch.All();
             }
         }
     }

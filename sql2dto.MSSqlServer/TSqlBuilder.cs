@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace sql2dto.MSSqlServer
 {
@@ -24,6 +25,91 @@ namespace sql2dto.MSSqlServer
         {
             return new SqlQuery(this);
         }
+
+        #region ADO.NET
+        public override DbConnection Connect(string connectionString)
+        {
+            var dbConn = BuildDbConnection(connectionString);
+            dbConn.Open();
+            return dbConn;
+        }
+
+        public override async Task<DbConnection> ConnectAsync(string connectionString)
+        {
+            var dbConn = BuildDbConnection(connectionString);
+            await dbConn.OpenAsync();
+            return dbConn;
+        }
+
+        public override DbConnection BuildDbConnection(string connectionString)
+        {
+            var dbConn = new SqlConnection(connectionString);
+            return dbConn;
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query)
+        {
+            var sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
+            sqlCommand.CommandText = BuildQueryString(query);
+            sqlCommand.Parameters.AddRange(query.GetDbParameters().Values.ToArray());
+            return sqlCommand;
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection)
+        {
+            var cmd = BuildDbCommand(query);
+            cmd.Connection = connection;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction)
+        {
+            var cmd = BuildDbCommand(query, connection);
+            cmd.Transaction = transaction;
+            return cmd;
+        }
+
+        public override ReadHelper ExecReadHelper(SqlQuery query, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(query, connection))
+            {
+                var reader = cmd.ExecuteReader();
+                var readHelper = new ReadHelper(reader);
+                return readHelper;
+            }
+        }
+
+        public override ReadHelper ExecReadHelper(SqlQuery query, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(query, connection, transaction))
+            {
+                var reader = cmd.ExecuteReader();
+                var readHelper = new ReadHelper(reader);
+                return readHelper;
+            }
+        }
+
+        public override async Task<ReadHelper> ExecReadHelperAsync(SqlQuery query, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(query, connection))
+            {
+                var reader = await cmd.ExecuteReaderAsync();
+                var readHelper = new ReadHelper(reader);
+                return readHelper;
+            }
+        }
+
+        public override async Task<ReadHelper> ExecReadHelperAsync(SqlQuery query, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(query, connection, transaction))
+            {
+                var reader = await cmd.ExecuteReaderAsync();
+                var readHelper = new ReadHelper(reader);
+                return readHelper;
+            }
+        }
+        #endregion
 
         public override string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null)
         {
@@ -226,6 +312,11 @@ namespace sql2dto.MSSqlServer
                     {
                         sb.AppendLine();
                     }
+
+                    foreach (var cteDbParam in cte.Item2.GetDbParameters().Values)
+                    {
+                        query.AddDbParameterIfNotFound(cteDbParam);
+                    }
                 }
             }
 
@@ -291,10 +382,12 @@ $@"{BuildSqlJoinTypeString(joinType)}
             {
                 result += $" ON {BuildExpressionString(query, condition)}";
             }
+
             foreach (var innerDbParam in subQuery.GetDbParameters().Values)
             {
                 query.AddDbParameterIfNotFound(innerDbParam);
             }
+
             return result;
         }
 
@@ -388,30 +481,6 @@ $@"{BuildSqlJoinTypeString(joinType)}
             }
 
             return $"'{value.Replace("'", "''")}'"; //TODO
-        }
-
-        public override DbCommand BuildDbCommand(SqlQuery query)
-        {
-            var sqlCommand = new SqlCommand();
-            sqlCommand.CommandType = System.Data.CommandType.Text;
-            sqlCommand.CommandText = BuildQueryString(query);
-            sqlCommand.Parameters.AddRange(query.GetDbParameters().Values.ToArray());
-
-            return sqlCommand;
-        }
-
-        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection)
-        {
-            var cmd = BuildDbCommand(query);
-            cmd.Connection = connection;
-            return cmd;
-        }
-
-        public override DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction)
-        {
-            var cmd = BuildDbCommand(query, connection);
-            cmd.Transaction = transaction;
-            return cmd;
         }
 
         public override string BuildBooleanMnemonicString(bool value)

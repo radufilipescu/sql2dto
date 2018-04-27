@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
@@ -316,9 +317,10 @@ namespace sql2dto.Core
             return this;
         }
 
-        public SqlQuery With(string expressionName, Func<SqlQuery> query, params string[] columnNames)
+        public SqlQuery With(string expressionName, Func<SqlQuery> buildQuery, params string[] columnNames)
         {
-            _commonTableExpressions.Add((expressionName, query(), new HashSet<string>(columnNames)));
+            var query = buildQuery();
+            _commonTableExpressions.Add((expressionName, query, new HashSet<string>(columnNames)));
             return this;
         }
 
@@ -340,6 +342,26 @@ namespace sql2dto.Core
         public DbCommand BuildDbCommand(DbConnection connection, DbTransaction transaction)
         {
             return _builder.BuildDbCommand(this, connection, transaction);
+        }
+
+        public ReadHelper ExecReadHelper(DbConnection connection)
+        {
+            return _builder.ExecReadHelper(this, connection);
+        }
+
+        public ReadHelper ExecReadHelper(DbConnection connection, DbTransaction transaction)
+        {
+            return _builder.ExecReadHelper(this, connection, transaction);
+        }
+
+        public async Task<ReadHelper> ExecReadHelperAsync(DbConnection connection)
+        {
+            return await _builder.ExecReadHelperAsync(this, connection);
+        }
+
+        public async Task<ReadHelper> ExecReadHelperAsync(DbConnection connection, DbTransaction transaction)
+        {
+            return await _builder.ExecReadHelperAsync(this, connection, transaction);
         }
     }
 }

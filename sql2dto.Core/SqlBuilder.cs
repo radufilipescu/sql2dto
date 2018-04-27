@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
@@ -11,6 +12,19 @@ namespace sql2dto.Core
 
         public abstract SqlParameterExpression Parameter(string name, object value);
         public abstract SqlQuery Query();
+
+        #region ADO.NET
+        public abstract DbConnection Connect(string connectionString);
+        public abstract Task<DbConnection> ConnectAsync(string connectionString);
+        public abstract DbConnection BuildDbConnection(string connectionString);
+        public abstract DbCommand BuildDbCommand(SqlQuery query);
+        public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection);
+        public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction);
+        public abstract ReadHelper ExecReadHelper(SqlQuery query, DbConnection connection);
+        public abstract ReadHelper ExecReadHelper(SqlQuery query, DbConnection connection, DbTransaction transaction);
+        public abstract Task<ReadHelper> ExecReadHelperAsync(SqlQuery query, DbConnection connection);
+        public abstract Task<ReadHelper> ExecReadHelperAsync(SqlQuery query, DbConnection connection, DbTransaction transaction);
+        #endregion
 
         public abstract string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null);
         public abstract string BuildAliasString(SqlTabularSource table);
@@ -24,9 +38,6 @@ namespace sql2dto.Core
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
         public abstract string BuildSqlOrderByDirectionString(SqlOrderByDirection direction);
         public abstract string EscapeConstantValue(string value);
-        public abstract DbCommand BuildDbCommand(SqlQuery query);
-        public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection);
-        public abstract DbCommand BuildDbCommand(SqlQuery query, DbConnection connection, DbTransaction transaction);
         public abstract string BuildBooleanMnemonicString(bool value);
         public abstract bool FromBooleanMnemonicToBoolean(int? value);
         public abstract bool FromBooleanMnemonicToBoolean(double? value);
