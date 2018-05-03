@@ -38,11 +38,7 @@ namespace sql2dto.Core
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
         public abstract string BuildSqlOrderByDirectionString(SqlOrderByDirection direction);
         public abstract string EscapeConstantValue(string value);
-        public abstract string BuildBooleanMnemonicString(bool value);
-        public abstract bool FromBooleanMnemonicToBoolean(int? value);
-        public abstract bool FromBooleanMnemonicToBoolean(double? value);
-        public abstract bool FromBooleanMnemonicToBoolean(float? value);
-        public abstract bool FromBooleanMnemonicToBoolean(decimal? value);
-        public abstract bool FromBooleanMnemonicToBoolean(string value);
+        
+        public abstract IBooleanMnemonicsTranslator BooleanMnemonicsTranslator { get; set; }
     }
 }

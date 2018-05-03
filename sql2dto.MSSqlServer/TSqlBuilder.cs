@@ -151,7 +151,7 @@ namespace sql2dto.MSSqlServer
                         }
                         else if (constType == SqlConstantType.BOOLEAN)
                         {
-                            result = BuildBooleanMnemonicString(constantExpression.BooleanValue.Value);
+                            result = BooleanMnemonicsTranslator.BuildBooleanMnemonicString(constantExpression.BooleanValue.Value);
                         }
                         else
                         {
@@ -483,52 +483,11 @@ $@"{BuildSqlJoinTypeString(joinType)}
             return $"'{value.Replace("'", "''")}'"; //TODO
         }
 
-        public override string BuildBooleanMnemonicString(bool value)
+        private IBooleanMnemonicsTranslator _booleanMnemonicsTranslator = new TSqlBooleanMnemonicsTranslator();
+        public override IBooleanMnemonicsTranslator BooleanMnemonicsTranslator
         {
-            return value ? "1" : "0";
-        }
-
-        public override bool FromBooleanMnemonicToBoolean(int? value)
-        {
-            return value.HasValue 
-                ? (value.Value == 0 ? false : true)
-                : false;
-        }
-
-        public override bool FromBooleanMnemonicToBoolean(double? value)
-        {
-            return value.HasValue
-                ? (value.Value == 0 ? false : true)
-                : false;
-        }
-
-        public override bool FromBooleanMnemonicToBoolean(float? value)
-        {
-            return value.HasValue
-                ? (value.Value == 0 ? false : true)
-                : false;
-        }
-
-        public override bool FromBooleanMnemonicToBoolean(decimal? value)
-        {
-            return value.HasValue
-                ? (value.Value == 0 ? false : true)
-                : false;
-        }
-
-        public override bool FromBooleanMnemonicToBoolean(string value)
-        {
-            if (String.IsNullOrEmpty(value))
-            {
-                return false;
-            }
-
-            if (Boolean.TryParse(value, out bool boolValue))
-            {
-                return boolValue;
-            }
-
-            return false;
+            get => _booleanMnemonicsTranslator;
+            set => _booleanMnemonicsTranslator = value;
         }
     }
 }
