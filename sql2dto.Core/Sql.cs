@@ -130,5 +130,12 @@ namespace sql2dto.Core
             return new SqlColumn(new SqlCTE(cte), null, columnName);
         }
         #endregion
+
+        #region CAST
+        public static SqlCastExpression Cast(SqlExpression expressionToCast, string to)
+        {
+            return new SqlCastExpression(expressionToCast, to);
+        }
+        #endregion
     }
 }

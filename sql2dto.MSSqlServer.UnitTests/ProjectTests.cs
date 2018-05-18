@@ -10,10 +10,10 @@ namespace sql2dto.MSSqlServer.UnitTests
 {
     public class ProjectTests
     {
-        public class NullableIntToBooleanConverterAttribute : ConverterAttribute
-        {
-            public override Func<object, object> Converter => (v) => Convert.ToBoolean(v ?? 0);
-        }
+        //public class NullableIntToBooleanConverterAttribute : ConverterAttribute
+        //{
+        //    public override Func<object, object> Converter => (v) => Convert.ToBoolean(v ?? 0);
+        //}
 
         public class sql2dto
         {
@@ -31,12 +31,12 @@ namespace sql2dto.MSSqlServer.UnitTests
                     private Users(string alias)
                         : base(nameof(dbo), nameof(Users), alias)
                     {
-                        Id = DefineColumn(nameof(Id), nameof(Id));
-                        FirstName = DefineColumn(nameof(FirstName), nameof(FirstName));
-                        LastName = DefineColumn(nameof(LastName), nameof(LastName));
+                        Id = DefineColumn(nameof(Id));
+                        FirstName = DefineColumn(nameof(FirstName));
+                        LastName = DefineColumn(nameof(LastName));
                         UserType = DefineColumn(nameof(UserType), "USER_TYPE");
-                        ReportsToId = DefineColumn(nameof(ReportsToId), nameof(ReportsToId));
-                        Age = DefineColumn(nameof(Age), nameof(Age));
+                        ReportsToId = DefineColumn(nameof(ReportsToId));
+                        Age = DefineColumn(nameof(Age));
                     }
 
                     public SqlColumn Id;
@@ -57,14 +57,16 @@ namespace sql2dto.MSSqlServer.UnitTests
                     private Addresses(string alias)
                         : base(nameof(dbo), nameof(Addresses), alias)
                     {
-                        Id = DefineColumn(nameof(Id), nameof(Id));
-                        UserId = DefineColumn(nameof(UserId), nameof(UserId));
-                        Street = DefineColumn(nameof(Street), nameof(Street));
+                        Id = DefineColumn(nameof(Id));
+                        UserId = DefineColumn(nameof(UserId));
+                        Street = DefineColumn(nameof(Street));
+                        IsMain = DefineColumn(nameof(IsMain));
                     }
 
                     public SqlColumn Id;
                     public SqlColumn UserId;
                     public SqlColumn Street;
+                    public SqlColumn IsMain;
                 }
             }
         }
@@ -103,7 +105,7 @@ namespace sql2dto.MSSqlServer.UnitTests
 
             public User User { get; set; }
 
-            [NullableIntToBooleanConverter]
+            //[NullableIntToBooleanConverter]
             public bool IsCapitalCity { get; set; }
         }
 
@@ -147,10 +149,10 @@ namespace sql2dto.MSSqlServer.UnitTests
                     .End(), nameof(Address.IsCapitalCity))
                 )
                 .Project<Address>(
-                    (Sql.Case()
+                    (Sql.Cast(Sql.Case()
                         .When(Sql.Like(a.Street, "B.%"), then: true)
                         .Else(false)
-                    .End(), dto => dto.IsCapitalCity)
+                    .End(), to: "BIT"), dto => dto.IsCapitalCity)
                 )
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
                 .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))

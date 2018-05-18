@@ -14,5 +14,6 @@ namespace sql2dto.Core
         PARAMETER,
         LIKE,
         IS_NULL,
+        CAST,
     }
 }

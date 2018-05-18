@@ -239,6 +239,18 @@ namespace sql2dto.MSSqlServer
                         result = $"{BuildExpressionString(query, innerExpression)} IS NULL";
                     }
                     break;
+                case SqlExpressionType.CAST:
+                    {
+                        var castExpression = (SqlCastExpression)expression;
+                        var expressionToCast = castExpression.GetExpressionToCast();
+
+                        string sqlTypeString = castExpression.GetSqlTypeString()
+                                                             .Replace("[", "")
+                                                             .Replace("]", "");
+
+                        result = $"CAST({BuildExpressionString(query, expressionToCast)} AS [{sqlTypeString}])";
+                    }
+                    break;
                 default:
                     throw new NotImplementedException($"SqlExpressionType: {type}");
             }

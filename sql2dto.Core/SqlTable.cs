@@ -51,6 +51,11 @@ namespace sql2dto.Core
         private List<SqlColumn> _columns;
         public List<SqlColumn> ListAllColumns() => _columns.ToList();
 
+        public SqlColumn DefineColumn(string propertyAndColumnName)
+        {
+            return DefineColumn(propertyAndColumnName, propertyAndColumnName);
+        }
+
         public SqlColumn DefineColumn(string propertyName, string columnName)
         {
             var col = new SqlColumn(this, propertyName, columnName);
