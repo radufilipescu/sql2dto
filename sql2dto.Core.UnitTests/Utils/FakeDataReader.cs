@@ -112,6 +112,11 @@ namespace sql2dto.Core.UnitTests.Utils
 
         public Type GetFieldType(int i)
         {
+            if (_currentRow == -1)
+            {
+                return _values[_currentReadResult][0][i].GetType();
+            }
+
             return _values[_currentReadResult][_currentRow][i].GetType();
         }
 

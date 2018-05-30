@@ -75,7 +75,7 @@ namespace sql2dto.MSSqlServer
             using (var cmd = BuildDbCommand(query, connection))
             {
                 var reader = cmd.ExecuteReader();
-                var readHelper = new ReadHelper(reader);
+                var readHelper = new ReadHelper(reader, query.GetReadHelperSettings());
                 return readHelper;
             }
         }
@@ -85,7 +85,7 @@ namespace sql2dto.MSSqlServer
             using (var cmd = BuildDbCommand(query, connection, transaction))
             {
                 var reader = cmd.ExecuteReader();
-                var readHelper = new ReadHelper(reader);
+                var readHelper = new ReadHelper(reader, query.GetReadHelperSettings());
                 return readHelper;
             }
         }
@@ -95,7 +95,7 @@ namespace sql2dto.MSSqlServer
             using (var cmd = BuildDbCommand(query, connection))
             {
                 var reader = await cmd.ExecuteReaderAsync();
-                var readHelper = new ReadHelper(reader);
+                var readHelper = new ReadHelper(reader, query.GetReadHelperSettings());
                 return readHelper;
             }
         }
@@ -105,7 +105,7 @@ namespace sql2dto.MSSqlServer
             using (var cmd = BuildDbCommand(query, connection, transaction))
             {
                 var reader = await cmd.ExecuteReaderAsync();
-                var readHelper = new ReadHelper(reader);
+                var readHelper = new ReadHelper(reader, query.GetReadHelperSettings());
                 return readHelper;
             }
         }
@@ -151,7 +151,7 @@ namespace sql2dto.MSSqlServer
                         }
                         else if (constType == SqlConstantType.BOOLEAN)
                         {
-                            result = BooleanMnemonicsTranslator.BuildBooleanMnemonicString(constantExpression.BooleanValue.Value);
+                            result = BuildBooleanString(constantExpression.BooleanValue.Value);
                         }
                         else
                         {
@@ -261,6 +261,13 @@ namespace sql2dto.MSSqlServer
             }
 
             return result;
+        }
+
+        public override string BuildBooleanString(bool value)
+        {
+            return value ? 
+                ReadHelperSettings.BooleanTranslator.BooleanTrueStringExpression 
+                : ReadHelperSettings.BooleanTranslator.BooleanFalseStringExpression;
         }
 
         public override string BuildAliasString(SqlTabularSource tabularSource)
@@ -495,11 +502,7 @@ $@"{BuildSqlJoinTypeString(joinType)}
             return $"'{value.Replace("'", "''")}'"; //TODO
         }
 
-        private IBooleanMnemonicsTranslator _booleanMnemonicsTranslator = new TSqlBooleanMnemonicsTranslator();
-        public override IBooleanMnemonicsTranslator BooleanMnemonicsTranslator
-        {
-            get => _booleanMnemonicsTranslator;
-            set => _booleanMnemonicsTranslator = value;
-        }
+        private IReadHelperSettings _readHelperSettings = new TSqlReadHelperSettings();
+        public override IReadHelperSettings ReadHelperSettings => _readHelperSettings;
     }
 }

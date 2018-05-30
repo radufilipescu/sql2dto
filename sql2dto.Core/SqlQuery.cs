@@ -26,6 +26,7 @@ namespace sql2dto.Core
 
         private SqlBuilder _builder;
         public string GetSqlBuilderLanguageImplementation() => _builder.GetLanguageImplementation();
+        public IReadHelperSettings GetReadHelperSettings() => _builder.ReadHelperSettings;
 
         private Dictionary<string, DbParameter> _dbParameters;
         public Dictionary<string, DbParameter> GetDbParameters() => _dbParameters;

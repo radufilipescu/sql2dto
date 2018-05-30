@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Reflection;
 using System.Text;
@@ -47,39 +48,58 @@ namespace sql2dto.Core
 
         public IDataReader Reader { get; private set; }
 
-        public Dictionary<string, int> ColumnNamesToOrdinals { get; private set; }
+        public ReadOnlyDictionary<string, int> ColumnNamesToOrdinals { get; private set; }
+        public ReadOnlyDictionary<int, Type> ColumnOrdinalsToTypes { get; private set; }
+        public ReadOnlyDictionary<int, TypeCode> ColumnOrdinalsToTypeCodes { get; private set; }
 
-        internal event EventHandler ColumnNamesToOrdinalsChanged;
+        internal event EventHandler ColumnMappingsChanged;
 
-        public ReadHelper(IDataReader reader)
+        private IReadHelperSettings _settings;
+
+        public ReadHelper(IDataReader reader, IReadHelperSettings settings = null)
         {
             Reader = reader;
-            SetupColumnNamesToOrdinals();
+            _settings = settings;
+            SetupColumnMappings();
         }
 
-        private void SetupColumnNamesToOrdinals()
+        private void SetupColumnMappings()
         {
-            ColumnNamesToOrdinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var columnNamesToOrdinals = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var columnOrdinalsToTypes = new Dictionary<int, Type>();
+            var columnOrdinalsToTypeCodes = new Dictionary<int, TypeCode>();
+
             for (int i = 0; i < Reader.FieldCount; i++)
             {
                 string colName = Reader.GetName(i);
-                if (ColumnNamesToOrdinals.TryGetValue(colName, out int ordinal))
+                if (columnNamesToOrdinals.TryGetValue(colName, out int ordinal))
                 {
                     int ocurrence = 1;
                     string newColName;
-                    while (ColumnNamesToOrdinals.ContainsKey(newColName = $"{colName}_{ocurrence}"))
+                    while (columnNamesToOrdinals.ContainsKey(newColName = $"{colName}_{ocurrence}"))
                     {
                         ocurrence++;
                     }
 
-                    ColumnNamesToOrdinals.Add(newColName, i);
+                    columnNamesToOrdinals.Add(newColName, i);
                 }
                 else
                 {
-                    ColumnNamesToOrdinals.Add(colName, i);
+                    columnNamesToOrdinals.Add(colName, i);
                 }
+
+                Type fieldType = Reader.GetFieldType(i);
+                columnOrdinalsToTypes.Add(i, fieldType);
+
+                TypeCode fieldTypeCode = Type.GetTypeCode(fieldType);
+                columnOrdinalsToTypeCodes.Add(i, fieldTypeCode);
             }
-            ColumnNamesToOrdinalsChanged?.Invoke(this, new EventArgs());
+
+            this.ColumnNamesToOrdinals = new ReadOnlyDictionary<string, int>(columnNamesToOrdinals);
+            this.ColumnOrdinalsToTypes = new ReadOnlyDictionary<int, Type>(columnOrdinalsToTypes);
+            this.ColumnOrdinalsToTypeCodes = new ReadOnlyDictionary<int, TypeCode>(columnOrdinalsToTypeCodes);
+
+            ColumnMappingsChanged?.Invoke(this, new EventArgs());
         }
 
         public bool Read()
@@ -92,7 +112,7 @@ namespace sql2dto.Core
             bool result = Reader.NextResult();
             if (result)
             {
-                SetupColumnNamesToOrdinals();
+                SetupColumnMappings();
             }
             return result;
         }
@@ -185,7 +205,95 @@ namespace sql2dto.Core
         [CacheGetterOrdinalMethodInfo]
         public bool GetBoolean(int ordinal)
         {
-            return Reader.GetBoolean(ordinal);
+            TypeCode columnTypeCode = ColumnOrdinalsToTypeCodes[ordinal];
+            if (columnTypeCode == TypeCode.Boolean)
+            {
+                return Reader.GetBoolean(ordinal);
+            }
+
+            if (_settings != null
+                && _settings.BooleanTranslator != null)
+            {
+                switch (columnTypeCode)
+                {
+                    case TypeCode.Int16:
+                        {
+                            if (_settings.BooleanTranslator.FromInt16ToBool != null)
+                            {
+                                var value = Reader.GetInt16(ordinal);
+                                return _settings.BooleanTranslator.FromInt16ToBool(value);
+                            }
+                        }
+                        break;
+                    case TypeCode.Int32:
+                        {
+                            if (_settings.BooleanTranslator.FromInt32ToBool != null)
+                            {
+                                var value = Reader.GetInt32(ordinal);
+                                return _settings.BooleanTranslator.FromInt32ToBool(value);
+                            }
+                        }
+                        break;
+                    case TypeCode.Int64:
+                        {
+                            if (_settings.BooleanTranslator.FromInt64ToBool != null)
+                            {
+                                var value = Reader.GetInt64(ordinal);
+                                return _settings.BooleanTranslator.FromInt64ToBool(value);
+                            }
+                        }
+                        break;
+
+                    case TypeCode.Double:
+                        {
+                            if (_settings.BooleanTranslator.FromDoubleToBool != null)
+                            {
+                                var value = Reader.GetDouble(ordinal);
+                                return _settings.BooleanTranslator.FromDoubleToBool(value);
+                            }
+                        }
+                        break;
+                    case TypeCode.Single:
+                        {
+                            if (_settings.BooleanTranslator.FromFloatToBool != null)
+                            {
+                                var value = Reader.GetFloat(ordinal);
+                                return _settings.BooleanTranslator.FromFloatToBool(value);
+                            }
+                        }
+                        break;
+                    case TypeCode.Decimal:
+                        {
+                            if (_settings.BooleanTranslator.FromDecimalToBool != null)
+                            {
+                                var value = Reader.GetDecimal(ordinal);
+                                return _settings.BooleanTranslator.FromDecimalToBool(value);
+                            }
+                        }
+                        break;
+
+                    case TypeCode.Char:
+                        {
+                            if (_settings.BooleanTranslator.FromCharToBool != null)
+                            {
+                                var value = Reader.GetChar(ordinal);
+                                return _settings.BooleanTranslator.FromCharToBool(value);
+                            }
+                        }
+                        break;
+                    case TypeCode.String:
+                        {
+                            if (_settings.BooleanTranslator.FromStringToBool != null)
+                            {
+                                var value = Reader.GetString(ordinal);
+                                return _settings.BooleanTranslator.FromStringToBool(value);
+                            }
+                        }
+                        break;
+                }
+            }
+
+            throw new InvalidCastException($"ReadHelper could not cast '{columnTypeCode}' to '{typeof(Boolean).FullName}'");
         }
 
         [CacheGetterOrdinalMethodInfo]
@@ -197,7 +305,7 @@ namespace sql2dto.Core
             }
             else
             {
-                return Reader.GetBoolean(ordinal);
+                return this.GetBoolean(ordinal);
             }
         }
 
@@ -205,7 +313,7 @@ namespace sql2dto.Core
         {
             if (ColumnNamesToOrdinals.TryGetValue(columnName, out int ordinal))
             {
-                return Reader.GetBoolean(ordinal);
+                return this.GetBoolean(ordinal);
             }
             else
             {
@@ -223,7 +331,7 @@ namespace sql2dto.Core
                 }
                 else
                 {
-                    return Reader.GetBoolean(ordinal);
+                    return this.GetBoolean(ordinal);
                 }
             }
             else
@@ -237,7 +345,7 @@ namespace sql2dto.Core
             int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
-                return Reader.GetBoolean(ordinal.Value);
+                return this.GetBoolean(ordinal.Value);
             }
             else
             {
@@ -256,7 +364,7 @@ namespace sql2dto.Core
                 }
                 else
                 {
-                    return Reader.GetBoolean(ordinal.Value);
+                    return this.GetBoolean(ordinal.Value);
                 }
             }
             else
@@ -270,7 +378,7 @@ namespace sql2dto.Core
             int? ordinal = mapper.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
-                return Reader.GetBoolean(ordinal.Value);
+                return this.GetBoolean(ordinal.Value);
             }
             else
             {
@@ -289,7 +397,7 @@ namespace sql2dto.Core
                 }
                 else
                 {
-                    return Reader.GetBoolean(ordinal.Value);
+                    return this.GetBoolean(ordinal.Value);
                 }
             }
             else

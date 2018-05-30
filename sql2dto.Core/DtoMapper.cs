@@ -1,6 +1,7 @@
 ﻿using sql2dto.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
@@ -108,7 +109,7 @@ namespace sql2dto.Core
             InitDefault();
         }
 
-        private static int? ExtractOrdinal(Dictionary<string, PropMapConfig> propMapConfigs, Dictionary<string, int> columnNamesToOrdinals, string propName, string columnsPrefix = null)
+        private static int? ExtractOrdinal(Dictionary<string, PropMapConfig> propMapConfigs, ReadOnlyDictionary<string, int> columnNamesToOrdinals, string propName, string columnsPrefix = null)
         {
             if (propMapConfigs.TryGetValue(propName, out PropMapConfig config))
             {
@@ -125,7 +126,7 @@ namespace sql2dto.Core
             return ExtractOrdinal(_defaultPropMapConfigs, helper.ColumnNamesToOrdinals, propName, columnsPrefix);
         }
 
-        private static int? ExtractOrdinal(Dictionary<string, int> columnNamesToColumnOrdinals, PropMapConfig config, string columnsPrefix = null)
+        private static int? ExtractOrdinal(ReadOnlyDictionary<string, int> columnNamesToColumnOrdinals, PropMapConfig config, string columnsPrefix = null)
         {
             if (config.ColumnOrdinal.HasValue)
             {

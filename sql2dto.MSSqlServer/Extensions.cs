@@ -11,17 +11,17 @@ namespace sql2dto.MSSqlServer
     public static class Extensions
     {
         #region SQL COMMAND EXTENSIONS
-        public static ReadHelper ExecReadHelper(this SqlCommand cmd)
+        public static ReadHelper ExecReadHelper(this SqlCommand cmd, IReadHelperSettings readHelperSettings = null)
         {
             var reader = cmd.ExecuteReader();
-            var readHelper = new ReadHelper(reader);
+            var readHelper = new ReadHelper(reader, readHelperSettings);
             return readHelper;
         }
 
-        public static async Task<ReadHelper> ExecReadHelperAsync(this SqlCommand cmd)
+        public static async Task<ReadHelper> ExecReadHelperAsync(this SqlCommand cmd, IReadHelperSettings readHelperSettings = null)
         {
             var reader = await cmd.ExecuteReaderAsync();
-            var readHelper = new ReadHelper(reader);
+            var readHelper = new ReadHelper(reader, readHelperSettings);
             return readHelper;
         }
         #endregion

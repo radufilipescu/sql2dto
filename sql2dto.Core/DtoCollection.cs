@@ -24,10 +24,10 @@ namespace sql2dto.Core
 
         protected void SetupColumnNamesToOrdinalsChangedHandler()
         {
-            _helper.ColumnNamesToOrdinalsChanged += _helper_ColumnNamesToOrdinalsChanged;
+            _helper.ColumnMappingsChanged += _helper_ColumnMappingsChanged;
         }
 
-        protected virtual void _helper_ColumnNamesToOrdinalsChanged(object sender, EventArgs e)
+        protected virtual void _helper_ColumnMappingsChanged(object sender, EventArgs e)
         {
             SetupMapFunc();
         }

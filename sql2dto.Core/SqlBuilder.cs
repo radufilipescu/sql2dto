@@ -27,6 +27,7 @@ namespace sql2dto.Core
         #endregion
 
         public abstract string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null);
+        public abstract string BuildBooleanString(bool value);
         public abstract string BuildAliasString(SqlTabularSource table);
         public abstract string BuildCTEJoinString(SqlQuery query, SqlCTE cte, SqlJoinType joinType, SqlExpression condition = null);
         public abstract string BuildTableJoinString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null);
@@ -39,6 +40,6 @@ namespace sql2dto.Core
         public abstract string BuildSqlOrderByDirectionString(SqlOrderByDirection direction);
         public abstract string EscapeConstantValue(string value);
         
-        public abstract IBooleanMnemonicsTranslator BooleanMnemonicsTranslator { get; set; }
+        public abstract IReadHelperSettings ReadHelperSettings { get; }
     }
 }
