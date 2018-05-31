@@ -298,13 +298,37 @@ namespace sql2dto.MSSqlServer
         public override string BuildQueryString(SqlQuery query)
         {
             var fromAndJoinClauses = query.GetFromAndJoinClauses();
-            if (fromAndJoinClauses.Count == 0)
-            {
-                throw new InvalidOperationException("FROM clause was not specified");
-            }
-            if (fromAndJoinClauses[0].Item1 != SqlJoinType.NONE)
+
+            if (fromAndJoinClauses.Count > 1
+                && fromAndJoinClauses[0].Item1 != SqlJoinType.NONE)
             {
                 throw new InvalidOperationException("FROM clause must be specified before any JOINS");
+            }
+
+            bool useTopClause = false;
+            bool useOffsetFetchClause = false;
+            int takeRows = 0;
+            int skipRows = 0;
+
+            if (query.GetTakeRowsCount() >= 0)
+            {
+                takeRows = query.GetTakeRowsCount();
+                if (query.GetSkipRowsCount() >= 0)
+                {
+                    if (query.GetOrderByExpressions().Count == 0)
+                    {
+                        throw new InvalidOperationException("Skip/Take (OFFSET/FETCH) must be used along with ORDER BY");
+                    }
+                    else
+                    {
+                        skipRows = query.GetSkipRowsCount();
+                        useOffsetFetchClause = true;
+                    }
+                }
+                else
+                {
+                    useTopClause = true;
+                }
             }
 
             var sb = new StringBuilder();
@@ -339,7 +363,16 @@ namespace sql2dto.MSSqlServer
                 }
             }
 
-            sb.AppendLine("SELECT");
+            sb.Append("SELECT");
+            if (useTopClause)
+            {
+                sb.AppendLine($" TOP {takeRows} ");
+            }
+            else
+            {
+                sb.AppendLine();
+            }
+
             sb.Append("    ");
             sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(query, e.Item1, e.Item2))));
             sb.AppendLine(String.Join(Environment.NewLine, query.GetFromAndJoinClauses().Select(fj =>
@@ -379,6 +412,12 @@ namespace sql2dto.MSSqlServer
             if (orderByExpressions.Count > 0)
             {
                 sb.AppendLine($"ORDER BY {String.Join(", ", orderByExpressions.Select(item => $"{BuildExpressionString(query, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}");
+            }
+
+            if (useOffsetFetchClause)
+            {
+                sb.AppendLine($"OFFSET {skipRows} ROWS");
+                sb.AppendLine($"FETCH NEXT {takeRows} ROWS ONLY");
             }
 
             return sb.ToString().Trim();

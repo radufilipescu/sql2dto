@@ -126,7 +126,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                 () =>
                 {
                     var usr = sql2dto.dbo.Users.As("usr");
-                    
+
                     return sql2dto.SqlBuilder.Query()
                         .Select(usr.Id)
                         .Select(Sql.Case()
@@ -168,6 +168,10 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
                 .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id & Sql.Const(3) == param3)
                 .Where(Sql.Const(1) == param1);
+
+                //.OrderBy(u.Id)
+                //.SkipRows(1)
+                //.TakeRows(2);
 
             using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             using (var h = await query.ExecReadHelperAsync(conn))

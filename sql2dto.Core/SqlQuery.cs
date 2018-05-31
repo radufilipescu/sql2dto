@@ -22,6 +22,9 @@ namespace sql2dto.Core
             _havingExpression = null;
             _orderByExpressions = new List<(SqlExpression, SqlOrderByDirection)>();
             _commonTableExpressions = new List<(string, SqlQuery, HashSet<string>)>();
+
+            _skipRowsCount = -1;
+            _takeRowsCount = -1;
         }
 
         private SqlBuilder _builder;
@@ -82,6 +85,32 @@ namespace sql2dto.Core
 
         private List<(string, SqlQuery, HashSet<string>)> _commonTableExpressions;
         public List<(string, SqlQuery, HashSet<string>)> GetCommonTableExpressions() => _commonTableExpressions;
+
+        private int _skipRowsCount;
+        public int GetSkipRowsCount() => _skipRowsCount;
+
+        private int _takeRowsCount;
+        public int GetTakeRowsCount() => _takeRowsCount;
+
+        public SqlQuery SkipRows(int count)
+        {
+            if (count < 0)
+            {
+                throw new ArgumentException("The count of rows a query can skip cannot be less than 0");
+            }
+            _skipRowsCount = count;
+            return this;
+        }
+
+        public SqlQuery TakeRows(int count)
+        {
+            if (count < 0)
+            {
+                throw new ArgumentException("The count of rows a query can take cannot be less than 0");
+            }
+            _takeRowsCount = count;
+            return this;
+        }
 
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
 
