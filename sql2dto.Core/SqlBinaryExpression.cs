@@ -11,6 +11,8 @@ namespace sql2dto.Core
             _firstTerm = firstTerm;
             _operator = op;
             _secondTerm = secondTerm;
+
+            Metadata = new Dictionary<string, string>();
         }
 
         public override SqlExpressionType GetExpressionType() => SqlExpressionType.BINARY;
@@ -23,5 +25,7 @@ namespace sql2dto.Core
 
         private SqlExpression _secondTerm;
         public SqlExpression GetSecondTerm() => _secondTerm;
+
+        public readonly Dictionary<string, string> Metadata;
     }
 }

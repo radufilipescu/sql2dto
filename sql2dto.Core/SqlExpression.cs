@@ -6,8 +6,19 @@ namespace sql2dto.Core
 {
     public abstract class SqlExpression
     {
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
         public abstract SqlExpressionType GetExpressionType();
 
+        #region  COMPARISION
         public static SqlExpression operator ==(SqlExpression a, SqlExpression b)
         {
             var result = new SqlBinaryExpression(a, SqlOperator.EQUALS, b);
@@ -20,18 +31,39 @@ namespace sql2dto.Core
             return result;
         }
 
-        public static SqlExpression operator &(SqlExpression a, SqlExpression b)
+        public static SqlExpression operator <(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.AND, b);
+            var result = new SqlBinaryExpression(a, SqlOperator.LESS_THAN, b);
             return result;
         }
 
-        public static SqlExpression operator |(SqlExpression a, SqlExpression b)
+        public static SqlExpression operator >(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.OR, b);
+            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_THAN, b);
             return result;
         }
 
+        public static SqlExpression operator <=(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.LESS_OR_EQUAL_THAN, b);
+            return result;
+        }
+
+        public static SqlExpression operator >=(SqlExpression a, SqlExpression b)
+        {
+            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_OR_EQUAL_THAN, b);
+            return result;
+        }
+
+        public static SqlExpression operator !(SqlExpression a)
+        {
+            //var result = new SqlUnaryExpression(a, SqlOperator.NOT);
+            //return result;
+            throw new NotImplementedException();
+        }
+        #endregion
+
+        #region ARITHMETIC
         public static SqlExpression operator +(SqlExpression a, SqlExpression b)
         {
             var result = new SqlBinaryExpression(a, SqlOperator.PLUS, b);
@@ -61,29 +93,94 @@ namespace sql2dto.Core
             var result = new SqlBinaryExpression(a, SqlOperator.MOD, b);
             return result;
         }
+        #endregion
 
-        public static SqlExpression operator <(SqlExpression a, SqlExpression b)
+        #region LOGICAL
+        public static SqlExpression operator &(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.LESS_THAN, b);
+            var result = new SqlBinaryExpression(a, SqlOperator.AND, b);
             return result;
         }
 
-        public static SqlExpression operator >(SqlExpression a, SqlExpression b)
+        public static SqlExpression operator |(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_THAN, b);
+            var result = new SqlBinaryExpression(a, SqlOperator.OR, b);
             return result;
         }
 
-        public static SqlExpression operator <=(SqlExpression a, SqlExpression b)
+        #region BETWEEN
+        public SqlExpression Between(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.LESS_OR_EQUAL_THAN, b);
+            return (a <= this) & (this <= b);
+        }
+
+        public SqlExpression NotBetween(SqlExpression a, SqlExpression b)
+        {
+            return (this <= a) | (this >= b);
+        }
+        #endregion
+
+        #region LIKE
+        public SqlExpression Like(string pattern, string escapeChar = null)
+        {
+            var result = new SqlBinaryExpression(this, SqlOperator.LIKE, Sql.Const(pattern));
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
             return result;
         }
 
-        public static SqlExpression operator >=(SqlExpression a, SqlExpression b)
+        public SqlExpression Like(SqlExpression pattern, string escapeChar = null)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.GREATER_OR_EQUAL_THAN, b);
+            var result = new SqlBinaryExpression(this, SqlOperator.LIKE, pattern);
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
             return result;
         }
+
+        public SqlExpression Like(SqlQuery pattern, string escapeChar = null)
+        {
+            var result = new SqlBinaryExpression(this, SqlOperator.LIKE, pattern);
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
+            return result;
+        }
+
+        public SqlExpression NotLike(string pattern, string escapeChar = null)
+        {
+            var result = new SqlBinaryExpression(this, SqlOperator.NOT_LIKE, Sql.Const(pattern));
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
+            return result;
+        }
+
+        public SqlExpression NotLike(SqlExpression pattern, string escapeChar = null)
+        {
+            var result = new SqlBinaryExpression(this, SqlOperator.NOT_LIKE, pattern);
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
+            return result;
+        }
+
+        public SqlExpression NotLike(SqlQuery pattern, string escapeChar = null)
+        {
+            var result = new SqlBinaryExpression(this, SqlOperator.NOT_LIKE, pattern);
+            if (!String.IsNullOrEmpty(escapeChar))
+            {
+                result.Metadata.Add("ESCAPE", escapeChar);
+            }
+            return result;
+        }
+        #endregion
+        #endregion
     }
 }

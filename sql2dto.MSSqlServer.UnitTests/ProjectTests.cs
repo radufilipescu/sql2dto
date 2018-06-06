@@ -120,6 +120,8 @@ namespace sql2dto.MSSqlServer.UnitTests
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
 
+            var uSub = sql2dto.dbo.Users.As("uSub");
+
             var query = sql2dto.SqlBuilder.Query()
 
                 .With("ulp_cte",
@@ -163,11 +165,24 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
                 .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
 
+                .SelectSubQuery(_ => _.Select(Sql.Const(1)), "CONST_1")
+                .SelectSubQuery(_ => _.Select(uSub.FirstName).From(uSub).Where(uSub.Id == u.Id), "SUBQ_FIRST_NAME")
+
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
                 .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id & Sql.Const(3) == param3)
-                .Where(Sql.Const(1) == param1);
+                .JoinSubquery(
+                    _ => _ 
+                        .Select(uSub.Id, "id")
+                        .From(uSub).As("jU"), 
+                    on: _ => _.GetColumn("id") == u.Id
+                )
+                .Where(
+                    Sql.Const(1) == param1
+                    & Sql.Const("abc").Like("%abc%")
+                    & Sql.Const("%abc%").Like("!%abc!%", escapeChar: "!")
+                );
 
                 //.OrderBy(u.Id)
                 //.SkipRows(1)
@@ -181,6 +196,11 @@ namespace sql2dto.MSSqlServer.UnitTests
                                 .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
                 var result = fetch.All();
+
+                Assert.Equal(result.Count, 3);
+                Assert.Equal(result[0].Addresses.Count, 2);
+                Assert.Equal(result[0].Addresses[0].IsCapitalCity, false);
+                Assert.Equal(result[0].Addresses[1].IsCapitalCity, true);
             }
         }
     }

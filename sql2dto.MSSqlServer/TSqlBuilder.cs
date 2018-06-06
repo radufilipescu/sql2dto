@@ -186,6 +186,12 @@ namespace sql2dto.MSSqlServer
                         }
 
                         result = $"{firstTermString} {BuildSqlOperatorString(op)} {secondTermString}";
+
+                        if ((op == SqlOperator.LIKE || op == SqlOperator.NOT_LIKE)
+                            && binaryExpression.Metadata.TryGetValue("ESCAPE", out string likeEscapeChar))
+                        {
+                            result += $" ESCAPE '{likeEscapeChar}'";
+                        }
                     }
                     break;
                 case SqlExpressionType.CASE_WHEN:
@@ -251,6 +257,23 @@ namespace sql2dto.MSSqlServer
                         result = $"CAST({BuildExpressionString(query, expressionToCast)} AS [{sqlTypeString}])";
                     }
                     break;
+                case SqlExpressionType.SUB_QUERY:
+                    {
+                        var subQuery = (SqlQuery)expression;
+                        if (subQuery.GetCommonTableExpressions().Count > 0)
+                        {
+                            throw new InvalidOperationException("CTEs are not allowed inside subqueries");
+                        }
+                        string subQueryString = BuildQueryString(subQuery);
+                        subQueryString = subQueryString
+                                            .Replace($"{Environment.NewLine}    ", " ")
+                                            .Replace(Environment.NewLine, " ");
+                        result = $"({subQueryString})";
+                    }
+                    break;
+                case SqlExpressionType.TABLE:
+                case SqlExpressionType.CTE:
+                    throw new InvalidOperationException("Invalid use of TABLE or CTE as sql expression");
                 default:
                     throw new NotImplementedException($"SqlExpressionType: {type}");
             }
@@ -500,6 +523,10 @@ $@"{BuildSqlJoinTypeString(joinType)}
                     return "<";
                 case SqlOperator.LESS_OR_EQUAL_THAN:
                     return "<=";
+                case SqlOperator.LIKE:
+                    return "LIKE";
+                case SqlOperator.NOT_LIKE:
+                    return "NOT LIKE";
                 default:
                     throw new NotImplementedException($"SqlOperator: {op}");
             }

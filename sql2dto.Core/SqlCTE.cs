@@ -11,6 +11,8 @@ namespace sql2dto.Core
             _cteAlias = cte;
         }
 
+        public override SqlExpressionType GetExpressionType() => SqlExpressionType.CTE;
+
         public override SqlTabularSourceType TabularType => SqlTabularSourceType.CTE;
 
         private string _cteAlias;

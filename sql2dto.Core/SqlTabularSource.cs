@@ -4,7 +4,7 @@ using System.Text;
 
 namespace sql2dto.Core
 {
-    public abstract class SqlTabularSource
+    public abstract class SqlTabularSource : SqlExpression
     {
         public abstract SqlTabularSourceType TabularType { get; }
         public abstract string GetAlias();

@@ -15,5 +15,11 @@ namespace sql2dto.Core
         LIKE,
         IS_NULL,
         CAST,
+
+        TUPLE,
+
+        SUB_QUERY,
+        TABLE,
+        CTE,
     }
 }

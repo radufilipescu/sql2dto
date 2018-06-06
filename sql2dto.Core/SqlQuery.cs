@@ -27,6 +27,8 @@ namespace sql2dto.Core
             _takeRowsCount = -1;
         }
 
+        public override SqlExpressionType GetExpressionType() => SqlExpressionType.SUB_QUERY;
+
         private SqlBuilder _builder;
         public string GetSqlBuilderLanguageImplementation() => _builder.GetLanguageImplementation();
         public IReadHelperSettings GetReadHelperSettings() => _builder.ReadHelperSettings;
@@ -145,6 +147,12 @@ namespace sql2dto.Core
                 AddSelectExpression(expression.Item1, expression.Item2);
             }
             return this;
+        }
+
+        public SqlQuery SelectSubQuery(Func<SqlQuery, SqlQuery> subQueryBuilder, string columnAlias)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            return Select(subQuery, columnAlias);
         }
         #endregion
 
@@ -287,10 +295,23 @@ namespace sql2dto.Core
             return this;
         }
 
+        public SqlQuery FromSubQuery(Func<SqlQuery, SqlQuery> subQueryBuilder)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            return From(subQuery);
+        }
+
         public SqlQuery Join(SqlTabularSource innerJoinPart, SqlExpression on)
         {
             _fromAndJoinClauses.Add((SqlJoinType.INNER, innerJoinPart, on));
             return this;
+        }
+
+        public SqlQuery JoinSubquery(Func<SqlQuery, SqlQuery> subQueryBuilder, Func<SqlQuery, SqlExpression> on)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            var onExpr = on(subQuery);
+            return Join(subQuery, onExpr);
         }
 
         public SqlQuery LeftJoin(SqlTabularSource innerJoinPart, SqlExpression on)
@@ -299,10 +320,24 @@ namespace sql2dto.Core
             return this;
         }
 
+        public SqlQuery LeftJoinSubquery(Func<SqlQuery, SqlQuery> subQueryBuilder, Func<SqlQuery, SqlExpression> on)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            var onExpr = on(subQuery);
+            return LeftJoin(subQuery, onExpr);
+        }
+
         public SqlQuery RightJoin(SqlTabularSource innerJoinPart, SqlExpression on)
         {
             _fromAndJoinClauses.Add((SqlJoinType.RIGHT, innerJoinPart, on));
             return this;
+        }
+
+        public SqlQuery RightJoinSubquery(Func<SqlQuery, SqlQuery> subQueryBuilder, Func<SqlQuery, SqlExpression> on)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            var onExpr = on(subQuery);
+            return RightJoin(subQuery, onExpr);
         }
 
         public SqlQuery FullJoin(SqlTabularSource innerJoinPart, SqlExpression on)
@@ -311,10 +346,23 @@ namespace sql2dto.Core
             return this;
         }
 
+        public SqlQuery FullJoinSubquery(Func<SqlQuery, SqlQuery> subQueryBuilder, Func<SqlQuery, SqlExpression> on)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            var onExpr = on(subQuery);
+            return FullJoin(subQuery, onExpr);
+        }
+
         public SqlQuery CrossJoin(SqlTabularSource innerJoinPart)
         {
             _fromAndJoinClauses.Add((SqlJoinType.CROSS, innerJoinPart, (SqlExpression)null));
             return this;
+        }
+
+        public SqlQuery CrossJoinSubquery(Func<SqlQuery, SqlQuery> subQueryBuilder)
+        {
+            var subQuery = subQueryBuilder(this._builder.Query());
+            return CrossJoin(subQuery);
         }
 
         public SqlQuery Where(SqlExpression condition)

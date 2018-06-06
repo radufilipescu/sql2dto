@@ -17,6 +17,8 @@ namespace sql2dto.Core
             _columns = new List<SqlColumn>();
         }
 
+        public override SqlExpressionType GetExpressionType() => SqlExpressionType.TABLE;
+
         public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.TABLE;
 
         private string _tableSchema;
