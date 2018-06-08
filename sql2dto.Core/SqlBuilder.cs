@@ -38,6 +38,7 @@ namespace sql2dto.Core
         public abstract string BuildSqlOperatorString(SqlOperator op);
         public abstract string BuildSqlFuncNameString(SqlFunctionName func);
         public abstract string BuildSqlOrderByDirectionString(SqlOrderByDirection direction);
+        public abstract string BuildSqlWindowFrameBoundString(SqlWindowFrameBound windowFrameBound);
         public abstract string EscapeConstantValue(string value);
         
         public abstract IReadHelperSettings ReadHelperSettings { get; }

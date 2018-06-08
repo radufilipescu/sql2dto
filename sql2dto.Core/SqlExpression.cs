@@ -6,6 +6,13 @@ namespace sql2dto.Core
 {
     public abstract class SqlExpression
     {
+        protected SqlExpression()
+        {
+            Metadata = new Dictionary<string, string>();
+        }
+
+        public readonly Dictionary<string, string> Metadata;
+
         public override int GetHashCode()
         {
             return base.GetHashCode();

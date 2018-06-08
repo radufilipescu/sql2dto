@@ -98,24 +98,29 @@ namespace sql2dto.Core
         #endregion
 
         #region FUNCTIONS
-        public static SqlFunctionCallExpression Sum(SqlExpression expression)
+        public static SqlFunctionOver Over()
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: false);
+            return new SqlFunctionOver();
         }
 
-        public static SqlFunctionCallExpression SumDistinct(SqlExpression expression)
+        public static SqlFunctionCallExpression Sum(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: true);
+            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: false, over: over);
         }
 
-        public static SqlFunctionCallExpression Avg(SqlExpression expression)
+        public static SqlFunctionCallExpression SumDistinct(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: false);
+            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: true, over: over);
         }
 
-        public static SqlFunctionCallExpression AvgDistinct(SqlExpression expression)
+        public static SqlFunctionCallExpression Avg(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true);
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: false, over: over);
+        }
+
+        public static SqlFunctionCallExpression AvgDistinct(SqlExpression expression, SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true, over: over);
         }
         #endregion
 
@@ -135,6 +140,13 @@ namespace sql2dto.Core
         public static SqlCastExpression Cast(SqlExpression expressionToCast, string to)
         {
             return new SqlCastExpression(expressionToCast, to);
+        }
+        #endregion
+
+        #region TUPLE
+        public static SqlTupleExpression Tuple(params SqlExpression[] items)
+        {
+            return new SqlTupleExpression(items);
         }
         #endregion
     }

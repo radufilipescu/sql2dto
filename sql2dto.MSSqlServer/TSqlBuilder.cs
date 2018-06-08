@@ -133,6 +133,43 @@ namespace sql2dto.MSSqlServer
                         var innerExpression = BuildExpressionString(query, functionCallExpression.GetInnerExpression());
 
                         result = $"{functionName}({distinct}{innerExpression})";
+
+                        var over = functionCallExpression.GetOverClause();
+                        if (over != null)
+                        {
+                            result += " OVER(";
+
+                            if (over.PartitionByExpressions.Count > 0)
+                            {
+                                result += $"PARTITION BY {String.Join(", ", over.PartitionByExpressions.Select(i => BuildExpressionString(query, i)))}";
+                            }
+
+                            if (over.OrderByExpressions.Count > 0)
+                            {
+                                if (over.PartitionByExpressions.Count > 0)
+                                {
+                                    result += " ";
+                                }
+
+                                result += $"ORDER BY {String.Join(", ", over.OrderByExpressions.Select(item => $"{BuildExpressionString(query, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}";
+                            }
+
+                            if (over.WindowingType != SqlWindowingType.NOT_SPECIFIED)
+                            {
+                                result += $" {over.WindowingType.ToString()}";
+
+                                if (over.WindowingEndFrameBound == null)
+                                {
+                                    result += $" {BuildSqlWindowFrameBoundString(over.WindowingBeginFrameBound)}";
+                                }
+                                else
+                                {
+                                    result += $" BETWEEN {BuildSqlWindowFrameBoundString(over.WindowingBeginFrameBound)} AND {BuildSqlWindowFrameBoundString(over.WindowingEndFrameBound)}";
+                                }
+                            }
+
+                            result += ")";
+                        }
                     }
                     break;
                 case SqlExpressionType.CONSTANT:
@@ -271,6 +308,10 @@ namespace sql2dto.MSSqlServer
                         result = $"({subQueryString})";
                     }
                     break;
+                case SqlExpressionType.TUPLE:
+                    {
+                        throw new InvalidOperationException($"{GetLanguageImplementation()} does not allow tuples to be used in queries");
+                    }
                 case SqlExpressionType.TABLE:
                 case SqlExpressionType.CTE:
                     throw new InvalidOperationException("Invalid use of TABLE or CTE as sql expression");
@@ -558,14 +599,43 @@ $@"{BuildSqlJoinTypeString(joinType)}
             }
         }
 
+        public override string BuildSqlWindowFrameBoundString(SqlWindowFrameBound windowFrameBound)
+        {
+            string result = "";
+            switch (windowFrameBound.WindowFrameType)
+            {
+                case SqlWindowFrameBoundType.CURRENT_ROW:
+                    {
+                        result += " CURRENT ROW";
+                    }
+                    break;
+                case SqlWindowFrameBoundType.PRECEDING_UNBOUNDED:
+                    {
+                        result += " UNBOUNDED PRECEDING";
+                    }
+                    break;
+                case SqlWindowFrameBoundType.PRECEDING_COUNT:
+                    {
+                        result += $" {windowFrameBound.Count} PRECEDING";
+                    }
+                    break;
+                case SqlWindowFrameBoundType.FOLLOWING_UNBOUNDED:
+                    {
+                        result += " UNBOUNDED FOLLOWING";
+                    }
+                    break;
+                case SqlWindowFrameBoundType.FOLLOWING_COUNT:
+                    {
+                        result += $" {windowFrameBound.Count} FOLLOWING";
+                    }
+                    break;
+            }
+            return result;
+        }
+
         public override string EscapeConstantValue(string value)
         {
-            if (Regex.IsMatch(value, "[()[]]"))
-            {
-                throw new InvalidOperationException($"Constant value not safe: {value}");
-            }
-
-            return $"'{value.Replace("'", "''")}'"; //TODO
+            return $"'{value.Replace("'", "''")}'";
         }
 
         private IReadHelperSettings _readHelperSettings = new TSqlReadHelperSettings();

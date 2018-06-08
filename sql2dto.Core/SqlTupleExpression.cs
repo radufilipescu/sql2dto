@@ -4,9 +4,9 @@ using System.Text;
 
 namespace sql2dto.Core
 {
-    public class SqlTuple : SqlExpression
+    public class SqlTupleExpression : SqlExpression
     {
-        public SqlTuple(params SqlExpression[] items)
+        internal SqlTupleExpression(params SqlExpression[] items)
         {
             _items = items;
         }
