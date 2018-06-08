@@ -26,6 +26,21 @@ namespace sql2dto.MSSqlServer
             return new SqlQuery(this);
         }
 
+        public override SqlInsert InsertInto(SqlTable table)
+        {
+            return new SqlInsert(this, table);
+        }
+
+        public override SqlUpdate Update(SqlTable table)
+        {
+            return new SqlUpdate(this, table);
+        }
+
+        public override SqlDelete DeleteFrom(SqlTable table)
+        {
+            return new SqlDelete(this, table);
+        }
+
         #region ADO.NET
         public override DbConnection Connect(string connectionString)
         {
@@ -70,6 +85,75 @@ namespace sql2dto.MSSqlServer
             return cmd;
         }
 
+        public override DbCommand BuildDbCommand(SqlInsert insert)
+        {
+            var sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
+            sqlCommand.CommandText = BuildInsertString(insert);
+            sqlCommand.Parameters.AddRange(insert.GetDbParameters().Values.ToArray());
+            return sqlCommand;
+        }
+
+        public override DbCommand BuildDbCommand(SqlInsert insert, DbConnection connection)
+        {
+            var cmd = BuildDbCommand(insert);
+            cmd.Connection = connection;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlInsert insert, DbConnection connection, DbTransaction transaction)
+        {
+            var cmd = BuildDbCommand(insert, connection);
+            cmd.Transaction = transaction;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlUpdate update)
+        {
+            var sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
+            sqlCommand.CommandText = BuildUpdateString(update);
+            sqlCommand.Parameters.AddRange(update.GetDbParameters().Values.ToArray());
+            return sqlCommand;
+        }
+
+        public override DbCommand BuildDbCommand(SqlUpdate update, DbConnection connection)
+        {
+            var cmd = BuildDbCommand(update);
+            cmd.Connection = connection;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlUpdate update, DbConnection connection, DbTransaction transaction)
+        {
+            var cmd = BuildDbCommand(update, connection);
+            cmd.Transaction = transaction;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlDelete delete)
+        {
+            var sqlCommand = new SqlCommand();
+            sqlCommand.CommandType = System.Data.CommandType.Text;
+            sqlCommand.CommandText = BuildDeleteString(delete);
+            sqlCommand.Parameters.AddRange(delete.GetDbParameters().Values.ToArray());
+            return sqlCommand;
+        }
+
+        public override DbCommand BuildDbCommand(SqlDelete delete, DbConnection connection)
+        {
+            var cmd = BuildDbCommand(delete);
+            cmd.Connection = connection;
+            return cmd;
+        }
+
+        public override DbCommand BuildDbCommand(SqlDelete delete, DbConnection connection, DbTransaction transaction)
+        {
+            var cmd = BuildDbCommand(delete, connection);
+            cmd.Transaction = transaction;
+            return cmd;
+        }
+
         public override ReadHelper ExecReadHelper(SqlQuery query, DbConnection connection)
         {
             using (var cmd = BuildDbCommand(query, connection))
@@ -109,9 +193,105 @@ namespace sql2dto.MSSqlServer
                 return readHelper;
             }
         }
+
+        public override int ExecInsert(SqlInsert insert, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(insert, connection))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override int ExecInsert(SqlInsert insert, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(insert, connection, transaction))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override async Task<int> ExecInsertAsync(SqlInsert insert, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(insert, connection))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public override async Task<int> ExecInsertAsync(SqlInsert insert, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(insert, connection, transaction))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public override int ExecUpdate(SqlUpdate update, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(update, connection))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override int ExecUpdate(SqlUpdate update, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(update, connection, transaction))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override async Task<int> ExecUpdateAsync(SqlUpdate update, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(update, connection))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public override async Task<int> ExecUpdateAsync(SqlUpdate update, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(update, connection, transaction))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public override int ExecDelete(SqlDelete delete, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(delete, connection))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override int ExecDelete(SqlDelete delete, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(delete, connection, transaction))
+            {
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
+        public override async Task<int> ExecDeleteAsync(SqlDelete delete, DbConnection connection)
+        {
+            using (var cmd = BuildDbCommand(delete, connection))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        public override async Task<int> ExecDeleteAsync(SqlDelete delete, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = BuildDbCommand(delete, connection, transaction))
+            {
+                return await cmd.ExecuteNonQueryAsync();
+            }
+        }
         #endregion
 
-        public override string BuildExpressionString(SqlQuery query, SqlExpression expression, string expressionAlias = null)
+        public override string BuildExpressionString(IDbParametersBag parametersBag, SqlExpression expression, string expressionAlias = null)
         {
             var type = expression.GetExpressionType();
             string result = null;
@@ -130,7 +310,7 @@ namespace sql2dto.MSSqlServer
 
                         var functionName = BuildSqlFuncNameString(functionCallExpression.GetFunctionName());
                         var distinct = functionCallExpression.GetIsDistinct() ? "DISTINCT " : "";
-                        var innerExpression = BuildExpressionString(query, functionCallExpression.GetInnerExpression());
+                        var innerExpression = BuildExpressionString(parametersBag, functionCallExpression.GetInnerExpression());
 
                         result = $"{functionName}({distinct}{innerExpression})";
 
@@ -141,7 +321,7 @@ namespace sql2dto.MSSqlServer
 
                             if (over.PartitionByExpressions.Count > 0)
                             {
-                                result += $"PARTITION BY {String.Join(", ", over.PartitionByExpressions.Select(i => BuildExpressionString(query, i)))}";
+                                result += $"PARTITION BY {String.Join(", ", over.PartitionByExpressions.Select(i => BuildExpressionString(parametersBag, i)))}";
                             }
 
                             if (over.OrderByExpressions.Count > 0)
@@ -151,7 +331,7 @@ namespace sql2dto.MSSqlServer
                                     result += " ";
                                 }
 
-                                result += $"ORDER BY {String.Join(", ", over.OrderByExpressions.Select(item => $"{BuildExpressionString(query, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}";
+                                result += $"ORDER BY {String.Join(", ", over.OrderByExpressions.Select(item => $"{BuildExpressionString(parametersBag, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}";
                             }
 
                             if (over.WindowingType != SqlWindowingType.NOT_SPECIFIED)
@@ -203,7 +383,7 @@ namespace sql2dto.MSSqlServer
                         var op = binaryExpression.GetOperator();
                         var secondTerm = binaryExpression.GetSecondTerm();
 
-                        string firstTermString = BuildExpressionString(query, firstTerm);
+                        string firstTermString = BuildExpressionString(parametersBag, firstTerm);
                         switch (firstTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -212,7 +392,7 @@ namespace sql2dto.MSSqlServer
                                 }
                                 break;
                         }
-                        string secondTermString = BuildExpressionString(query, secondTerm);
+                        string secondTermString = BuildExpressionString(parametersBag, secondTerm);
                         switch (secondTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -237,15 +417,15 @@ namespace sql2dto.MSSqlServer
                         var onExpression = caseWhenExpression.GetOnExpression();
                         var elseExpression = caseWhenExpression.GetElseExpression();
 
-                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(query, onExpression)}";
+                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(parametersBag, onExpression)}";
                         result = $"CASE{onExpressionString}";
                         foreach (var whenThenExpression in caseWhenExpression.GetWhenThenExpressions())
                         {
-                            result += $" WHEN {BuildExpressionString(query, whenThenExpression.Item1)} THEN {BuildExpressionString(query, whenThenExpression.Item2)}";
+                            result += $" WHEN {BuildExpressionString(parametersBag, whenThenExpression.Item1)} THEN {BuildExpressionString(parametersBag, whenThenExpression.Item2)}";
                         }
                         if (!(elseExpression is null))
                         {
-                            result += $" ELSE {BuildExpressionString(query, elseExpression)}";
+                            result += $" ELSE {BuildExpressionString(parametersBag, elseExpression)}";
                         }
                         result += " END";
                     }
@@ -255,7 +435,7 @@ namespace sql2dto.MSSqlServer
                         var likeExpression = (SqlLikeExpression)expression;
                         var inputExpression = likeExpression.GetInputExpression();
                         var patternExpression = likeExpression.GetPatternExpression();
-                        result = $"{BuildExpressionString(query, inputExpression)} LIKE {BuildExpressionString(query, patternExpression)}";
+                        result = $"{BuildExpressionString(parametersBag, inputExpression)} LIKE {BuildExpressionString(parametersBag, patternExpression)}";
                     }
                     break;
                 case SqlExpressionType.PARAMETER:
@@ -268,7 +448,7 @@ namespace sql2dto.MSSqlServer
                         }
 
                         result = dbParameter.ParameterName;
-                        query.AddDbParameterIfNotFound(dbParameter);
+                        parametersBag.AddDbParameterIfNotFound(dbParameter);
                         if (!result.StartsWith("@"))
                         {
                             result = $"@{result}";
@@ -279,7 +459,7 @@ namespace sql2dto.MSSqlServer
                     {
                         var isNullExpression = (SqlIsNullExpression)expression;
                         var innerExpression = isNullExpression.GetInnerExpression();
-                        result = $"{BuildExpressionString(query, innerExpression)} IS NULL";
+                        result = $"{BuildExpressionString(parametersBag, innerExpression)} IS NULL";
                     }
                     break;
                 case SqlExpressionType.CAST:
@@ -291,7 +471,7 @@ namespace sql2dto.MSSqlServer
                                                              .Replace("[", "")
                                                              .Replace("]", "");
 
-                        result = $"CAST({BuildExpressionString(query, expressionToCast)} AS [{sqlTypeString}])";
+                        result = $"CAST({BuildExpressionString(parametersBag, expressionToCast)} AS [{sqlTypeString}])";
                     }
                     break;
                 case SqlExpressionType.SUB_QUERY:
@@ -640,5 +820,35 @@ $@"{BuildSqlJoinTypeString(joinType)}
 
         private IReadHelperSettings _readHelperSettings = new TSqlReadHelperSettings();
         public override IReadHelperSettings ReadHelperSettings => _readHelperSettings;
+
+        public override string BuildInsertString(SqlInsert insert)
+        {
+            string colsString = String.Join(", ", insert.ColumnsToSet.Select(colToSet => $"[{colToSet.Item1.GetColumnName()}]"));
+            string setString = String.Join(", ", insert.ColumnsToSet.Select(colToSet => $"{BuildExpressionString(insert, colToSet.Item2)}"));
+            return $"INSERT INTO [{insert.Table.GetTableSchema()}].[{insert.Table.GetTableName()}] ({colsString}) VALUES ({setString})";
+        }
+
+        public override string BuildUpdateString(SqlUpdate update)
+        {
+            string setString = String.Join(", ", update.ColumnsToSet.Select(colToSet => $"[{colToSet.Item1.GetColumnName()}] = {BuildExpressionString(update, colToSet.Item2)}"));
+            var result =  $"UPDATE [{update.Table.GetTableSchema()}].[{update.Table.GetTableName()}] SET {setString}";
+            if (!(update.WhereExpression is null))
+            {
+                string whereString = BuildExpressionString(update, update.WhereExpression);
+                result += $" WHERE {whereString}";
+            }
+            return result;
+        }
+
+        public override string BuildDeleteString(SqlDelete delete)
+        {
+            string result = $"DELETE FROM [{delete.Table.GetTableSchema()}].[{delete.Table.GetTableName()}]";
+            if (!(delete.WhereExpression is null))
+            {
+                string whereString = BuildExpressionString(delete, delete.WhereExpression);
+                result += $" WHERE {whereString}";
+            }
+            return result;
+        }
     }
 }

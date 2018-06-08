@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
-    public class SqlQuery : SqlTabularSource
+    public class SqlQuery : SqlTabularSource, IDbParametersBag
     {
         public SqlQuery(SqlBuilder builder)
         {
@@ -35,12 +35,14 @@ namespace sql2dto.Core
 
         private Dictionary<string, DbParameter> _dbParameters;
         public Dictionary<string, DbParameter> GetDbParameters() => _dbParameters;
-        public void AddDbParameterIfNotFound(DbParameter parameter)
+        public bool AddDbParameterIfNotFound(DbParameter parameter)
         {
             if (!_dbParameters.ContainsKey(parameter.ParameterName))
             {
                 _dbParameters.Add(parameter.ParameterName, parameter);
+                return true;
             }
+            return false;
         }
 
         private string _queryAlias;
