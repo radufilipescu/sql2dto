@@ -33,11 +33,6 @@ namespace sql2dto.Core
         // special
         LIKE,
         NOT_LIKE,
-        IN,
-        SOME,
-        ALL,
-        ANY,
-        NOT,
         #endregion
     }
 }

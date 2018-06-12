@@ -505,6 +505,42 @@ namespace sql2dto.MSSqlServer
                         result = $"({subQueryString})";
                     }
                     break;
+                case SqlExpressionType.NOT:
+                    {
+                        var notExpression = (SqlNotExpression)expression;
+                        result = $"NOT {BuildExpressionString(statement, notExpression.GetInnerExpression())}";
+                    }
+                    break;
+                case SqlExpressionType.IN:
+                case SqlExpressionType.EXISTS:
+                case SqlExpressionType.ANY:
+                case SqlExpressionType.ALL:
+                    {
+                        var expr = (IGetInnerExpressionsList)expression;
+                        bool isFirstExpression = true;
+                        var expressionsListSB = new StringBuilder();
+                        foreach (var expressionItem in expr.GetInnerExpressionsList())
+                        {
+                            if (!isFirstExpression)
+                            {
+                                expressionsListSB.Append(", ");
+                            }
+                            expressionsListSB.Append(BuildExpressionString(statement, expressionItem));
+                            isFirstExpression = false;
+                        }
+
+                        if (type == SqlExpressionType.IN)
+                        {
+                            var inExpr = (SqlInExpression)expression;
+                            var notString = inExpr.GetIsNotIn() ? "NOT " : "";
+                            result = $"{BuildExpressionString(statement, inExpr.GetCheckExpression())} {notString}{type.ToString()} ({expressionsListSB.ToString()})";
+                        }
+                        else
+                        {
+                            result = $"{type.ToString()} ({expressionsListSB.ToString()})";
+                        }
+                    }
+                    break;
                 case SqlExpressionType.TUPLE:
                     {
                         throw new InvalidOperationException($"{GetLanguageImplementation()} does not allow tuples to be used in queries");

@@ -1,6 +1,8 @@
 ﻿using sql2dto.Core;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Text;
 using Xunit;
 
@@ -69,6 +71,62 @@ namespace sql2dto.MSSqlServer.UnitTests
 
                 int deletedRows1 = await delete1.ExecAsync(conn);
                 int deletedRows2 = await delete2.ExecAsync(conn);
+            }
+        }
+
+        [Fact]
+        public async void Test2()
+        {
+            var subQ = sql2dto.SqlBuilder.Query()
+                .Select(Sql.Const(1), "ColInt")
+                .Select(Sql.Const("a"), "ColString")
+                .As("X");
+
+            var q = sql2dto.SqlBuilder.Query()
+                
+                // LIKE
+                .Select(Sql.Case().When(subQ.GetColumn("ColString").Like("XXX"), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(subQ.GetColumn("ColString").NotLike("XXX"), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(subQ.GetColumn("ColString").Like("XXX")), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(!subQ.GetColumn("ColString").Like("XXX"), then: "YES").Else("NO"))
+
+                // BETWEEN
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt").Between(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt").NotBetween(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(subQ.GetColumn("ColInt").Between(Sql.Const(1), Sql.Const(2))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(!subQ.GetColumn("ColInt").Between(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+
+                // IN
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt").In(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt").NotIn(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(subQ.GetColumn("ColInt").In(Sql.Const(1), Sql.Const(2))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(!subQ.GetColumn("ColInt").In(Sql.Const(1), Sql.Const(2)), then: "YES").Else("NO"))
+
+                // EXISTS
+                .Select(Sql.Case().When(Sql.Exists(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.NotExists(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(Sql.Exists(sql2dto.SqlBuilder.Query().Select(Sql.Const(1)))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(!Sql.Exists(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+
+                // ANY
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt") > Sql.Any(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(subQ.GetColumn("ColInt") > Sql.Any(sql2dto.SqlBuilder.Query().Select(Sql.Const(1)))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When( ! subQ.GetColumn("ColInt") > Sql.Any(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+
+                // ALL
+                .Select(Sql.Case().When(subQ.GetColumn("ColInt") > Sql.All(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(Sql.Not(subQ.GetColumn("ColInt") > Sql.All(sql2dto.SqlBuilder.Query().Select(Sql.Const(1)))), then: "YES").Else("NO"))
+                .Select(Sql.Case().When(!subQ.GetColumn("ColInt") > Sql.All(sql2dto.SqlBuilder.Query().Select(Sql.Const(1))), then: "YES").Else("NO"))
+
+                .From(subQ);
+
+            using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
+            using (var cmd = q.BuildDbCommand(conn))
+            using (var resultSet = new DataSet())
+            using (var adapter = new SqlDataAdapter((SqlCommand)cmd))
+            {
+                adapter.Fill(resultSet);
+                var tbl = resultSet.Tables[0];
             }
         }
     }

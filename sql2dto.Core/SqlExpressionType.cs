@@ -21,5 +21,11 @@ namespace sql2dto.Core
         SUB_QUERY,
         TABLE,
         CTE,
+
+        NOT,
+        IN,
+        EXISTS,
+        ANY,
+        ALL,
     }
 }

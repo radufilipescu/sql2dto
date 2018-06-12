@@ -161,5 +161,38 @@ namespace sql2dto.Core
             return new SqlTupleExpression(items);
         }
         #endregion
+
+        #region NOT
+        public static SqlExpression Not(SqlExpression innerExpression)
+        {
+            return new SqlNotExpression(innerExpression);
+        }
+        #endregion
+
+        #region EXISTS
+        public static SqlExpression Exists(params SqlExpression[] innerExpressions)
+        {
+            return new SqlExistsExpression(innerExpressions.ToList());
+        }
+
+        public static SqlExpression NotExists(params SqlExpression[] innerExpressions)
+        {
+            return new SqlNotExpression(new SqlExistsExpression(innerExpressions.ToList()));
+        }
+        #endregion
+
+        #region ANY
+        public static SqlExpression Any(params SqlExpression[] innerExpressions)
+        {
+            return new SqlAnyExpression(innerExpressions.ToList());
+        }
+        #endregion
+
+        #region ALL
+        public static SqlExpression All(params SqlExpression[] innerExpressions)
+        {
+            return new SqlAllExpression(innerExpressions.ToList());
+        }
+        #endregion
     }
 }

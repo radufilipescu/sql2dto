@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace sql2dto.Core
@@ -62,11 +63,9 @@ namespace sql2dto.Core
             return result;
         }
 
-        public static SqlExpression operator !(SqlExpression a)
+        public static SqlExpression operator !(SqlExpression innerExpression)
         {
-            //var result = new SqlUnaryExpression(a, SqlOperator.NOT);
-            //return result;
-            throw new NotImplementedException();
+            return new SqlNotExpression(innerExpression);
         }
         #endregion
 
@@ -186,6 +185,18 @@ namespace sql2dto.Core
                 result.Metadata.Add("ESCAPE", escapeChar);
             }
             return result;
+        }
+        #endregion
+
+        #region IN
+        public SqlExpression In(params SqlExpression[] expressions)
+        {
+            return new SqlInExpression(this, expressions.ToList(), isNotIn: false);
+        }
+
+        public SqlExpression NotIn(params SqlExpression[] expressions)
+        {
+            return new SqlInExpression(this, expressions.ToList(), isNotIn: true);
         }
         #endregion
         #endregion
