@@ -6,6 +6,9 @@ namespace sql2dto.Core
 {
     public enum SqlFunctionName
     {
+        CONCAT,
+
+        // windowing functions
         SUM,
         AVERAGE,
     }

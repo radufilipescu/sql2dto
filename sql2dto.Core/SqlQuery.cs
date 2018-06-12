@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
-    public class SqlQuery : SqlTabularSource, IDbParametersBag
+    public class SqlQuery : SqlTabularSource, ISqlStatement
     {
+        public SqlStatementType StatementType => SqlStatementType.SELECT;
+
         public SqlQuery(SqlBuilder builder)
         {
             _builder = builder;

@@ -6,10 +6,10 @@ namespace sql2dto.Core
 {
     public class SqlFunctionCallExpression : SqlExpression
     {
-        internal SqlFunctionCallExpression(SqlFunctionName functionName, SqlExpression innerExpression, bool distinct, SqlFunctionOver over)
+        internal SqlFunctionCallExpression(SqlFunctionName functionName, List<SqlExpression> parameterExpressions, bool distinct, SqlFunctionOver over)
         {
             _functionName = functionName;
-            _innerExpression = innerExpression;
+            _parameterExpressions = parameterExpressions;
             _isDistinct = distinct;
             _over = over;
         }
@@ -17,8 +17,8 @@ namespace sql2dto.Core
         private SqlFunctionName _functionName;
         public SqlFunctionName GetFunctionName() => _functionName;
 
-        private SqlExpression _innerExpression;
-        public SqlExpression GetInnerExpression() => _innerExpression;
+        private List<SqlExpression> _parameterExpressions;
+        public List<SqlExpression> GetParameterExpressions() => _parameterExpressions;
 
         private bool _isDistinct;
         public bool GetIsDistinct() => _isDistinct;

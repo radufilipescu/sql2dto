@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 
 namespace sql2dto.Core
@@ -98,6 +99,15 @@ namespace sql2dto.Core
         #endregion
 
         #region FUNCTIONS
+
+        #region non windowing functions
+        public static SqlFunctionCallExpression Concat(params SqlExpression[] expressions)
+        {
+            return new SqlFunctionCallExpression(SqlFunctionName.CONCAT, expressions.ToList(), distinct: false, over: null);
+        }
+        #endregion
+
+        #region windowing functions
         public static SqlFunctionOver Over()
         {
             return new SqlFunctionOver();
@@ -105,23 +115,25 @@ namespace sql2dto.Core
 
         public static SqlFunctionCallExpression Sum(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: false, over: over);
+            return new SqlFunctionCallExpression(SqlFunctionName.SUM, new List<SqlExpression> { expression }, distinct: false, over: over);
         }
 
         public static SqlFunctionCallExpression SumDistinct(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.SUM, expression, distinct: true, over: over);
+            return new SqlFunctionCallExpression(SqlFunctionName.SUM, new List<SqlExpression> { expression }, distinct: true, over: over);
         }
 
         public static SqlFunctionCallExpression Avg(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: false, over: over);
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, new List<SqlExpression> { expression }, distinct: false, over: over);
         }
 
         public static SqlFunctionCallExpression AvgDistinct(SqlExpression expression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, expression, distinct: true, over: over);
+            return new SqlFunctionCallExpression(SqlFunctionName.AVERAGE, new List<SqlExpression> { expression }, distinct: true, over: over);
         }
+        #endregion
+
         #endregion
 
         #region CTE

@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
-    public class SqlUpdate : IDbParametersBag
+    public class SqlUpdate : ISqlStatement
     {
+        public SqlStatementType StatementType => SqlStatementType.UPDATE;
+
         public SqlUpdate(SqlBuilder builder, SqlTable table)
         {
             _builder = builder;

@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
-    public class SqlDelete : IDbParametersBag
+    public class SqlDelete : ISqlStatement
     {
+        public SqlStatementType StatementType => SqlStatementType.DELETE;
+
         public SqlDelete(SqlBuilder builder, SqlTable table)
         {
             _builder = builder;

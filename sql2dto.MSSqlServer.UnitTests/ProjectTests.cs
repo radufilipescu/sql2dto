@@ -169,9 +169,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .SelectSubQuery(_ => _.Select(uSub.FirstName).From(uSub).Where(uSub.Id == u.Id), "SUBQ_FIRST_NAME")
 
                 .Select(Sql.Sum(u.Age, Sql.Over()), "AGE_SUM")
-                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.Id)), "AGE_SUM_PART_ID")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType)), "AGE_SUM_PART_TYPE")
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id)), "AGE_SUM_ORD_ID")
-                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.Id).OrderBy(u.Id)), "AGE_SUM_PART_ID_ORD_ID")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id)), "AGE_SUM_PART_TYPE_ORD_ID")
 
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id).Rows(_ => _.CurrentRow())), "AGE_SUM_ORD_ID_ROWS_CURRENT_ROW")
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id).Range(_ => _.CurrentRow())), "AGE_SUM_ORD_ID_RANGE_CURRENT_ROW")
@@ -184,6 +184,20 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id).RowsBetween(_ => _.PrecedingUnbounded(), _ => _.FollowingUnbounded())), "AGE_SUM_ORD_ID_ROWS_BETWEEN_PRECEDING_UNBOUNDED_AND_FOLLOWING_UNBOUNDED")
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id).RangeBetween(_ => _.PrecedingUnbounded(), _ => _.FollowingUnbounded())), "AGE_SUM_ORD_ID_RANGE_BETWEEN_PRECEDING_UNBOUNDED_AND_FOLLOWING_UNBOUNDED")
                 .Select(Sql.Sum(u.Age, Sql.Over().OrderBy(u.Id).RowsBetween(_ => _.PrecedingCount(5), (_ => _.FollowingCount(5)))), "AGE_SUM_ORD_ID_ROWS_BETWEEN_PRECEDING_5_AND_FOLLOWING_5")
+
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).Rows(_ => _.CurrentRow())), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_CURRENT_ROW")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).Range(_ => _.CurrentRow())), "AGE_SUM_PART_TYPE_ORD_ID_RANGE_CURRENT_ROW")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).Rows(_ => _.PrecedingUnbounded())), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_PRECEDING_UNBOUNDED")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).Range(_ => _.PrecedingUnbounded())), "AGE_SUM_PART_TYPE_ORD_ID_RANGE_PRECEDING_UNBOUNDED")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).Rows(_ => _.PrecedingCount(5))), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_PRECEDING_5")
+
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).RowsBetween(_ => _.CurrentRow(), _ => _.CurrentRow())), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_BETWEEN_CURRENT_ROW_AND_CURRENT_ROW")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).RangeBetween(_ => _.CurrentRow(), _ => _.CurrentRow())), "AGE_SUM_PART_TYPE_ORD_ID_RANGE_BETWEEN_CURRENT_ROW_AND_CURRENT_ROW")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).RowsBetween(_ => _.PrecedingUnbounded(), _ => _.FollowingUnbounded())), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_BETWEEN_PRECEDING_UNBOUNDED_AND_FOLLOWING_UNBOUNDED")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).RangeBetween(_ => _.PrecedingUnbounded(), _ => _.FollowingUnbounded())), "AGE_SUM_PART_TYPE_ORD_ID_RANGE_BETWEEN_PRECEDING_UNBOUNDED_AND_FOLLOWING_UNBOUNDED")
+                .Select(Sql.Sum(u.Age, Sql.Over().PartitionBy(u.UserType).OrderBy(u.Id).RowsBetween(_ => _.PrecedingCount(5), (_ => _.FollowingCount(5)))), "AGE_SUM_PART_TYPE_ORD_ID_ROWS_BETWEEN_PRECEDING_5_AND_FOLLOWING_5")
+
+                .Select(Sql.Concat(u.FirstName, Sql.Const("---"), u.LastName), "CONCAT_NAMES")
 
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)

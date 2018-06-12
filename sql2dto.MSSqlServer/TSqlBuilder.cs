@@ -291,7 +291,7 @@ namespace sql2dto.MSSqlServer
         }
         #endregion
 
-        public override string BuildExpressionString(IDbParametersBag parametersBag, SqlExpression expression, string expressionAlias = null)
+        public override string BuildExpressionString(ISqlStatement statement, SqlExpression expression, string expressionAlias = null)
         {
             var type = expression.GetExpressionType();
             string result = null;
@@ -301,7 +301,14 @@ namespace sql2dto.MSSqlServer
                     {
                         var column = (SqlColumn)expression;
 
-                        result = $"{BuildAliasString(column.GetSqlTabularSource())}.{$"[{column.GetColumnName()}]"}";
+                        if (statement.StatementType == SqlStatementType.SELECT)
+                        {
+                            result = $"{BuildAliasString(column.GetSqlTabularSource())}.{$"[{column.GetColumnName()}]"}";
+                        }
+                        else
+                        {
+                            result = $"[{column.GetColumnName()}]";
+                        }
                     }
                     break;
                 case SqlExpressionType.FUNCTION_CALL:
@@ -310,9 +317,19 @@ namespace sql2dto.MSSqlServer
 
                         var functionName = BuildSqlFuncNameString(functionCallExpression.GetFunctionName());
                         var distinct = functionCallExpression.GetIsDistinct() ? "DISTINCT " : "";
-                        var innerExpression = BuildExpressionString(parametersBag, functionCallExpression.GetInnerExpression());
+                        var parameterExpressionsSB = new StringBuilder();
+                        bool isFirstParameter = true;
+                        foreach (var paramExpression in functionCallExpression.GetParameterExpressions())
+                        {
+                            if (!isFirstParameter)
+                            {
+                                parameterExpressionsSB.Append(", ");
+                            }
+                            parameterExpressionsSB.Append(BuildExpressionString(statement, paramExpression));
+                            isFirstParameter = false;
+                        }
 
-                        result = $"{functionName}({distinct}{innerExpression})";
+                        result = $"{functionName}({distinct}{parameterExpressionsSB.ToString()})";
 
                         var over = functionCallExpression.GetOverClause();
                         if (over != null)
@@ -321,7 +338,7 @@ namespace sql2dto.MSSqlServer
 
                             if (over.PartitionByExpressions.Count > 0)
                             {
-                                result += $"PARTITION BY {String.Join(", ", over.PartitionByExpressions.Select(i => BuildExpressionString(parametersBag, i)))}";
+                                result += $"PARTITION BY {String.Join(", ", over.PartitionByExpressions.Select(i => BuildExpressionString(statement, i)))}";
                             }
 
                             if (over.OrderByExpressions.Count > 0)
@@ -331,7 +348,7 @@ namespace sql2dto.MSSqlServer
                                     result += " ";
                                 }
 
-                                result += $"ORDER BY {String.Join(", ", over.OrderByExpressions.Select(item => $"{BuildExpressionString(parametersBag, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}";
+                                result += $"ORDER BY {String.Join(", ", over.OrderByExpressions.Select(item => $"{BuildExpressionString(statement, item.Item1)} {BuildSqlOrderByDirectionString(item.Item2)}"))}";
                             }
 
                             if (over.WindowingType != SqlWindowingType.NOT_SPECIFIED)
@@ -383,7 +400,7 @@ namespace sql2dto.MSSqlServer
                         var op = binaryExpression.GetOperator();
                         var secondTerm = binaryExpression.GetSecondTerm();
 
-                        string firstTermString = BuildExpressionString(parametersBag, firstTerm);
+                        string firstTermString = BuildExpressionString(statement, firstTerm);
                         switch (firstTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -392,7 +409,7 @@ namespace sql2dto.MSSqlServer
                                 }
                                 break;
                         }
-                        string secondTermString = BuildExpressionString(parametersBag, secondTerm);
+                        string secondTermString = BuildExpressionString(statement, secondTerm);
                         switch (secondTerm.GetExpressionType())
                         {
                             case SqlExpressionType.BINARY:
@@ -417,15 +434,15 @@ namespace sql2dto.MSSqlServer
                         var onExpression = caseWhenExpression.GetOnExpression();
                         var elseExpression = caseWhenExpression.GetElseExpression();
 
-                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(parametersBag, onExpression)}";
+                        var onExpressionString = onExpression is null ? "" : $" {BuildExpressionString(statement, onExpression)}";
                         result = $"CASE{onExpressionString}";
                         foreach (var whenThenExpression in caseWhenExpression.GetWhenThenExpressions())
                         {
-                            result += $" WHEN {BuildExpressionString(parametersBag, whenThenExpression.Item1)} THEN {BuildExpressionString(parametersBag, whenThenExpression.Item2)}";
+                            result += $" WHEN {BuildExpressionString(statement, whenThenExpression.Item1)} THEN {BuildExpressionString(statement, whenThenExpression.Item2)}";
                         }
                         if (!(elseExpression is null))
                         {
-                            result += $" ELSE {BuildExpressionString(parametersBag, elseExpression)}";
+                            result += $" ELSE {BuildExpressionString(statement, elseExpression)}";
                         }
                         result += " END";
                     }
@@ -435,7 +452,7 @@ namespace sql2dto.MSSqlServer
                         var likeExpression = (SqlLikeExpression)expression;
                         var inputExpression = likeExpression.GetInputExpression();
                         var patternExpression = likeExpression.GetPatternExpression();
-                        result = $"{BuildExpressionString(parametersBag, inputExpression)} LIKE {BuildExpressionString(parametersBag, patternExpression)}";
+                        result = $"{BuildExpressionString(statement, inputExpression)} LIKE {BuildExpressionString(statement, patternExpression)}";
                     }
                     break;
                 case SqlExpressionType.PARAMETER:
@@ -448,7 +465,7 @@ namespace sql2dto.MSSqlServer
                         }
 
                         result = dbParameter.ParameterName;
-                        parametersBag.AddDbParameterIfNotFound(dbParameter);
+                        statement.AddDbParameterIfNotFound(dbParameter);
                         if (!result.StartsWith("@"))
                         {
                             result = $"@{result}";
@@ -459,7 +476,7 @@ namespace sql2dto.MSSqlServer
                     {
                         var isNullExpression = (SqlIsNullExpression)expression;
                         var innerExpression = isNullExpression.GetInnerExpression();
-                        result = $"{BuildExpressionString(parametersBag, innerExpression)} IS NULL";
+                        result = $"{BuildExpressionString(statement, innerExpression)} IS NULL";
                     }
                     break;
                 case SqlExpressionType.CAST:
@@ -471,7 +488,7 @@ namespace sql2dto.MSSqlServer
                                                              .Replace("[", "")
                                                              .Replace("]", "");
 
-                        result = $"CAST({BuildExpressionString(parametersBag, expressionToCast)} AS [{sqlTypeString}])";
+                        result = $"CAST({BuildExpressionString(statement, expressionToCast)} AS [{sqlTypeString}])";
                     }
                     break;
                 case SqlExpressionType.SUB_QUERY:
@@ -761,6 +778,8 @@ $@"{BuildSqlJoinTypeString(joinType)}
                     return "SUM";
                 case SqlFunctionName.AVERAGE:
                     return "AVG";
+                case SqlFunctionName.CONCAT:
+                    return "CONCAT";
                 default:
                     throw new NotImplementedException($"SqlFunctionName: {func}");
             }

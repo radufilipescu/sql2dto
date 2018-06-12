@@ -63,7 +63,7 @@ namespace sql2dto.Core
         #endregion
 
         #region SELECT
-        public abstract string BuildExpressionString(IDbParametersBag parametersBag, SqlExpression expression, string expressionAlias = null);
+        public abstract string BuildExpressionString(ISqlStatement statement, SqlExpression expression, string expressionAlias = null);
         public abstract string BuildBooleanString(bool value);
         public abstract string BuildAliasString(SqlTabularSource table);
         public abstract string BuildCTEJoinString(SqlQuery query, SqlCTE cte, SqlJoinType joinType, SqlExpression condition = null);

@@ -50,14 +50,12 @@ namespace sql2dto.MSSqlServer.UnitTests
             var update1 = sql2dto.SqlBuilder.Update(d)
                 .Set(d.ColString, Sql.Const("XXX"));
 
-            //TODO:
-            //var update2 = sql2dto.SqlBuilder.Update(d)
-            //    .Set(d.ColString, d.ColInt + Sql.Const("XXX"))
-            //    .Where(d.ColInt == sql2dto.SqlBuilder.Parameter("param_1", 1));
+            var update2 = sql2dto.SqlBuilder.Update(d)
+                .Set(d.ColString, Sql.Concat(d.ColInt, Sql.Const("XXX")))
+                .Where(d.ColInt == sql2dto.SqlBuilder.Parameter("param_1", 1));
 
-            //TODO:
-            //var delete1 = sql2dto.SqlBuilder.DeleteFrom(d)
-            //    .Where(d.ColInt == Sql.Const(2));
+            var delete1 = sql2dto.SqlBuilder.DeleteFrom(d)
+                .Where(d.ColInt == Sql.Const(2));
 
             var delete2 = sql2dto.SqlBuilder.DeleteFrom(d);
 
@@ -67,11 +65,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                 int insertRows2 = await insert2.ExecAsync(conn);
 
                 int updateRows1 = await update1.ExecAsync(conn);
-                //TODO:
-                //int updateRows2 = await update2.ExecAsync(conn);
+                int updateRows2 = await update2.ExecAsync(conn);
 
-                //TODO:
-                //int deletedRows1 = await delete1.ExecAsync(conn);
+                int deletedRows1 = await delete1.ExecAsync(conn);
                 int deletedRows2 = await delete2.ExecAsync(conn);
             }
         }
