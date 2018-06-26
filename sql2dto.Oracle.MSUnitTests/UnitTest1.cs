@@ -150,12 +150,15 @@ namespace sql2dto.Oracle.MSUnitTests
                         .Else(false)
                     .End(), nameof(Address.IsCapitalCity))
                 )
+                
+                //TODO CAST
                 //.Project<Address>(
                 //    (Sql.Cast(Sql.Case()
                 //        .When(Sql.Like(a.STREET, "B.%"), then: true)
                 //        .Else(false)
                 //    .End(), to: "BIT"), dto => dto.IsCapitalCity)
                 //)
+
                 .Project<Address>(
                     (Sql.Case()
                         .When(Sql.Like(a.STREET, "B.%"), then: true)
@@ -197,6 +200,7 @@ namespace sql2dto.Oracle.MSUnitTests
                 .Select(Sql.Sum(u.AGE, Sql.Over().PartitionBy(u.USERTYPE).OrderBy(u.ID).RangeBetween(_ => _.PrecedingUnbounded(), _ => _.FollowingUnbounded())), "SUM_19")
                 .Select(Sql.Sum(u.AGE, Sql.Over().PartitionBy(u.USERTYPE).OrderBy(u.ID).RowsBetween(_ => _.PrecedingCount(5), (_ => _.FollowingCount(5)))), "SUM_20")
 
+                //TODO
                 //.Select(Sql.Concat(u.FirstName, Sql.Const("---"), u.LastName), "CONCAT_NAMES")
 
                 .From(u)
