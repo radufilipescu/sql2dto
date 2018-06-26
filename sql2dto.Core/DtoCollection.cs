@@ -1,4 +1,5 @@
-﻿using System;
+﻿using sql2dto.Attributes;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -75,6 +76,13 @@ namespace sql2dto.Core
         public virtual TDto Fetch()
         {
             var dto = _mapFunc();
+
+            if (DtoMapper<TDto>.ImplementsIOnDtoRead)
+            {
+                var currentData = _helper.FetchCurrentRowDataAsDictionary();
+                ((IOnDtoRead)dto).OnDtoRead(currentData);
+            }
+
             InnerList.Add(dto);
             LastFetchedIndex = InnerList.Count - 1;
             return dto;

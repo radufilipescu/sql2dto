@@ -13,6 +13,7 @@ namespace sql2dto.Core
     {
         #region STATIC
         protected static Dictionary<string, PropMapConfig> _defaultPropMapConfigs;
+        public static bool ImplementsIOnDtoRead { get; private set; }
         internal static string DefaultColumnsPrefix { get; private set; }
         internal static string[] DefaultOrderedKeyPropNames { get; private set; }
 
@@ -46,6 +47,8 @@ namespace sql2dto.Core
         {
             _defaultPropMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
             var dtoType = typeof(TDto);
+
+            ImplementsIOnDtoRead = typeof(IOnDtoRead).IsAssignableFrom(dtoType);
 
             var columnsPrefixAttr = dtoType.GetTypeInfo().GetCustomAttribute<ColumnsPrefixAttribute>();
             if (columnsPrefixAttr != null)

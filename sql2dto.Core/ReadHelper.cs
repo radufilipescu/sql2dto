@@ -1842,7 +1842,22 @@ namespace sql2dto.Core
         }
         #endregion
 
-        public Dictionary<string, List<object>> FetchDataDictionary()
+        public Dictionary<string, object> FetchCurrentRowDataAsDictionary()
+        {
+            if (Reader.IsClosed)
+            {
+                throw new InvalidOperationException("Reader is closed");
+            }
+
+            var result = new Dictionary<string, object>();
+            foreach (var kvp in ColumnNamesToOrdinals)
+            {
+                result[kvp.Key] = GetValue(kvp.Value);
+            }
+            return result;
+        }
+
+        public Dictionary<string, List<object>> FetchAllDataAsDictionary()
         {
             var result = new Dictionary<string, List<object>>();
             foreach (var header in ColumnNamesToOrdinals.Keys)

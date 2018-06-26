@@ -96,7 +96,7 @@ namespace sql2dto.MSSqlServer.UnitTests
 
         [KeyProps(nameof(Id))]
         [ColumnsPrefix(nameof(Address))]
-        public class Address
+        public class Address : IOnDtoRead
         {
             public Int64 Id { get; set; }
             public Int64 UserId { get; set; }
@@ -107,6 +107,11 @@ namespace sql2dto.MSSqlServer.UnitTests
 
             //[NullableIntToBooleanConverter]
             public bool IsCapitalCity { get; set; }
+
+            public void OnDtoRead(Dictionary<string, object> rowValues)
+            {
+
+            }
         }
 
         [Fact]
