@@ -14,6 +14,15 @@ namespace sql2dto.Core
             _over = over;
         }
 
+        internal SqlFunctionCallExpression(string stringFunctionName, List<SqlExpression> parameterExpressions, bool distinct, SqlFunctionOver over)
+            :this (SqlFunctionName.NONE, parameterExpressions, distinct, over)
+        {
+            _stringFunctionName = stringFunctionName;
+        }
+
+        private string _stringFunctionName;
+        public string GetStringFunctionName() => _stringFunctionName;
+
         private SqlFunctionName _functionName;
         public SqlFunctionName GetFunctionName() => _functionName;
 

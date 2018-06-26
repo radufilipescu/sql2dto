@@ -129,5 +129,22 @@ namespace sql2dto.MSSqlServer.UnitTests
                 var tbl = resultSet.Tables[0];
             }
         }
+
+        [Fact]
+        public async void Test3()
+        {
+            var q = sql2dto.SqlBuilder.Query()
+
+                .Select(Sql.FuncCall("SUM", (Sql.Const(1) + Sql.Const(10) - Sql.Const(6))));
+
+            using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
+            using (var cmd = q.BuildDbCommand(conn))
+            using (var resultSet = new DataSet())
+            using (var adapter = new SqlDataAdapter((SqlCommand)cmd))
+            {
+                adapter.Fill(resultSet);
+                DataTable tbl = resultSet.Tables[0];
+            }
+        }
     }
 }

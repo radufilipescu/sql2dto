@@ -6,6 +6,8 @@ namespace sql2dto.Core
 {
     public enum SqlFunctionName
     {
+        NONE,
+
         CONCAT,
 
         // windowing functions

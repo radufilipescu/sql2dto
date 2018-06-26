@@ -108,6 +108,16 @@ namespace sql2dto.Core
         #endregion
 
         #region windowing functions
+        public static SqlFunctionCallExpression FuncCall(string funcName, SqlExpression expression, SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { expression }, distinct: false, over: over);
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName, SqlExpression expression, SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { expression }, distinct: true, over: over);
+        }
+
         public static SqlFunctionOver Over()
         {
             return new SqlFunctionOver();

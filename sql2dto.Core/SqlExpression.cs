@@ -78,7 +78,7 @@ namespace sql2dto.Core
 
         public static SqlExpression operator -(SqlExpression a, SqlExpression b)
         {
-            var result = new SqlBinaryExpression(a, SqlOperator.PLUS, b);
+            var result = new SqlBinaryExpression(a, SqlOperator.MINUS, b);
             return result;
         }
 

@@ -316,6 +316,14 @@ namespace sql2dto.MSSqlServer
                         var functionCallExpression = (SqlFunctionCallExpression)expression;
 
                         var functionName = BuildSqlFuncNameString(functionCallExpression.GetFunctionName());
+                        if (functionName == null)
+                        {
+                            functionName = functionCallExpression.GetStringFunctionName()
+                                                                 .Replace("'", "")
+                                                                 .Replace("[", "")
+                                                                 .Replace("]", "");
+                        }
+
                         var distinct = functionCallExpression.GetIsDistinct() ? "DISTINCT " : "";
                         var parameterExpressionsSB = new StringBuilder();
                         bool isFirstParameter = true;
@@ -810,6 +818,8 @@ $@"{BuildSqlJoinTypeString(joinType)}
         {
             switch (func)
             {
+                case SqlFunctionName.NONE:
+                    return null;
                 case SqlFunctionName.SUM:
                     return "SUM";
                 case SqlFunctionName.AVERAGE:
