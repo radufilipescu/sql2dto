@@ -233,10 +233,10 @@ namespace sql2dto.MSSqlServer.UnitTests
 
                 var result = fetch.All();
 
-                Assert.Equal(result.Count, 3);
-                Assert.Equal(result[0].Addresses.Count, 2);
-                Assert.Equal(result[0].Addresses[0].IsCapitalCity, false);
-                Assert.Equal(result[0].Addresses[1].IsCapitalCity, true);
+                Assert.Equal(3, result.Count);
+                Assert.Equal(2, result[0].Addresses.Count);
+                Assert.False(result[0].Addresses[0].IsCapitalCity);
+                Assert.True(result[0].Addresses[1].IsCapitalCity);
             }
         }
     }
