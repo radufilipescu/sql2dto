@@ -198,7 +198,7 @@ namespace sql2dto.Oracle.UnitTests
                 .Select(Sql.Sum(u.AGE, Sql.Over().PartitionBy(u.USERTYPE).OrderBy(u.ID).RowsBetween(_ => _.PrecedingCount(5), (_ => _.FollowingCount(5)))), "SUM_20")
 
                 //TODO
-                //.Select(Sql.Concat(u.FIRSTNAME, Sql.Const("---"), u.LASTNAME), "CONCAT_NAMES")
+                .Select(Sql.Concat(Sql.Concat(u.FIRSTNAME, Sql.Const("---")), u.LASTNAME), "CONCAT_NAMES")
 
                 .From(u)
                 .LeftJoin(a, on: u.ID == a.USERID)
