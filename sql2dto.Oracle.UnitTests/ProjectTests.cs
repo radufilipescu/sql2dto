@@ -6,7 +6,7 @@ using Xunit;
 
 namespace sql2dto.Oracle.UnitTests
 {
-    public class UnitTest1
+    public class ProjectTests
     {
         public class sql2dto
         {

@@ -669,6 +669,11 @@ namespace sql2dto.MSSqlServer
             }
 
             sb.Append("SELECT");
+            if (query.GetIsDistinct())
+            {
+                sb.Append(" DISTINCT");
+            }
+
             if (useTopClause)
             {
                 sb.AppendLine($" TOP {takeRows} ");

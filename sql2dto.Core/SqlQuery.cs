@@ -293,6 +293,15 @@ namespace sql2dto.Core
             return this;
         }
 
+        private bool _isDistinct;
+        public bool GetIsDistinct() => _isDistinct;
+
+        public SqlQuery Distinct()
+        {
+            _isDistinct = true;
+            return this;
+        }
+
         public SqlQuery From(SqlTabularSource fromPart)
         {
             _fromAndJoinClauses.Add((SqlJoinType.NONE, fromPart, (SqlExpression)null));

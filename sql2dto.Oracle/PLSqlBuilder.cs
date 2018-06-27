@@ -640,7 +640,14 @@ namespace sql2dto.Oracle
                 }
             }
 
-            sb.AppendLine("SELECT");
+            if (query.GetIsDistinct())
+            {
+                sb.AppendLine("SELECT DISTINCT");
+            }
+            else
+            {
+                sb.AppendLine("SELECT");
+            }
 
             sb.Append("    ");
             sb.AppendLine(String.Join($@",{Environment.NewLine}    ", query.GetSelectExpressions().Select(e => BuildExpressionString(query, e.Item1, e.Item2))));
