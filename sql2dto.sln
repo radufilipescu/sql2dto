@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.MSSqlServer", "sql2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.MSSqlServer.UnitTests", "sql2dto.MSSqlServer.UnitTests\sql2dto.MSSqlServer.UnitTests.csproj", "{AD8630F0-C9B7-44A8-804D-19FB1F92E631}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.Oracle", "sql2dto.Oracle\sql2dto.Oracle.csproj", "{2115D119-470A-42CD-A9D3-6D2523EE6073}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Oracle", "sql2dto.Oracle\sql2dto.Oracle.csproj", "{2115D119-470A-42CD-A9D3-6D2523EE6073}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.Oracle.UnitTests", "sql2dto.Oracle.UnitTests\sql2dto.Oracle.UnitTests.csproj", "{027753C7-0486-472C-8130-E30F1C8F8838}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.Oracle.MSUnitTests", "sql2dto.Oracle.MSUnitTests\sql2dto.Oracle.MSUnitTests.csproj", "{807E7521-045C-4717-8E1F-DAB2E8701A8C}"
 EndProject
@@ -47,6 +49,10 @@ Global
 		{2115D119-470A-42CD-A9D3-6D2523EE6073}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2115D119-470A-42CD-A9D3-6D2523EE6073}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2115D119-470A-42CD-A9D3-6D2523EE6073}.Release|Any CPU.Build.0 = Release|Any CPU
+		{027753C7-0486-472C-8130-E30F1C8F8838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{027753C7-0486-472C-8130-E30F1C8F8838}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{027753C7-0486-472C-8130-E30F1C8F8838}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{027753C7-0486-472C-8130-E30F1C8F8838}.Release|Any CPU.Build.0 = Release|Any CPU
 		{807E7521-045C-4717-8E1F-DAB2E8701A8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{807E7521-045C-4717-8E1F-DAB2E8701A8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{807E7521-045C-4717-8E1F-DAB2E8701A8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
