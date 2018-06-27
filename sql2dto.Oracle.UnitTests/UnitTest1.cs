@@ -149,12 +149,11 @@ namespace sql2dto.Oracle.UnitTests
                     .End(), nameof(Address.IsCapitalCity))
                 )
 
-                //TODO CAST
                 //.Project<Address>(
                 //    (Sql.Cast(Sql.Case()
                 //        .When(Sql.Like(a.STREET, "B.%"), then: true)
                 //        .Else(false)
-                //    .End(), to: "BIT"), dto => dto.IsCapitalCity)
+                //    .End(), to: "NUMBER(*)"), dto => dto.IsCapitalCity)
                 //)
 
                 .Project<Address>(

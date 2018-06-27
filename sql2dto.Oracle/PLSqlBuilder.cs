@@ -495,7 +495,7 @@ namespace sql2dto.Oracle
                         string sqlTypeString = castExpression.GetSqlTypeString()
                                                              .Replace("\"", "");
 
-                        result = $"CAST({BuildExpressionString(statement, expressionToCast)} \"{sqlTypeString}\")";
+                        result = $"CAST({BuildExpressionString(statement, expressionToCast)} AS {sqlTypeString})";
                     }
                     break;
                 case SqlExpressionType.SUB_QUERY:
