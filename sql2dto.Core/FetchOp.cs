@@ -50,19 +50,22 @@ namespace sql2dto.Core
             switch (genericArguments.Count)
             {
                 case 1:
-                    collectionGenericType = typeof(DtoCollection<>);
+                    collectionGenericType = typeof(DtoCollection<>); // no key
                     break;
                 case 2:
-                    collectionGenericType = typeof(DtoCollection<,>);
+                    collectionGenericType = typeof(DtoCollection<,>); // one key
                     break;
                 case 3:
-                    collectionGenericType = typeof(DtoCollection<,,>);
+                    collectionGenericType = typeof(DtoCollection<,,>); // two keyes
                     break;
                 case 4:
-                    collectionGenericType = typeof(DtoCollection<,,,>);
+                    collectionGenericType = typeof(DtoCollection<,,,>); // three keyes
+                    break;
+                case 5:
+                    collectionGenericType = typeof(DtoCollection<,,,,>); // four keyes
                     break;
                 default:
-                    throw new InvalidOperationException();
+                    throw new NotImplementedException($"Could not create DtoCollection with {genericArguments.Count-1} keyes! Not implemented!");
             }
 
             var collectionType = collectionGenericType.MakeGenericType(genericArguments.ToArray());

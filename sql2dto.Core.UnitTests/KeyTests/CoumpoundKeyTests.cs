@@ -105,5 +105,26 @@ namespace sql2dto.Core.UnitTests.KeyTests
 
             KeyTestsData.AssertDataIntegrity(empCol.InnerList.Cast<IEmployee>());
         }
+
+        [KeyProps(nameof(Id1), nameof(Id2), nameof(Id3), nameof(Id4))]
+        public class SomeClass
+        {
+            public int Id1 { get; set; }
+            public string Id2 { get; set; }
+            public decimal Id3 { get; set; }
+            public string Id4 { get; set; }
+
+            public string Data1 { get; set; }
+        }
+
+        [Fact]
+        public void Create_4_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Id2", "Id3", "Id4", "Data");
+            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "4", "DATA-1");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<SomeClass>();
+            fetch.All();
+        }
     }
 }
