@@ -53,16 +53,22 @@ namespace sql2dto.Core
                     collectionGenericType = typeof(DtoCollection<>); // no key
                     break;
                 case 2:
-                    collectionGenericType = typeof(DtoCollection<,>); // one key
+                    collectionGenericType = typeof(DtoCollection<,>); // 1 key
                     break;
                 case 3:
-                    collectionGenericType = typeof(DtoCollection<,,>); // two keyes
+                    collectionGenericType = typeof(DtoCollection<,,>); // 2 keyes
                     break;
                 case 4:
-                    collectionGenericType = typeof(DtoCollection<,,,>); // three keyes
+                    collectionGenericType = typeof(DtoCollection<,,,>); // 3 keyes
                     break;
                 case 5:
-                    collectionGenericType = typeof(DtoCollection<,,,,>); // four keyes
+                    collectionGenericType = typeof(DtoCollection<,,,,>); // 4 keyes
+                    break;
+                case 6:
+                    collectionGenericType = typeof(DtoCollection<,,,,,>); // 5 keyes
+                    break;
+                case 7:
+                    collectionGenericType = typeof(DtoCollection<,,,,,,>); // 6 keyes
                     break;
                 default:
                     throw new NotImplementedException($"Could not create DtoCollection with {genericArguments.Count-1} keyes! Not implemented!");
@@ -221,6 +227,49 @@ namespace sql2dto.Core
             };
         }
 
+        private static void SetupFetchAndCollectByKeyValueFuncs<TKey1, TKey2, TKey3, TKey4, TKey5>(FetchOp<TDto> fetchOp, DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> collection, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            fetchOp._fetchFunc = () =>
+            {
+                var key = keyReadFunc(fetchOp._readHelper);
+                TDto current = collection.FetchByKeyValue(key);
+                return new FetchResult<TDto> { Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+            fetchOp._collectFunc = () =>
+            {
+                var key = keyReadFunc(fetchOp._readHelper);
+                TDto current = collection.FetchByKeyValue(key);
+                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+        }
+
+        private static void SetupFetchAndCollectByKeyValueFuncs<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(FetchOp<TDto> fetchOp, DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> collection, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            fetchOp._fetchFunc = () =>
+            {
+                var key = keyReadFunc(fetchOp._readHelper);
+                TDto current = collection.FetchByKeyValue(key);
+                return new FetchResult<TDto> { Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+            fetchOp._collectFunc = () =>
+            {
+                var key = keyReadFunc(fetchOp._readHelper);
+                TDto current = collection.FetchByKeyValue(key);
+                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+        }
+
         private static void SetupFetchAndCollectByKeyPropNamesFuncs<TKey>(FetchOp<TDto> fetchOp, DtoCollection<TDto, TKey> collection, string keyPropName)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
@@ -283,6 +332,45 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4);
+                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+        }
+
+        private static void SetupFetchAndCollectByKeyPropNamesFuncs<TKey1, TKey2, TKey3, TKey4, TKey5>(FetchOp<TDto> fetchOp, DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> collection, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            fetchOp._fetchFunc = () =>
+            {
+                TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+                return new FetchResult<TDto> { Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+            fetchOp._collectFunc = () =>
+            {
+                TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+        }
+
+        private static void SetupFetchAndCollectByKeyPropNamesFuncs<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(FetchOp<TDto> fetchOp, DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> collection, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            fetchOp._fetchFunc = () =>
+            {
+                TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+                return new FetchResult<TDto> { Current = current, CurrentIndex = collection.LastFetchedIndex };
+            };
+            fetchOp._collectFunc = () =>
+            {
+                TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
                 return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
@@ -678,6 +766,226 @@ namespace sql2dto.Core
             var result = new FetchOp<TDto>(readHelper);
             var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper);
             SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
+            return result;
+        }
+        #endregion
+
+        #region 5 Keys
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            return result;
+        }
+        #endregion
+
+        #region 6 Keys
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, mapper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            SetupDefaultFetchAndCollectFuncs(result, collection);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            SetupFetchAndCollectByKeyValueFuncs(result, collection, keyReadFunc);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+            return result;
+        }
+
+        public static FetchOp<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6)
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var result = new FetchOp<TDto>(readHelper);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            SetupFetchAndCollectByKeyPropNamesFuncs(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
             return result;
         }
         #endregion

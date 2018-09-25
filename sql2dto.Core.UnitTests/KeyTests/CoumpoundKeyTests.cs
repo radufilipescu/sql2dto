@@ -106,25 +106,127 @@ namespace sql2dto.Core.UnitTests.KeyTests
             KeyTestsData.AssertDataIntegrity(empCol.InnerList.Cast<IEmployee>());
         }
 
+        [KeyProps(nameof(Id1))]
+        public class OneKeysData
+        {
+            public int Id1 { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [Fact]
+        public void Create_1_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Data");
+            fakeReader.AddRow(1, "DATA-1");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<OneKeysData>();
+            var result = fetch.All();
+        }
+
+        [KeyProps(nameof(Id1), nameof(Id2))]
+        public class TwoKeysData
+        {
+            public int Id1 { get; set; }
+            public string Id2 { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [Fact]
+        public void Create_2_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Id2", "Data");
+            fakeReader.AddRow(1, "2", "DATA-2");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<TwoKeysData>();
+            var result = fetch.All();
+        }
+
+        [KeyProps(nameof(Id1), nameof(Id2), nameof(Id3))]
+        public class ThreeKeysData
+        {
+            public int Id1 { get; set; }
+            public string Id2 { get; set; }
+            public decimal Id3 { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [Fact]
+        public void Create_3_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Id2", "Id3", "Data");
+            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "DATA-3");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<ThreeKeysData>();
+            var result = fetch.All();
+        }
+
         [KeyProps(nameof(Id1), nameof(Id2), nameof(Id3), nameof(Id4))]
-        public class SomeClass
+        public class FourKeysData
         {
             public int Id1 { get; set; }
             public string Id2 { get; set; }
             public decimal Id3 { get; set; }
             public string Id4 { get; set; }
 
-            public string Data1 { get; set; }
+            public string Data { get; set; }
         }
 
         [Fact]
         public void Create_4_keyes_fetch_and_collection()
         {
             var fakeReader = new FakeDataReader("Id1", "Id2", "Id3", "Id4", "Data");
-            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "4", "DATA-1");
+            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "4", "DATA-4");
             var h = new ReadHelper(fakeReader);
-            var fetch = h.Fetch<SomeClass>();
-            fetch.All();
+            var fetch = h.Fetch<FourKeysData>();
+            var result = fetch.All();
+        }
+
+        [KeyProps(nameof(Id1), nameof(Id2), nameof(Id3), nameof(Id4), nameof(Id5))]
+        public class FiveKeysData
+        {
+            public int Id1 { get; set; }
+            public string Id2 { get; set; }
+            public decimal Id3 { get; set; }
+            public string Id4 { get; set; }
+            public int Id5 { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [Fact]
+        public void Create_5_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Id2", "Id3", "Id4", "Id5", "Data");
+            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "4", 5, "DATA-5");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<FiveKeysData>();
+            var result = fetch.All();
+        }
+
+        [KeyProps(nameof(Id1), nameof(Id2), nameof(Id3), nameof(Id4), nameof(Id5), nameof(Id6))]
+        public class SixKeysData
+        {
+            public int Id1 { get; set; }
+            public string Id2 { get; set; }
+            public decimal Id3 { get; set; }
+            public string Id4 { get; set; }
+            public int Id5 { get; set; }
+            public decimal Id6 { get; set; }
+
+            public string Data { get; set; }
+        }
+
+        [Fact]
+        public void Create_6_keyes_fetch_and_collection()
+        {
+            var fakeReader = new FakeDataReader("Id1", "Id2", "Id3", "Id4", "Id5", "Id6", "Data");
+            fakeReader.AddRow(1, "2", Convert.ToDecimal(3), "4", 5, Convert.ToDecimal(6), "DATA-6");
+            var h = new ReadHelper(fakeReader);
+            var fetch = h.Fetch<SixKeysData>();
+            var result = fetch.All();
         }
     }
 }

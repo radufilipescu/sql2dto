@@ -580,4 +580,274 @@ namespace sql2dto.Core
             return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, columnPrefix);
         }
     }
+
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> : DtoCollection<TDto> where TDto : new()
+        where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+        where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+        where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+        where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+        where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+    {
+        private const int KeyItemsCount = 5;
+        public Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5), int> KeyesToIndexes { get; private set; }
+
+        public DtoCollection(ReadHelper helper)
+            : base(helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5), int>();
+        }
+
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5), int>();
+        }
+
+        public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(helper, mapper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5), int>();
+        }
+
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5), int>();
+        }
+
+        public TDto FetchByKeyValue((TKey1, TKey2, TKey3, TKey4, TKey5) key)
+        {
+            TDto dto;
+            if (KeyesToIndexes.TryGetValue(key, out int index))
+            {
+                dto = InnerList[index];
+                LastFetchedIndex = index;
+            }
+            else
+            {
+                dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                KeyesToIndexes.Add(key, LastFetchedIndex);
+            }
+            return dto;
+        }
+
+        public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string columnsPrefix = null)
+        {
+            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName4, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName5, columnsPrefix))
+            {
+                return default(TDto);
+            }
+            TKey1 key1 = FetchKeyPart<TKey1>(keyPropName1, columnsPrefix);
+            TKey2 key2 = FetchKeyPart<TKey2>(keyPropName2, columnsPrefix);
+            TKey3 key3 = FetchKeyPart<TKey3>(keyPropName3, columnsPrefix);
+            TKey4 key4 = FetchKeyPart<TKey4>(keyPropName4, columnsPrefix);
+            TKey5 key5 = FetchKeyPart<TKey5>(keyPropName5, columnsPrefix);
+            return FetchByKeyValue((key1, key2, key3, key4, key5));
+        }
+
+        public override TDto Fetch()
+        {
+            return FetchByKeyProps(
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4),
+                GetConfiguredColumnsPrefix()
+            );
+        }
+
+        public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5) key)
+        {
+            return KeyesToIndexes.ContainsKey(key);
+        }
+
+        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string columnPrefix = null)
+        {
+            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnPrefix)
+                || IsDBNullKeyPart(keyPropName4, columnPrefix)
+                || IsDBNullKeyPart(keyPropName5, columnPrefix))
+            {
+                return false;
+            }
+            TKey1 key1 = FetchKeyPart<TKey1>(
+                keyPropName1,
+                columnPrefix
+            );
+            TKey2 key2 = FetchKeyPart<TKey2>(
+                keyPropName2,
+                columnPrefix
+            );
+            TKey3 key3 = FetchKeyPart<TKey3>(
+                keyPropName3,
+                columnPrefix
+            );
+            TKey4 key4 = FetchKeyPart<TKey4>(
+                keyPropName4,
+                columnPrefix
+            );
+            TKey5 key5 = FetchKeyPart<TKey5>(
+                keyPropName5,
+                columnPrefix
+            );
+            return IsDtoCached((key1, key2, key3, key4, key5));
+        }
+
+        public override bool IsDtoCached()
+        {
+            string columnPrefix = GetConfiguredColumnsPrefix();
+            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+            string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
+            string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
+            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, columnPrefix);
+        }
+    }
+
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> : DtoCollection<TDto> where TDto : new()
+        where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+        where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+        where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+        where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+        where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+    {
+        private const int KeyItemsCount = 6;
+        public Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5, TKey6), int> KeyesToIndexes { get; private set; }
+
+        public DtoCollection(ReadHelper helper)
+            : base(helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5, TKey6), int>();
+        }
+
+        public DtoCollection(string columnsPrefix, ReadHelper helper)
+            : base(columnsPrefix, helper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5, TKey6), int>();
+        }
+
+        public DtoCollection(ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(helper, mapper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5, TKey6), int>();
+        }
+
+        public DtoCollection(string columnsPrefix, ReadHelper helper, DtoMapper<TDto> mapper)
+            : base(columnsPrefix, helper, mapper)
+        {
+            KeyesToIndexes = new Dictionary<(TKey1, TKey2, TKey3, TKey4, TKey5, TKey6), int>();
+        }
+
+        public TDto FetchByKeyValue((TKey1, TKey2, TKey3, TKey4, TKey5, TKey6) key)
+        {
+            TDto dto;
+            if (KeyesToIndexes.TryGetValue(key, out int index))
+            {
+                dto = InnerList[index];
+                LastFetchedIndex = index;
+            }
+            else
+            {
+                dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                KeyesToIndexes.Add(key, LastFetchedIndex);
+            }
+            return dto;
+        }
+
+        public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, string columnsPrefix = null)
+        {
+            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName4, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName5, columnsPrefix)
+                || IsDBNullKeyPart(keyPropName6, columnsPrefix))
+            {
+                return default(TDto);
+            }
+            TKey1 key1 = FetchKeyPart<TKey1>(keyPropName1, columnsPrefix);
+            TKey2 key2 = FetchKeyPart<TKey2>(keyPropName2, columnsPrefix);
+            TKey3 key3 = FetchKeyPart<TKey3>(keyPropName3, columnsPrefix);
+            TKey4 key4 = FetchKeyPart<TKey4>(keyPropName4, columnsPrefix);
+            TKey5 key5 = FetchKeyPart<TKey5>(keyPropName5, columnsPrefix);
+            TKey6 key6 = FetchKeyPart<TKey6>(keyPropName6, columnsPrefix);
+            return FetchByKeyValue((key1, key2, key3, key4, key5, key6));
+        }
+
+        public override TDto Fetch()
+        {
+            return FetchByKeyProps(
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4),
+                GetConfiguredKeyPropNameByIndex(KeyItemsCount, 5),
+                GetConfiguredColumnsPrefix()
+            );
+        }
+
+        public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5, TKey6) key)
+        {
+            return KeyesToIndexes.ContainsKey(key);
+        }
+
+        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, string columnPrefix = null)
+        {
+            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+                || IsDBNullKeyPart(keyPropName2, columnPrefix)
+                || IsDBNullKeyPart(keyPropName3, columnPrefix)
+                || IsDBNullKeyPart(keyPropName4, columnPrefix)
+                || IsDBNullKeyPart(keyPropName5, columnPrefix)
+                || IsDBNullKeyPart(keyPropName6, columnPrefix))
+            {
+                return false;
+            }
+            TKey1 key1 = FetchKeyPart<TKey1>(
+                keyPropName1,
+                columnPrefix
+            );
+            TKey2 key2 = FetchKeyPart<TKey2>(
+                keyPropName2,
+                columnPrefix
+            );
+            TKey3 key3 = FetchKeyPart<TKey3>(
+                keyPropName3,
+                columnPrefix
+            );
+            TKey4 key4 = FetchKeyPart<TKey4>(
+                keyPropName4,
+                columnPrefix
+            );
+            TKey5 key5 = FetchKeyPart<TKey5>(
+                keyPropName5,
+                columnPrefix
+            );
+            TKey6 key6 = FetchKeyPart<TKey6>(
+                keyPropName6,
+                columnPrefix
+            );
+            return IsDtoCached((key1, key2, key3, key4, key5, key6));
+        }
+
+        public override bool IsDtoCached()
+        {
+            string columnPrefix = GetConfiguredColumnsPrefix();
+            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+            string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
+            string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
+            string keyPropName6 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 5);
+            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6, columnPrefix);
+        }
+    }
 }
