@@ -107,12 +107,51 @@ namespace sql2dto.Oracle.UnitTests
             }
         }
 
+        public class UsersLifePeriod : SqlCommonTable
+        {
+            public static UsersLifePeriod As(string alias, SqlParameterExpression param2)
+            {
+                return new UsersLifePeriod(alias, param2);
+            }
+
+            private UsersLifePeriod(string tableAlias, SqlParameterExpression param2)
+                : base(nameof(UsersLifePeriod), tableAlias)
+            {
+                ID = DefineColumn(nameof(ID));
+                LIFEPERIOD = DefineColumn(nameof(LIFEPERIOD));
+
+                _param2 = param2;
+            }
+
+            public SqlColumn ID;
+            public SqlColumn LIFEPERIOD;
+
+            private SqlParameterExpression _param2;
+
+            public override SqlQuery Query()
+            {
+                var usr = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("usr");
+                // !!! SELECT ORDER IN QUERY MUST MATCH THE ORDER OF DefineColumn CALLS IN CONSTRUCTOR
+                return sql2dto.SqlBuilder.Query()
+                        .Select(usr.ID) //Id
+                        .Select(Sql.Case()
+                                    .When(Sql.IsNull(usr.AGE), then: "UNKOWN")
+                                    .When(usr.AGE >= Sql.Const(18), then: "Adult")
+                                    .Else("Teenage")
+                                .End()) //LifePeriod
+                        .From(usr)
+                        .Where(Sql.Const(2) == this._param2);
+            }
+        }
+
         [Fact]
         public async void Test1()
         {
             var param1 = sql2dto.SqlBuilder.Parameter("p_1", 1);
             var param2 = sql2dto.SqlBuilder.Parameter("p_2", 2);
             var param3 = sql2dto.SqlBuilder.Parameter("p_3", 3);
+
+            var ulpCTE = UsersLifePeriod.As("ulpCTE", param2);
 
             var u = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("u");
             var a = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_ADDRESSES.As("a");
@@ -122,22 +161,24 @@ namespace sql2dto.Oracle.UnitTests
 
             var query = sql2dto.SqlBuilder.Query()
 
-                .With("ulp_cte",
-                () =>
-                {
-                    var usr = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("usr");
+                //.With("ulp_cte",
+                //() =>
+                //{
+                //    var usr = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("usr");
 
-                    return sql2dto.SqlBuilder.Query()
-                        .Select(usr.ID)
-                        .Select(Sql.Case()
-                                    .When(Sql.IsNull(usr.AGE), then: "UNKOWN")
-                                    .When(usr.AGE >= Sql.Const(18), then: "Adult")
-                                    .Else("Teenage")
-                                .End())
-                        .From(usr)
-                        .Where(Sql.Const(2) == param2);
+                //    return sql2dto.SqlBuilder.Query()
+                //        .Select(usr.ID)
+                //        .Select(Sql.Case()
+                //                    .When(Sql.IsNull(usr.AGE), then: "UNKOWN")
+                //                    .When(usr.AGE >= Sql.Const(18), then: "Adult")
+                //                    .Else("Teenage")
+                //                .End())
+                //        .From(usr)
+                //        .Where(Sql.Const(2) == param2);
 
-                }, nameof(User.Id), nameof(User.LifePeriod))
+                //}, nameof(User.Id), nameof(User.LifePeriod))
+
+                .With(ulpCTE)
 
                 .Project<User>(u)
                 .Project<Address>(a)
@@ -163,7 +204,9 @@ namespace sql2dto.Oracle.UnitTests
                     .End(), dto => dto.IsCapitalCity)
                 )
                 .Project<User>("ReportsToUser", r, exceptColumns: r.REPORTSTOID)
-                .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+                //.Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+                .Project<User>((ulpCTE.LIFEPERIOD, nameof(User.LifePeriod)))
+                //
 
                 .SelectSubQuery(_ => _.Select(Sql.Const(1)), "CONST_1")
                 .SelectSubQuery(_ => _.Select(uSub.FIRSTNAME).From(uSub).Where(uSub.ID == u.ID), "SUBQ_FIRST_NAME")
@@ -203,7 +246,9 @@ namespace sql2dto.Oracle.UnitTests
                 .From(u)
                 .LeftJoin(a, on: u.ID == a.USERID)
                 .LeftJoin(r, on: u.REPORTSTOID == r.ID)
-                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.ID & Sql.Const(3) == param3)
+                //.Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.ID & Sql.Const(3) == param3)
+                .Join(ulpCTE, on: ulpCTE.ID == u.ID & Sql.Const(3) == param3)
+                //
                 .JoinSubquery(
                     _ => _
                         .Select(uSub.ID, "id")
@@ -214,11 +259,13 @@ namespace sql2dto.Oracle.UnitTests
                     Sql.Const(1) == param1
                     & Sql.Const("abc").Like("%abc%")
                     & Sql.Const("%abc%").Like("!%abc!%", escapeChar: "!")
-                )
+                );
 
-            .OrderBy(u.ID);
-            //.SkipRows(1)
-            //.TakeRows(2);
+                //.OrderBy(u.ID);
+                //.SkipRows(1)
+                //.TakeRows(2);
+
+            var sqlStr = query.BuildQueryString();
 
             using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=srv-db)(PORT=1521))(CONNECT_DATA=(SID=orcl)));User Id=ADMINEMMETT; Password=adminemmett;"))
             using (var h = await query.ExecReadHelperAsync(conn))

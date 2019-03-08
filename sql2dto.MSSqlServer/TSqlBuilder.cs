@@ -592,7 +592,8 @@ namespace sql2dto.MSSqlServer
 
         public override string BuildTableJoinString(SqlQuery query, SqlTable table, SqlJoinType joinType, SqlExpression condition = null)
         {
-            string result = $"{BuildSqlJoinTypeString(joinType)} [{table.GetTableSchema()}].[{table.GetTableName()}] AS [{table.GetAlias()}]";
+            var tableSchemaDot = String.IsNullOrEmpty(table.GetTableSchema()) ? "" : $"[{table.GetTableSchema()}].";
+            string result = $"{BuildSqlJoinTypeString(joinType)} {tableSchemaDot}[{table.GetTableName()}] AS [{table.GetAlias()}]";
             if (!(condition is null))
             {
                 result += $" ON {BuildExpressionString(query, condition)}";
