@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using sql2dto.TableMappingGenerator.Forms;
 
 namespace sql2dto.TableMappingGenerator
 {
@@ -16,7 +17,7 @@ namespace sql2dto.TableMappingGenerator
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new frmGenerator());
         }
     }
 }
