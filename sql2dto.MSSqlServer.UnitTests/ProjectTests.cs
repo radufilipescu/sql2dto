@@ -114,12 +114,51 @@ namespace sql2dto.MSSqlServer.UnitTests
             }
         }
 
+        public class UsersLifePeriod : SqlCommonTable
+        {
+            public static UsersLifePeriod As(string alias, SqlParameterExpression param2)
+            {
+                return new UsersLifePeriod(alias, param2);
+            }
+
+            private UsersLifePeriod(string tableAlias, SqlParameterExpression param2) 
+                : base(nameof(UsersLifePeriod), tableAlias)
+            {
+                Id = DefineColumn(nameof(Id));
+                LifePeriod = DefineColumn(nameof(LifePeriod));
+
+                _param2 = param2;
+            }
+
+            public SqlColumn Id;
+            public SqlColumn LifePeriod;
+
+            private SqlParameterExpression _param2;
+
+            public override SqlQuery Query()
+            {
+                var usr = sql2dto.dbo.Users.As("usr");
+                // !!! SELECT ORDER IN QUERY MUST MATCH THE ORDER OF DefineColumn CALLS IN CONSTRUCTOR
+                return sql2dto.SqlBuilder.Query()
+                        .Select(usr.Id) //Id
+                        .Select(Sql.Case()
+                                    .When(Sql.IsNull(usr.Age), then: "UNKOWN")
+                                    .When(usr.Age >= Sql.Const(18), then: "Adult")
+                                    .Else("Teenage")
+                                .End()) //LifePeriod
+                        .From(usr)
+                        .Where(Sql.Const(2) == this._param2);
+            }
+        }
+
         [Fact]
         public async void Test1()
         {
             var param1 = sql2dto.SqlBuilder.Parameter("p_1", 1);
             var param2 = sql2dto.SqlBuilder.Parameter("p_2", 2);
             var param3 = sql2dto.SqlBuilder.Parameter("p_3", 3);
+
+            var ulpCTE = UsersLifePeriod.As("ulpCTE", param2);
 
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
@@ -129,22 +168,24 @@ namespace sql2dto.MSSqlServer.UnitTests
 
             var query = sql2dto.SqlBuilder.Query()
 
-                .With("ulp_cte",
-                () =>
-                {
-                    var usr = sql2dto.dbo.Users.As("usr");
+                //.With("ulp_cte",
+                //() =>
+                //{
+                //    var usr = sql2dto.dbo.Users.As("usr");
 
-                    return sql2dto.SqlBuilder.Query()
-                        .Select(usr.Id)
-                        .Select(Sql.Case()
-                                    .When(Sql.IsNull(usr.Age), then: "UNKOWN")
-                                    .When(usr.Age >= Sql.Const(18), then: "Adult")
-                                    .Else("Teenage")
-                                .End())
-                        .From(usr)
-                        .Where(Sql.Const(2) == param2);
+                //    return sql2dto.SqlBuilder.Query()
+                //        .Select(usr.Id)
+                //        .Select(Sql.Case()
+                //                    .When(Sql.IsNull(usr.Age), then: "UNKOWN")
+                //                    .When(usr.Age >= Sql.Const(18), then: "Adult")
+                //                    .Else("Teenage")
+                //                .End())
+                //        .From(usr)
+                //        .Where(Sql.Const(2) == param2);
 
-                }, nameof(User.Id), nameof(User.LifePeriod))
+                //}, nameof(User.Id), nameof(User.LifePeriod))
+
+                .With(ulpCTE)
 
                 .Project<User>(u)
                 .Project<Address>(a)
@@ -168,7 +209,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                     .End(), dto => dto.IsCapitalCity)
                 )
                 .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
-                .Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+                //.Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
+                .Project<User>((ulpCTE.LifePeriod, nameof(User.LifePeriod)))
+                //
 
                 .SelectSubQuery(_ => _.Select(Sql.Const(1)), "CONST_1")
                 .SelectSubQuery(_ => _.Select(uSub.FirstName).From(uSub).Where(uSub.Id == u.Id), "SUBQ_FIRST_NAME")
@@ -207,7 +250,9 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .From(u)
                 .LeftJoin(a, on: u.Id == a.UserId)
                 .LeftJoin(r, on: u.ReportsToId == r.Id)
-                .Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id & Sql.Const(3) == param3)
+                //.Join(Sql.CTE("ulp_cte"), on: Sql.CTEColumn("ulp_cte", nameof(User.Id)) == u.Id & Sql.Const(3) == param3)
+                .Join(ulpCTE, on: ulpCTE.Id == u.Id & Sql.Const(3) == param3)
+                //
                 .JoinSubquery(
                     _ => _ 
                         .Select(uSub.Id, "id")
@@ -223,6 +268,8 @@ namespace sql2dto.MSSqlServer.UnitTests
                 //.OrderBy(u.Id)
                 //.SkipRows(1)
                 //.TakeRows(2);
+
+            var sqlStr = query.BuildQueryString();
 
             using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             using (var h = await query.ExecReadHelperAsync(conn))

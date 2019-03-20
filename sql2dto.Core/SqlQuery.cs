@@ -415,6 +415,15 @@ namespace sql2dto.Core
             return this;
         }
 
+        public SqlQuery With(SqlCommonTable commonTable)
+        {
+            var query = commonTable.Query();
+            var expressionName = commonTable.GetTableName();
+            var columnNames = commonTable.ListAllColumns().Select(c => c.GetColumnName());
+            _commonTableExpressions.Add((expressionName, query, new HashSet<string>(columnNames)));
+            return this;
+        }
+
         public string BuildQueryString()
         {
             return _builder.BuildQueryString(this);

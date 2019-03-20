@@ -108,15 +108,202 @@ namespace sql2dto.Core
         #endregion
 
         #region windowing functions
-        public static SqlFunctionCallExpression FuncCall(string funcName, SqlExpression expression, SqlFunctionOver over = null)
+        #region function call
+        #region 1 param
+        public static SqlFunctionCallExpression FuncCall(string funcName, SqlExpression paramExpression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { expression }, distinct: false, over: over);
+            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { paramExpression }, distinct: false, over: over);
         }
 
-        public static SqlFunctionCallExpression FuncCallDistinct(string funcName, SqlExpression expression, SqlFunctionOver over = null)
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName, SqlExpression paramExpression, SqlFunctionOver over = null)
         {
-            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { expression }, distinct: true, over: over);
+            return new SqlFunctionCallExpression(funcName, new List<SqlExpression> { paramExpression }, distinct: true, over: over);
         }
+        #endregion
+
+        #region 2 params
+        public static SqlFunctionCallExpression FuncCall(string funcName, 
+            SqlExpression paramExpression1, SqlExpression paramExpression2, 
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName, 
+                new List<SqlExpression> { paramExpression1, paramExpression2 }, 
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 3 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 4 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 5 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 6 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 7 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6, SqlExpression paramExpression7,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6, paramExpression7 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6, SqlExpression paramExpression7,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6, paramExpression7 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region 8 params
+        public static SqlFunctionCallExpression FuncCall(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6, SqlExpression paramExpression7, SqlExpression paramExpression8,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6, paramExpression7, paramExpression8 },
+                distinct: false, over: over
+            );
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName,
+            SqlExpression paramExpression1, SqlExpression paramExpression2, SqlExpression paramExpression3, SqlExpression paramExpression4,
+            SqlExpression paramExpression5, SqlExpression paramExpression6, SqlExpression paramExpression7, SqlExpression paramExpression8,
+            SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName,
+                new List<SqlExpression> { paramExpression1, paramExpression2, paramExpression3, paramExpression4,
+                                          paramExpression5, paramExpression6, paramExpression7, paramExpression8 },
+                distinct: true, over: over
+            );
+        }
+        #endregion
+
+        #region parameters list
+        public static SqlFunctionCallExpression FuncCall(string funcName, List<SqlExpression> paramExpressions, SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName, paramExpressions, distinct: false, over: over);
+        }
+
+        public static SqlFunctionCallExpression FuncCallDistinct(string funcName, List<SqlExpression> paramExpressions, SqlFunctionOver over = null)
+        {
+            return new SqlFunctionCallExpression(funcName, paramExpressions, distinct: true, over: over);
+        }
+        #endregion
+
+        #endregion
 
         public static SqlFunctionOver Over()
         {
