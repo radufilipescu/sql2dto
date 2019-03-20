@@ -28,43 +28,43 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            this.clbTables = new System.Windows.Forms.CheckedListBox();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            this.clbObjects = new System.Windows.Forms.CheckedListBox();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
-            this.gbTables = new System.Windows.Forms.GroupBox();
+            this.gbDBObjects = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.cbCheckAllTables = new System.Windows.Forms.CheckBox();
             this.gbColumnMappings = new System.Windows.Forms.GroupBox();
             this.lblColumnMappingsHeader = new System.Windows.Forms.Label();
-            this.dgvColumnMappins = new System.Windows.Forms.DataGridView();
+            this.dgvColumnMappings = new System.Windows.Forms.DataGridView();
             this.SourceColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DestinationField = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.lblServer = new System.Windows.Forms.Label();
             this.lblServerName = new System.Windows.Forms.Label();
             this.lblDatabase = new System.Windows.Forms.Label();
             this.lblDatabaseName = new System.Windows.Forms.Label();
-            this.gbTables.SuspendLayout();
+            this.gbDBObjects.SuspendLayout();
             this.gbColumnMappings.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvColumnMappins)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvColumnMappings)).BeginInit();
             this.SuspendLayout();
             // 
-            // clbTables
+            // clbObjects
             // 
-            this.clbTables.CheckOnClick = true;
-            this.clbTables.FormattingEnabled = true;
-            this.clbTables.Location = new System.Drawing.Point(6, 47);
-            this.clbTables.Name = "clbTables";
-            this.clbTables.Size = new System.Drawing.Size(250, 334);
-            this.clbTables.TabIndex = 0;
-            this.clbTables.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clbTables_ItemCheck);
-            this.clbTables.SelectedIndexChanged += new System.EventHandler(this.clbTables_SelectedIndexChanged);
-            this.clbTables.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clbTables_MouseDown);
+            this.clbObjects.CheckOnClick = true;
+            this.clbObjects.FormattingEnabled = true;
+            this.clbObjects.Location = new System.Drawing.Point(6, 47);
+            this.clbObjects.Name = "clbObjects";
+            this.clbObjects.Size = new System.Drawing.Size(291, 334);
+            this.clbObjects.TabIndex = 0;
+            this.clbObjects.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.clbTables_ItemCheck);
+            this.clbObjects.SelectedIndexChanged += new System.EventHandler(this.clbTables_SelectedIndexChanged);
+            this.clbObjects.MouseDown += new System.Windows.Forms.MouseEventHandler(this.clbTables_MouseDown);
             // 
             // btnGenerate
             // 
             this.btnGenerate.Enabled = false;
-            this.btnGenerate.Location = new System.Drawing.Point(600, 448);
+            this.btnGenerate.Location = new System.Drawing.Point(645, 448);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(86, 23);
             this.btnGenerate.TabIndex = 2;
@@ -74,7 +74,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(708, 448);
+            this.btnCancel.Location = new System.Drawing.Point(753, 448);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 3;
@@ -82,17 +82,17 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
-            // gbTables
+            // gbDBObjects
             // 
-            this.gbTables.Controls.Add(this.label1);
-            this.gbTables.Controls.Add(this.cbCheckAllTables);
-            this.gbTables.Controls.Add(this.clbTables);
-            this.gbTables.Location = new System.Drawing.Point(12, 48);
-            this.gbTables.Name = "gbTables";
-            this.gbTables.Size = new System.Drawing.Size(262, 389);
-            this.gbTables.TabIndex = 5;
-            this.gbTables.TabStop = false;
-            this.gbTables.Text = "Tables";
+            this.gbDBObjects.Controls.Add(this.label1);
+            this.gbDBObjects.Controls.Add(this.cbCheckAllTables);
+            this.gbDBObjects.Controls.Add(this.clbObjects);
+            this.gbDBObjects.Location = new System.Drawing.Point(12, 48);
+            this.gbDBObjects.Name = "gbDBObjects";
+            this.gbDBObjects.Size = new System.Drawing.Size(303, 389);
+            this.gbDBObjects.TabIndex = 5;
+            this.gbDBObjects.TabStop = false;
+            this.gbDBObjects.Text = "Objects";
             // 
             // label1
             // 
@@ -116,13 +116,12 @@
             // gbColumnMappings
             // 
             this.gbColumnMappings.Controls.Add(this.lblColumnMappingsHeader);
-            this.gbColumnMappings.Controls.Add(this.dgvColumnMappins);
-            this.gbColumnMappings.Location = new System.Drawing.Point(292, 48);
+            this.gbColumnMappings.Controls.Add(this.dgvColumnMappings);
+            this.gbColumnMappings.Location = new System.Drawing.Point(339, 48);
             this.gbColumnMappings.Name = "gbColumnMappings";
             this.gbColumnMappings.Size = new System.Drawing.Size(489, 389);
             this.gbColumnMappings.TabIndex = 6;
             this.gbColumnMappings.TabStop = false;
-            this.gbColumnMappings.Visible = false;
             // 
             // lblColumnMappingsHeader
             // 
@@ -133,29 +132,29 @@
             this.lblColumnMappingsHeader.Size = new System.Drawing.Size(0, 16);
             this.lblColumnMappingsHeader.TabIndex = 3;
             // 
-            // dgvColumnMappins
+            // dgvColumnMappings
             // 
-            this.dgvColumnMappins.AllowUserToAddRows = false;
-            this.dgvColumnMappins.AllowUserToDeleteRows = false;
-            this.dgvColumnMappins.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            this.dgvColumnMappins.BackgroundColor = System.Drawing.SystemColors.Window;
-            this.dgvColumnMappins.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvColumnMappins.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgvColumnMappings.AllowUserToAddRows = false;
+            this.dgvColumnMappings.AllowUserToDeleteRows = false;
+            this.dgvColumnMappings.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            this.dgvColumnMappings.BackgroundColor = System.Drawing.SystemColors.Window;
+            this.dgvColumnMappings.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvColumnMappings.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.SourceColumn,
             this.DestinationField});
-            this.dgvColumnMappins.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
-            this.dgvColumnMappins.Location = new System.Drawing.Point(8, 35);
-            this.dgvColumnMappins.Name = "dgvColumnMappins";
-            this.dgvColumnMappins.RowHeadersVisible = false;
-            this.dgvColumnMappins.Size = new System.Drawing.Size(475, 346);
-            this.dgvColumnMappins.TabIndex = 0;
-            this.dgvColumnMappins.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvColumnMappings_ellValueChanged);
+            this.dgvColumnMappings.EditMode = System.Windows.Forms.DataGridViewEditMode.EditOnEnter;
+            this.dgvColumnMappings.Location = new System.Drawing.Point(8, 35);
+            this.dgvColumnMappings.Name = "dgvColumnMappings";
+            this.dgvColumnMappings.RowHeadersVisible = false;
+            this.dgvColumnMappings.Size = new System.Drawing.Size(475, 346);
+            this.dgvColumnMappings.TabIndex = 0;
+            this.dgvColumnMappings.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvColumnMappings_CellValueChanged);
             // 
             // SourceColumn
             // 
             this.SourceColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.SourceColumn.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.SourceColumn.DefaultCellStyle = dataGridViewCellStyle2;
             this.SourceColumn.FillWeight = 60.9137F;
             this.SourceColumn.HeaderText = "Source Column";
             this.SourceColumn.Name = "SourceColumn";
@@ -208,23 +207,23 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(789, 483);
+            this.ClientSize = new System.Drawing.Size(840, 483);
             this.Controls.Add(this.lblDatabaseName);
             this.Controls.Add(this.lblDatabase);
             this.Controls.Add(this.lblServerName);
             this.Controls.Add(this.lblServer);
             this.Controls.Add(this.gbColumnMappings);
-            this.Controls.Add(this.gbTables);
+            this.Controls.Add(this.gbDBObjects);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnGenerate);
             this.Name = "frmGenerator";
             this.Text = "Mapping Generator";
             this.Load += new System.EventHandler(this.MappingGeneratorForm_LoadAsync);
-            this.gbTables.ResumeLayout(false);
-            this.gbTables.PerformLayout();
+            this.gbDBObjects.ResumeLayout(false);
+            this.gbDBObjects.PerformLayout();
             this.gbColumnMappings.ResumeLayout(false);
             this.gbColumnMappings.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvColumnMappins)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvColumnMappings)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -232,14 +231,14 @@
 
         #endregion
 
-        private System.Windows.Forms.CheckedListBox clbTables;
+        private System.Windows.Forms.CheckedListBox clbObjects;
         private System.Windows.Forms.Button btnGenerate;
         private System.Windows.Forms.Button btnCancel;
-        private System.Windows.Forms.GroupBox gbTables;
+        private System.Windows.Forms.GroupBox gbDBObjects;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox cbCheckAllTables;
         private System.Windows.Forms.GroupBox gbColumnMappings;
-        private System.Windows.Forms.DataGridView dgvColumnMappins;
+        private System.Windows.Forms.DataGridView dgvColumnMappings;
         private System.Windows.Forms.Label lblColumnMappingsHeader;
         private System.Windows.Forms.DataGridViewTextBoxColumn SourceColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn DestinationField;

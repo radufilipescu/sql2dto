@@ -55,6 +55,7 @@
             this.tbServerName.Name = "tbServerName";
             this.tbServerName.Size = new System.Drawing.Size(168, 20);
             this.tbServerName.TabIndex = 1;
+            this.tbServerName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox_KeyDownAsync);
             // 
             // tbLogin
             // 
@@ -62,6 +63,7 @@
             this.tbLogin.Name = "tbLogin";
             this.tbLogin.Size = new System.Drawing.Size(168, 20);
             this.tbLogin.TabIndex = 3;
+            this.tbLogin.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox_KeyDownAsync);
             // 
             // lblLogin
             // 
@@ -79,6 +81,7 @@
             this.tbPassword.PasswordChar = '*';
             this.tbPassword.Size = new System.Drawing.Size(168, 20);
             this.tbPassword.TabIndex = 5;
+            this.tbPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox_KeyDownAsync);
             // 
             // lblDatabase
             // 
@@ -124,6 +127,7 @@
             this.tbDBName.Name = "tbDBName";
             this.tbDBName.Size = new System.Drawing.Size(168, 20);
             this.tbDBName.TabIndex = 10;
+            this.tbDBName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox_KeyDownAsync);
             // 
             // frmDBConnection
             // 

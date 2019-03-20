@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace sql2dto.TableMappingGenerator
+namespace sql2dto.TableMappingGenerator.Dtos
 {
-    class TableColumns
+    class TableColumnsDto
     {
         public string TableSchema { get; set; }
         public string TableName { get; set; }

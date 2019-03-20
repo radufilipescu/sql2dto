@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace sql2dto.TableMappingGenerator.Forms
@@ -30,6 +23,7 @@ namespace sql2dto.TableMappingGenerator.Forms
             SaveFileDialog save = new SaveFileDialog();
             save.DefaultExt = "txt";
             save.AddExtension = true;
+            save.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
 
             if (save.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {

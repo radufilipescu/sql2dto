@@ -8,13 +8,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using sql2dto.TableMappingGenerator.Persistence;
 
 namespace sql2dto.TableMappingGenerator.Forms
 {
     public partial class frmDBConnection : Form
     {
-        private ITableColumnRepository _repository;
-        public Dictionary<string, Dictionary<string, Dictionary<string, string>>> ColumnsBySchemaAndTable = null;
+        private DBStructureWorker _dBStructureWorker;
+        public DBStructure DBStruct = null;
 
         public frmDBConnection()
         {
@@ -83,30 +84,42 @@ namespace sql2dto.TableMappingGenerator.Forms
             tbPassword.Focus();
         }
 
-        private async void btnConnect_ClickAsync(object sender, EventArgs e)
+        private async Task Submit()
         {
             try
             {
                 using (var frmProgress = new frmProgress())
                 {
                     frmProgress.Show(this);
-
-                    _repository = new MSSQLTableColumnsRepository(this);
-                    ColumnsBySchemaAndTable = await _repository.GetColumnsBySchemaAndTable();
+                    DBConnection.FrmDBConnectionForm = this;
+                    _dBStructureWorker = new DBStructureWorker();
+                    DBStruct = await _dBStructureWorker.GetDBStructure();
                 }
 
                 this.DialogResult = DialogResult.OK;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show(this, $"Could not fetch the database table structure! {Environment.NewLine} {Environment.NewLine}" + ex.Message, 
+                MessageBox.Show(this, $"Could not fetch the database table structure! {System.Environment.NewLine} {System.Environment.NewLine}" + ex.Message,
                     "Oups!", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private async void btnConnect_ClickAsync(object sender, EventArgs e)
+        {
+            await Submit();
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;
+        }
+
+        private async void textBox_KeyDownAsync(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                await Submit();
+            }
         }
     }
 }

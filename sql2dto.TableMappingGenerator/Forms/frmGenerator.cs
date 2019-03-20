@@ -1,20 +1,18 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace sql2dto.TableMappingGenerator.Forms
 {
     public partial class frmGenerator : Form
     {
-        private Dictionary<string, Dictionary<string, Dictionary<string, string>>> _columnsBySchemaAndTable = null;
+        private bool _authorizeCheck { get; set; }
+        public DBStructure _dbStructure = null;
         private string _dbName = "";
         private string _dbServer = "";
         private string _dbLogin = "";
@@ -31,28 +29,31 @@ namespace sql2dto.TableMappingGenerator.Forms
         {
             try
             {
-                using (var frmDBConnectionForm = new frmDBConnection())
+                using (var frmDBConnection = new frmDBConnection())
                 {
                     LoadUserPref();
-                    if (_userPref!= null)
+                    if (_userPref != null)
                     {
-                        frmDBConnectionForm.ServerName = _userPref.LastServerName;
-                        frmDBConnectionForm.DBName = _userPref.LastDBName;
-                        frmDBConnectionForm.Login = _userPref.LastLogin;
+                        frmDBConnection.ServerName = _userPref.LastServerName;
+                        frmDBConnection.DBName = _userPref.LastDBName;
+                        frmDBConnection.Login = _userPref.LastLogin;
                     }
 
-                    if (frmDBConnectionForm.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                    if (frmDBConnection.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                     {
-                        this.Close();
+                        Close();
                         return;
                     }
 
-                    _dbServer = frmDBConnectionForm.ServerName;
-                    _dbName = frmDBConnectionForm.DBName;
-                    _dbLogin = frmDBConnectionForm.Login;
-                    _columnsBySchemaAndTable = frmDBConnectionForm.ColumnsBySchemaAndTable;
-                    lblServerName.Text = frmDBConnectionForm.ServerName;
-                    lblDatabaseName.Text = frmDBConnectionForm.DBName;
+                    _dbStructure = frmDBConnection.DBStruct;
+                    _userPref.LastServerName = _dbServer = frmDBConnection.ServerName;
+                    _userPref.LastDBName = _dbName = frmDBConnection.DBName;
+                    _userPref.LastLogin = _dbLogin = frmDBConnection.Login;
+
+                    WriteUserPrefToFile(JsonConvert.SerializeObject(_userPref));
+
+                    lblServerName.Text = frmDBConnection.ServerName;
+                    lblDatabaseName.Text = frmDBConnection.DBName;
                     LoadColumnMappingsFromUserPref();
                 }
             }
@@ -62,37 +63,59 @@ namespace sql2dto.TableMappingGenerator.Forms
             }
 
 
-            clbTables.Items.Clear();
-            foreach (var schema in _columnsBySchemaAndTable)
+            clbObjects.Items.Clear();
+
+            foreach (var schema in _dbStructure.Schemas)
             {
-                foreach (var table in schema.Value)
+                foreach (var function in schema.ParamsByFunction)
                 {
-                    clbTables.Items.Add(new TableSchemaItem(schema.Key, table.Key));
+                    clbObjects.Items.Add(new DBItem(schema.Name, function.Key, DBItem.DBType.Function));
                 }
             }
 
-            if (clbTables.Items.Count > 0)
+            foreach (var schema in _dbStructure.Schemas)
             {
-                clbTables.SelectedIndex = 0;
+                foreach (var table in schema.ColumnMappingsByTable)
+                {
+                    clbObjects.Items.Add(new DBItem(schema.Name, table.Key, DBItem.DBType.Table));
+                }
+            }
+
+            if (clbObjects.Items.Count > 0)
+            {
+                clbObjects.SelectedIndex = 0;
             }
         }
 
         private void clbTables_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedTable = clbTables.SelectedItem as TableSchemaItem;
-            dgvColumnMappins.Rows.Clear();
-
-            if (_columnsBySchemaAndTable != null && selectedTable != null)
+            if (!(clbObjects.SelectedItem is DBItem selectedObject))
             {
-                lblColumnMappingsHeader.Text = $"{selectedTable.Table} column mappings";
-                gbColumnMappings.Visible = true;
-                if (_columnsBySchemaAndTable.TryGetValue(selectedTable.Schema, out Dictionary<string, Dictionary<string, string>> schema))
+                return;
+            }
+
+            if (selectedObject.Type == DBItem.DBType.Function)
+            {
+                lblColumnMappingsHeader.Text = $"Function {selectedObject.Name} ";
+                dgvColumnMappings.Visible = false;
+            }
+            else if (selectedObject.Type == DBItem.DBType.Table)
+            {
+                dgvColumnMappings.Rows.Clear();
+                dgvColumnMappings.Visible = true;
+
+                if (_dbStructure != null && selectedObject != null)
                 {
-                    if (schema.TryGetValue(selectedTable.Table, out Dictionary<string, string> table))
+                    lblColumnMappingsHeader.Text = $"{selectedObject.Name} column mappings";
+                    var schema = _dbStructure.Schemas.FirstOrDefault(s => s.Name == selectedObject.Schema);
+                    if (schema != null)
                     {
-                        foreach (var column in table)
+                        if (schema.ColumnMappingsByTable.TryGetValue(selectedObject.Name, out Dictionary<string, string> table))
                         {
-                            dgvColumnMappins.Rows.Add(column.Key, column.Value);
+                            foreach (var column in table)
+                            {
+                                dgvColumnMappings.Rows.Add(column.Key, column.Value);
+                            }
                         }
                     }
                 }
@@ -101,23 +124,20 @@ namespace sql2dto.TableMappingGenerator.Forms
 
         private void cbCheckAllTables_CheckedChanged(object sender, EventArgs e)
         {
-            AuthorizeCheck = true;
+            _authorizeCheck = true;
             bool checkedStatus = cbCheckAllTables.Checked;
-            for (int i = 0; i < clbTables.Items.Count; i++)
+            for (int i = 0; i < clbObjects.Items.Count; i++)
             {
-                clbTables.SetItemChecked(i, checkedStatus);
+                clbObjects.SetItemChecked(i, checkedStatus);
             }
 
-            btnGenerate.Enabled = clbTables.CheckedItems.Count > 0 ? true : false;
-            AuthorizeCheck = false;
+            btnGenerate.Enabled = clbObjects.CheckedItems.Count > 0 ? true : false;
+            _authorizeCheck = false;
         }
-
-
-        bool AuthorizeCheck { get; set; }
 
         private void clbTables_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            if (!AuthorizeCheck)
+            if (!_authorizeCheck)
             {
                 e.NewValue = e.CurrentValue; //check state change was not through authorized actions
             }
@@ -125,20 +145,20 @@ namespace sql2dto.TableMappingGenerator.Forms
 
         private void clbTables_MouseDown(object sender, MouseEventArgs e)
         {
-            Point loc = this.clbTables.PointToClient(Cursor.Position);
-            for (int i = 0; i < this.clbTables.Items.Count; i++)
+            Point loc = this.clbObjects.PointToClient(Cursor.Position);
+            for (int i = 0; i < this.clbObjects.Items.Count; i++)
             {
-                Rectangle rec = this.clbTables.GetItemRectangle(i);
+                Rectangle rec = this.clbObjects.GetItemRectangle(i);
                 rec.Width = 16; //checkbox itself has a default width of about 16 pixels
 
                 if (rec.Contains(loc))
                 {
-                    AuthorizeCheck = true;
-                    bool newValue = !this.clbTables.GetItemChecked(i);
-                    this.clbTables.SetItemChecked(i, newValue);//check 
+                    _authorizeCheck = true;
+                    bool newValue = !this.clbObjects.GetItemChecked(i);
+                    this.clbObjects.SetItemChecked(i, newValue);//check 
 
                     cbCheckAllTables.CheckedChanged -= cbCheckAllTables_CheckedChanged;
-                    if (clbTables.CheckedItems.Count == clbTables.Items.Count)
+                    if (clbObjects.CheckedItems.Count == clbObjects.Items.Count)
                     {
                         cbCheckAllTables.Checked = true;
                     }
@@ -146,33 +166,33 @@ namespace sql2dto.TableMappingGenerator.Forms
                     {
                         cbCheckAllTables.Checked = false;
                     }
-                    btnGenerate.Enabled = clbTables.CheckedItems.Count > 0 ? true : false;
+                    btnGenerate.Enabled = clbObjects.CheckedItems.Count > 0 ? true : false;
                     cbCheckAllTables.CheckedChanged += cbCheckAllTables_CheckedChanged;
-                    AuthorizeCheck = false;
+                    _authorizeCheck = false;
 
                     return;
                 }
             }
         }
 
-        private void dgvColumnMappings_ellValueChanged(object sender, DataGridViewCellEventArgs e)
+        private void dgvColumnMappings_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex == -1)
             {
                 return;
             }
 
-            var row = dgvColumnMappins.Rows[e.RowIndex];
-            var selectedTable = clbTables.SelectedItem as TableSchemaItem;
+            var row = dgvColumnMappings.Rows[e.RowIndex];
+            var selectedTable = clbObjects.SelectedItem as DBItem;
 
             if (e.ColumnIndex == 1 && selectedTable != null)
             {
                 var columnName = (string)row.Cells[e.ColumnIndex - 1].Value;
                 var changedValue = (string)row.Cells[e.ColumnIndex].Value;
-
-                if (_columnsBySchemaAndTable.TryGetValue(selectedTable.Schema, out Dictionary<string, Dictionary<string, string>> schema))
+                var schema = _dbStructure.Schemas.FirstOrDefault(s => s.Name == selectedTable.Schema);
+                if (schema != null)
                 {
-                    if (schema.TryGetValue(selectedTable.Table, out Dictionary<string, string> table))
+                    if (schema.ColumnMappingsByTable.TryGetValue(selectedTable.Name, out Dictionary<string, string> table))
                     {
                         if (table.TryGetValue(columnName, out string mappedField))
                         {
@@ -185,7 +205,7 @@ namespace sql2dto.TableMappingGenerator.Forms
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            string mappingResult = GenerateMapping(_dbName);
+            string mappingResult = GenerateSqlMappings(_dbName);
 
             using (var frmMappingGenerator = new frmDisplayMappingResult())
             {
@@ -194,85 +214,136 @@ namespace sql2dto.TableMappingGenerator.Forms
             }
         }
 
-        private string GenerateMapping(string database)
+        private string GenerateSqlMappings(string database)
         {
             string result = "";
 
-            foreach (var schema in _columnsBySchemaAndTable)
+            foreach (var schema in _dbStructure.Schemas)
             {
-                string schemaMapping = "";
+                string schemaMappings = "";
                 int leftPaddingCount = 4;
-                string schemaLeftPadding = new string(' ', leftPaddingCount);
-                foreach (var table in schema.Value)
+                string leftPadding = new string(' ', leftPaddingCount);
+                var functionMappings = GenerateSQLFunctions(schema.Name, schema.ParamsByFunction, leftPaddingCount + 4);
+                var tableMappings = GenerateSQLTables(schema.Name, schema.ColumnMappingsByTable, leftPaddingCount + 4);
+
+                if (!string.IsNullOrEmpty(functionMappings))
                 {
-                    foreach (TableSchemaItem itemChecked in clbTables.CheckedItems)
-                    {
-                        if (itemChecked.Table == table.Key && itemChecked.Schema == schema.Key)
-                        {
-                            string tableMapping = GenerateTableMapping(schema.Key, table.Key, table.Value, leftPaddingCount + 4);
-                            if (string.IsNullOrEmpty(schemaMapping))
-                            {
-                                schemaMapping = 
-$@"{schemaLeftPadding}public class {schema.Key}
-{schemaLeftPadding}{{
-{tableMapping}";
-                            }
-                            else
-                            {
-                                schemaMapping += Environment.NewLine + Environment.NewLine + tableMapping;
-                            }
-                        }
-                    }
+                    schemaMappings =
+$@"{leftPadding}public class {schema.Name}
+{leftPadding}{{
+{functionMappings}";
                 }
-                if (!string.IsNullOrEmpty(schemaMapping))
+
+                if (!string.IsNullOrEmpty(tableMappings))
                 {
-                    if (string.IsNullOrEmpty(result))
+                    if (string.IsNullOrEmpty(schemaMappings))
                     {
-                        result =
-$@"public class {database}
-{{
-{schemaMapping}
-{schemaLeftPadding}}}";
+                        schemaMappings =
+$@"{leftPadding}public class {schema.Name}
+{leftPadding}{{
+{tableMappings}";
                     }
                     else
                     {
-                        result +=
-$@"
-
-{schemaMapping}
-{schemaLeftPadding}}}";
+                        schemaMappings += Environment.NewLine + Environment.NewLine + tableMappings;
                     }
-                };
+                }
+
+                if (!string.IsNullOrEmpty(schemaMappings))
+                {
+                    result =
+$@"public class {database}
+{{
+{schemaMappings}
+{leftPadding}}}";
+                }
             }
-            result += $@"
-}}";
+            result += Environment.NewLine + "}";
 
             UpdateAndSaveUserPref();
 
             return result;
         }
 
-        private string GenerateTableMapping(string schema, string table, Dictionary<string, string> columnMappings, int leftPaddingCount)
+        private string GenerateSQLFunctions(string schema, Dictionary<string, IEnumerable<string>> parametersByFunction, int leftPaddingCount)
         {
             string leftPadding = new string(' ', leftPaddingCount);
-            string template =
-$@"{leftPadding}public class {table} : SqlTable
+            string result = "";
+
+            foreach (var func in parametersByFunction)
+            {
+                foreach (DBItem itemChecked in clbObjects.CheckedItems)
+                {
+                    if (itemChecked.Name == func.Key && itemChecked.Schema == schema)
+                    {
+                        string template =
+$@"{leftPadding}    public static SqlFunctionCallExpression {func.Key}({string.Join(", ", func.Value.Select(param => $"SqlExpression {FunctionParamToCamelCase(param)}").ToArray())})
+{leftPadding}    {{
+{leftPadding}        return Sql.FuncCall($""{{nameof({schema})}}.{{nameof({func.Key})}}"", new List<SqlExpression>(){{{string.Join(", ", func.Value.Select(param => $"{FunctionParamToCamelCase(param)}").ToArray())}}});
+{leftPadding}    }}";
+                        if (string.IsNullOrEmpty(result))
+                        {
+                            result = 
+$@"{leftPadding}public static class UserFuncs
 {leftPadding}{{
-{leftPadding}    public static {table} As(string alias)
+{template}";
+                        }
+                        else
+                        {
+                            result += Environment.NewLine + template;
+                        }
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(result))
+            {
+                result += Environment.NewLine + $"{leftPadding}}}";
+            }
+
+            return result;
+        }
+
+        private string GenerateSQLTables(string schema, Dictionary<string, Dictionary<string, string>> columnMappingsByTable, int leftPaddingCount)
+        {
+            string leftPadding = new string(' ', leftPaddingCount);
+            string result = "";
+
+            foreach (var table in columnMappingsByTable)
+            {
+                foreach (DBItem itemChecked in clbObjects.CheckedItems)
+                {
+                    if (itemChecked.Name == table.Key && itemChecked.Schema == schema)
+                    {
+                        string template =
+$@"{leftPadding}public class {table.Key} : SqlTable
+{leftPadding}{{
+{leftPadding}    public static {table.Key} As(string alias)
 {leftPadding}    {{
-{leftPadding}        return new {table}(alias);
+{leftPadding}        return new {table.Key}(alias);
 {leftPadding}    }}
 
-{leftPadding}    private {table}(string alias)
-{leftPadding}        : base(nameof({schema}), nameof({table}), alias)
+{leftPadding}    private {table.Key}(string alias)
+{leftPadding}        : base(nameof({schema}), nameof({table.Key}), alias)
 {leftPadding}    {{
-{leftPadding}        {string.Join(Environment.NewLine + new string(' ', leftPaddingCount + 8), columnMappings.Select(col => GenerateFieldIntialization(col.Key, col.Value)))}
+{leftPadding}        {string.Join(Environment.NewLine + new string(' ', leftPaddingCount + 8), table.Value.Select(col => GenerateFieldIntialization(col.Key, col.Value)))}
 {leftPadding}    }}
 
-{leftPadding}    {string.Join(Environment.NewLine + new string(' ', leftPaddingCount + 4), columnMappings.Select(col => $"public SqlColumn {col.Value};"))}
+{leftPadding}    {string.Join(Environment.NewLine + new string(' ', leftPaddingCount + 4), table.Value.Select(col => $"public SqlColumn {col.Value};"))}
 {leftPadding}}}";
+                        if (string.IsNullOrEmpty(result))
+                        {
+                            result = template;
+                        }
+                        else
+                        {
+                            result += Environment.NewLine + Environment.NewLine + template;
+                        }
+                    }
+                }
+            }
 
-            return template;
+            return result;
         }
 
         private string GenerateFieldIntialization(string sourceColumn, string destinationField)
@@ -287,7 +358,7 @@ $@"{leftPadding}public class {table} : SqlTable
             }
         }
 
-        private  void LoadUserPref()
+        private void LoadUserPref()
         {
             string userPrefPath = $"{ _userPrefFolder}\\{_userPrefFileName}";
             if (File.Exists(userPrefPath))
@@ -304,21 +375,22 @@ $@"{leftPadding}public class {table} : SqlTable
                     }
                 }
             }
-            _userPref = _userPref?? new UserPreferences();
+            _userPref = _userPref ?? new UserPreferences();
         }
 
         private void LoadColumnMappingsFromUserPref()
         {
-            var localPreferences = _userPref?.EnvironmentColumnMappings.SingleOrDefault(item => item.DBName == _dbName && item.DBServerName == _dbServer);
+            var localPreferences = _userPref?.Environments.SingleOrDefault(item => item.DBName == _dbName && item.DBServerName == _dbServer);
             if (localPreferences != null)
             {
                 foreach (var localSchema in localPreferences.ColumnMappings)
                 {
-                    if (_columnsBySchemaAndTable.TryGetValue(localSchema.Key, out Dictionary<string, Dictionary<string, string>> tables))
+                    var schema = _dbStructure.Schemas.FirstOrDefault(s => s.Name == localSchema.Key);
+                    if (schema != null)
                     {
                         foreach (var localTable in localSchema.Value)
                         {
-                            if (tables.TryGetValue(localTable.Key, out Dictionary<string, string> columnMappings))
+                            if (schema.ColumnMappingsByTable.TryGetValue(localTable.Key, out Dictionary<string, string> columnMappings))
                             {
                                 foreach (var localColumn in localTable.Value)
                                 {
@@ -333,12 +405,12 @@ $@"{leftPadding}public class {table} : SqlTable
                 }
             }
         }
-        
+
         private void UpdateAndSaveUserPref()
         {
-            var modifiedColumnMappings = _columnsBySchemaAndTable.ToDictionary(
-                                                (schema) => schema.Key,
-                                                (schema) => schema.Value.ToList().ToDictionary(
+            var modifiedColumnMappings = _dbStructure.Schemas.ToDictionary(
+                                                (schema) => schema.Name,
+                                                (schema) => schema.ColumnMappingsByTable.ToList().ToDictionary(
                                                                                     (table) => table.Key,
                                                                                     (table) => table.Value.ToList()
                                                                                                           .Where(column => column.Key != column.Value)
@@ -352,15 +424,15 @@ $@"{leftPadding}public class {table} : SqlTable
                                                ).Where(item => item.Value.Count > 0)
                                                 .ToDictionary(item => item.Key, item => item.Value);
 
-            EnvironmentColumnMappings newColumnMappings = new EnvironmentColumnMappings()
+            DBEnv newColumnMappings = new DBEnv()
             {
                 DBServerName = _dbServer,
                 DBName = _dbName,
                 ColumnMappings = modifiedColumnMappings
             };
 
-            _userPref.EnvironmentColumnMappings.Remove(_userPref.EnvironmentColumnMappings.FirstOrDefault(item => item.DBName == _dbName && item.DBServerName == _dbServer));
-            _userPref.EnvironmentColumnMappings.Add(newColumnMappings);
+            _userPref.Environments.Remove(_userPref.Environments.FirstOrDefault(item => item.DBName == _dbName && item.DBServerName == _dbServer));
+            _userPref.Environments.Add(newColumnMappings);
             _userPref.LastServerName = _dbServer;
             _userPref.LastDBName = _dbName;
             _userPref.LastLogin = _dbLogin;
@@ -378,6 +450,16 @@ $@"{leftPadding}public class {table} : SqlTable
             }
 
             File.WriteAllText(userPrefFilePath, userPrefJSON);
+        }
+
+        public static string FunctionParamToCamelCase(string param)
+        {
+            if (!string.IsNullOrEmpty(param) && param.Length > 1)
+            {
+                string result = param[0] == '@' ? param.Remove(0, 1) : param;
+                return Char.ToLowerInvariant(result[0]) + result.Substring(1);
+            }
+            return param;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

@@ -11,21 +11,21 @@ namespace sql2dto.TableMappingGenerator
         public string LastServerName { get; set; }
         public string LastDBName { get; set; }
         public string LastLogin { get; set; }
-        public List<EnvironmentColumnMappings> EnvironmentColumnMappings{get; set;}
+        public List<DBEnv> Environments{get; set;}
 
         public UserPreferences()
         {
-            EnvironmentColumnMappings = new List<EnvironmentColumnMappings>();
+            Environments = new List<DBEnv>();
         }
     }
 
-    class EnvironmentColumnMappings
+    class DBEnv
     {
         public string DBServerName { get; set; }
         public string DBName { get; set; }
         public Dictionary<string, Dictionary<string, Dictionary<string, string>>> ColumnMappings { get; set; }
 
-        public EnvironmentColumnMappings()
+        public DBEnv()
         {
             ColumnMappings = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
         }

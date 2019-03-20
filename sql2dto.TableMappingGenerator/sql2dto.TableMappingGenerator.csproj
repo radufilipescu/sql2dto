@@ -80,6 +80,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DBConnection.cs" />
+    <Compile Include="DBStructureWorker.cs" />
     <Compile Include="Forms\frmDBConnection.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -98,19 +100,22 @@
     <Compile Include="Forms\frmProgress.Designer.cs">
       <DependentUpon>frmProgress.cs</DependentUpon>
     </Compile>
-    <Compile Include="ITableColumnRepository.cs" />
+    <Compile Include="Dtos\FunctionParametersDto.cs" />
+    <Compile Include="Persistence\IDBFunctionsRepository.cs" />
+    <Compile Include="Persistence\IDBTablesRepository.cs" />
     <Compile Include="Forms\frmGenerator.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\frmGenerator.Designer.cs">
       <DependentUpon>frmGenerator.cs</DependentUpon>
     </Compile>
+    <Compile Include="Persistence\MSSQLDBFunctionsRepository.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TableColumns.cs" />
-    <Compile Include="MSSQLTableColumnsRepository.cs" />
-    <Compile Include="Forms\TableSchemaItem.cs" />
-    <Compile Include="ColumnMappingDetails.cs" />
+    <Compile Include="Dtos\TableColumnsDto.cs" />
+    <Compile Include="Persistence\MSSQLDBTablesRepository.cs" />
+    <Compile Include="Forms\DBItem.cs" />
+    <Compile Include="UserPreferences.cs" />
     <EmbeddedResource Include="Forms\frmDBConnection.resx">
       <DependentUpon>frmDBConnection.cs</DependentUpon>
     </EmbeddedResource>
