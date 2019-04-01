@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.MSSqlServer.UnitTes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Oracle", "sql2dto.Oracle\sql2dto.Oracle.csproj", "{2115D119-470A-42CD-A9D3-6D2523EE6073}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.Oracle.UnitTests", "sql2dto.Oracle.UnitTests\sql2dto.Oracle.UnitTests.csproj", "{027753C7-0486-472C-8130-E30F1C8F8838}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sql2dto.Oracle.UnitTests", "sql2dto.Oracle.UnitTests\sql2dto.Oracle.UnitTests.csproj", "{027753C7-0486-472C-8130-E30F1C8F8838}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sql2dto.TableMappingGenerator", "sql2dto.TableMappingGenerator\sql2dto.TableMappingGenerator.csproj", "{6DE403A4-B6B1-42DE-94AC-74AE7E934E78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{027753C7-0486-472C-8130-E30F1C8F8838}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{027753C7-0486-472C-8130-E30F1C8F8838}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{027753C7-0486-472C-8130-E30F1C8F8838}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DE403A4-B6B1-42DE-94AC-74AE7E934E78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DE403A4-B6B1-42DE-94AC-74AE7E934E78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DE403A4-B6B1-42DE-94AC-74AE7E934E78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DE403A4-B6B1-42DE-94AC-74AE7E934E78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
