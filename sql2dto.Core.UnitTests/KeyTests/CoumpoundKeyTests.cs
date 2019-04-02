@@ -89,7 +89,34 @@ namespace sql2dto.Core.UnitTests.KeyTests
         }
 
         [Fact]
-        public void Fetch_using_attributes_map_config()
+        public void Fetch_using_key_props_attribute()
+        {
+            var fakeReader = new FakeDataReader("Id", "Name", "Age");
+            KeyTestsData.SetupEmployeesData(fakeReader);
+
+            var h = new ReadHelper(fakeReader);
+
+            var empCol = new DtoCollection<Empolyee_Attr, int, string>(h);
+
+            while (h.Read())
+            {
+                var e = empCol.Fetch();
+            }
+
+            KeyTestsData.AssertDataIntegrity(empCol.InnerList.Cast<IEmployee>());
+        }
+
+        public class Empolyee_Attr2 : IEmployee
+        {
+            [PropMap(IsKey = true)]
+            public int Id { get; set; }
+            [PropMap(IsKey = true)]
+            public string Name { get; set; }
+            public double Age { get; set; }
+        }
+
+        [Fact]
+        public void Fetch_using_prop_map_attributes_with_is_key()
         {
             var fakeReader = new FakeDataReader("Id", "Name", "Age");
             KeyTestsData.SetupEmployeesData(fakeReader);

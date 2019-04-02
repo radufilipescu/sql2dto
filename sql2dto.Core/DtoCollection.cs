@@ -88,10 +88,10 @@ namespace sql2dto.Core
             return dto;
         }
 
-        public virtual bool IsDtoCached()
-        {
-            return false;
-        }
+        //public virtual bool IsDtoCached()
+        //{
+        //    return false;
+        //}
 
         protected string GetConfiguredColumnsPrefix()
         {
@@ -138,6 +138,35 @@ namespace sql2dto.Core
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Could not check if DBNull for key property {keyPartPropName}. See inner exception for details.", ex);
+            }
+        }
+
+        protected bool IsDBNullAllowedKeyPart(string keyPartPropName)
+        {
+            try
+            {
+                if (_mapper == null)
+                {
+                    if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(keyPartPropName, out PropMapConfig conf))
+                    {
+                        return conf.IsNullableKey;
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    if (_mapper.TryGetInnerPropMapConfig(keyPartPropName, out PropMapConfig conf))
+                    {
+                        return conf.IsNullableKey;
+                    }
+
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Could not check if key property {keyPartPropName} is allowed to be DBNull. See inner exception for details.", ex);
             }
         }
 
@@ -209,7 +238,7 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName, string columnPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName, columnPrefix))
+            if (!IsDBNullAllowedKeyPart(keyPropName) && IsDBNullKeyPart(keyPropName, columnPrefix))
             {
                 return default(TDto);
             }
@@ -225,30 +254,30 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached(TKey key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached(TKey key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName, columnPrefix))
-            {
-                return false;
-            }
-            TKey key = FetchKeyPart<TKey>(
-                keyPropName,
-                columnPrefix
-            );
-            return IsDtoCached(key);
-        }
+        //public bool IsDtoCached(string keyPropName, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey key = FetchKeyPart<TKey>(
+        //        keyPropName,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached(key);
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            return IsDtoCached(keyPropName, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    return IsDtoCached(keyPropName, columnPrefix);
+        //}
     }
 
     public class DtoCollection<TDto, TKey1, TKey2> : DtoCollection<TDto> where TDto : new()
@@ -300,8 +329,8 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string columnsPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnsPrefix))
+            if ((!IsDBNullAllowedKeyPart(keyPropName1) && IsDBNullKeyPart(keyPropName1, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName2) && IsDBNullKeyPart(keyPropName2, columnsPrefix)))
             {
                 return default(TDto);
             }
@@ -319,36 +348,36 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached((TKey1, TKey2) key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached((TKey1, TKey2) key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName1, string keyPropName2, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnPrefix))
-            {
-                return false;
-            }
-            TKey1 key1 = FetchKeyPart<TKey1>(
-                keyPropName1,
-                columnPrefix
-            );
-            TKey2 key2 = FetchKeyPart<TKey2>(
-                keyPropName2,
-                columnPrefix
-            );
-            return IsDtoCached((key1, key2));
-        }
+        //public bool IsDtoCached(string keyPropName1, string keyPropName2, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName2, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey1 key1 = FetchKeyPart<TKey1>(
+        //        keyPropName1,
+        //        columnPrefix
+        //    );
+        //    TKey2 key2 = FetchKeyPart<TKey2>(
+        //        keyPropName2,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached((key1, key2));
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
-            return IsDtoCached(keyPropName1, keyPropName2, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+        //    return IsDtoCached(keyPropName1, keyPropName2, columnPrefix);
+        //}
     }
 
     public class DtoCollection<TDto, TKey1, TKey2, TKey3> : DtoCollection<TDto> where TDto : new()
@@ -401,9 +430,9 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string columnsPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnsPrefix))
+            if ((!IsDBNullAllowedKeyPart(keyPropName1) && IsDBNullKeyPart(keyPropName1, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName2) && IsDBNullKeyPart(keyPropName2, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName3) && IsDBNullKeyPart(keyPropName3, columnsPrefix)))
             {
                 return default(TDto);
             }
@@ -423,42 +452,42 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached((TKey1, TKey2, TKey3) key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached((TKey1, TKey2, TKey3) key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnPrefix))
-            {
-                return false;
-            }
-            TKey1 key1 = FetchKeyPart<TKey1>(
-                keyPropName1,
-                columnPrefix
-            );
-            TKey2 key2 = FetchKeyPart<TKey2>(
-                keyPropName2,
-                columnPrefix
-            );
-            TKey3 key3 = FetchKeyPart<TKey3>(
-                keyPropName3,
-                columnPrefix
-            );
-            return IsDtoCached((key1, key2, key3));
-        }
+        //public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName2, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName3, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey1 key1 = FetchKeyPart<TKey1>(
+        //        keyPropName1,
+        //        columnPrefix
+        //    );
+        //    TKey2 key2 = FetchKeyPart<TKey2>(
+        //        keyPropName2,
+        //        columnPrefix
+        //    );
+        //    TKey3 key3 = FetchKeyPart<TKey3>(
+        //        keyPropName3,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached((key1, key2, key3));
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
-            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
-            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+        //    string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+        //    return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, columnPrefix);
+        //}
     }
 
     public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4> : DtoCollection<TDto> where TDto : new()
@@ -512,10 +541,10 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string columnsPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnsPrefix))
+            if ((!IsDBNullAllowedKeyPart(keyPropName1) && IsDBNullKeyPart(keyPropName1, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName2) && IsDBNullKeyPart(keyPropName2, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName3) && IsDBNullKeyPart(keyPropName3, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName4) && IsDBNullKeyPart(keyPropName4, columnsPrefix)))
             {
                 return default(TDto);
             }
@@ -537,48 +566,48 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4) key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4) key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnPrefix))
-            {
-                return false;
-            }
-            TKey1 key1 = FetchKeyPart<TKey1>(
-                keyPropName1,
-                columnPrefix
-            );
-            TKey2 key2 = FetchKeyPart<TKey2>(
-                keyPropName2,
-                columnPrefix
-            );
-            TKey3 key3 = FetchKeyPart<TKey3>(
-                keyPropName3,
-                columnPrefix
-            );
-            TKey4 key4 = FetchKeyPart<TKey4>(
-                keyPropName4,
-                columnPrefix
-            );
-            return IsDtoCached((key1, key2, key3, key4));
-        }
+        //public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName2, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName3, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName4, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey1 key1 = FetchKeyPart<TKey1>(
+        //        keyPropName1,
+        //        columnPrefix
+        //    );
+        //    TKey2 key2 = FetchKeyPart<TKey2>(
+        //        keyPropName2,
+        //        columnPrefix
+        //    );
+        //    TKey3 key3 = FetchKeyPart<TKey3>(
+        //        keyPropName3,
+        //        columnPrefix
+        //    );
+        //    TKey4 key4 = FetchKeyPart<TKey4>(
+        //        keyPropName4,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached((key1, key2, key3, key4));
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
-            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
-            string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
-            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+        //    string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+        //    string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
+        //    return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, columnPrefix);
+        //}
     }
 
     public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> : DtoCollection<TDto> where TDto : new()
@@ -633,11 +662,11 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string columnsPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName5, columnsPrefix))
+            if ((!IsDBNullAllowedKeyPart(keyPropName1) && IsDBNullKeyPart(keyPropName1, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName2) && IsDBNullKeyPart(keyPropName2, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName3) && IsDBNullKeyPart(keyPropName3, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName4) && IsDBNullKeyPart(keyPropName4, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName5) && IsDBNullKeyPart(keyPropName5, columnsPrefix)))
             {
                 return default(TDto);
             }
@@ -661,54 +690,54 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5) key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5) key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnPrefix)
-                || IsDBNullKeyPart(keyPropName5, columnPrefix))
-            {
-                return false;
-            }
-            TKey1 key1 = FetchKeyPart<TKey1>(
-                keyPropName1,
-                columnPrefix
-            );
-            TKey2 key2 = FetchKeyPart<TKey2>(
-                keyPropName2,
-                columnPrefix
-            );
-            TKey3 key3 = FetchKeyPart<TKey3>(
-                keyPropName3,
-                columnPrefix
-            );
-            TKey4 key4 = FetchKeyPart<TKey4>(
-                keyPropName4,
-                columnPrefix
-            );
-            TKey5 key5 = FetchKeyPart<TKey5>(
-                keyPropName5,
-                columnPrefix
-            );
-            return IsDtoCached((key1, key2, key3, key4, key5));
-        }
+        //public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName2, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName3, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName4, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName5, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey1 key1 = FetchKeyPart<TKey1>(
+        //        keyPropName1,
+        //        columnPrefix
+        //    );
+        //    TKey2 key2 = FetchKeyPart<TKey2>(
+        //        keyPropName2,
+        //        columnPrefix
+        //    );
+        //    TKey3 key3 = FetchKeyPart<TKey3>(
+        //        keyPropName3,
+        //        columnPrefix
+        //    );
+        //    TKey4 key4 = FetchKeyPart<TKey4>(
+        //        keyPropName4,
+        //        columnPrefix
+        //    );
+        //    TKey5 key5 = FetchKeyPart<TKey5>(
+        //        keyPropName5,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached((key1, key2, key3, key4, key5));
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
-            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
-            string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
-            string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
-            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+        //    string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+        //    string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
+        //    string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
+        //    return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, columnPrefix);
+        //}
     }
 
     public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> : DtoCollection<TDto> where TDto : new()
@@ -764,12 +793,12 @@ namespace sql2dto.Core
 
         public TDto FetchByKeyProps(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, string columnsPrefix = null)
         {
-            if (IsDBNullKeyPart(keyPropName1, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName5, columnsPrefix)
-                || IsDBNullKeyPart(keyPropName6, columnsPrefix))
+            if ((!IsDBNullAllowedKeyPart(keyPropName1) && IsDBNullKeyPart(keyPropName1, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName2) && IsDBNullKeyPart(keyPropName2, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName3) && IsDBNullKeyPart(keyPropName3, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName4) && IsDBNullKeyPart(keyPropName4, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName5) && IsDBNullKeyPart(keyPropName5, columnsPrefix))
+                || (!IsDBNullAllowedKeyPart(keyPropName6) && IsDBNullKeyPart(keyPropName6, columnsPrefix)))
             {
                 return default(TDto);
             }
@@ -795,59 +824,59 @@ namespace sql2dto.Core
             );
         }
 
-        public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5, TKey6) key)
-        {
-            return KeyesToIndexes.ContainsKey(key);
-        }
+        //public bool IsDtoCached((TKey1, TKey2, TKey3, TKey4, TKey5, TKey6) key)
+        //{
+        //    return KeyesToIndexes.ContainsKey(key);
+        //}
 
-        public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, string columnPrefix = null)
-        {
-            if (IsDBNullKeyPart(keyPropName1, columnPrefix)
-                || IsDBNullKeyPart(keyPropName2, columnPrefix)
-                || IsDBNullKeyPart(keyPropName3, columnPrefix)
-                || IsDBNullKeyPart(keyPropName4, columnPrefix)
-                || IsDBNullKeyPart(keyPropName5, columnPrefix)
-                || IsDBNullKeyPart(keyPropName6, columnPrefix))
-            {
-                return false;
-            }
-            TKey1 key1 = FetchKeyPart<TKey1>(
-                keyPropName1,
-                columnPrefix
-            );
-            TKey2 key2 = FetchKeyPart<TKey2>(
-                keyPropName2,
-                columnPrefix
-            );
-            TKey3 key3 = FetchKeyPart<TKey3>(
-                keyPropName3,
-                columnPrefix
-            );
-            TKey4 key4 = FetchKeyPart<TKey4>(
-                keyPropName4,
-                columnPrefix
-            );
-            TKey5 key5 = FetchKeyPart<TKey5>(
-                keyPropName5,
-                columnPrefix
-            );
-            TKey6 key6 = FetchKeyPart<TKey6>(
-                keyPropName6,
-                columnPrefix
-            );
-            return IsDtoCached((key1, key2, key3, key4, key5, key6));
-        }
+        //public bool IsDtoCached(string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, string columnPrefix = null)
+        //{
+        //    if (IsDBNullKeyPart(keyPropName1, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName2, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName3, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName4, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName5, columnPrefix)
+        //        || IsDBNullKeyPart(keyPropName6, columnPrefix))
+        //    {
+        //        return false;
+        //    }
+        //    TKey1 key1 = FetchKeyPart<TKey1>(
+        //        keyPropName1,
+        //        columnPrefix
+        //    );
+        //    TKey2 key2 = FetchKeyPart<TKey2>(
+        //        keyPropName2,
+        //        columnPrefix
+        //    );
+        //    TKey3 key3 = FetchKeyPart<TKey3>(
+        //        keyPropName3,
+        //        columnPrefix
+        //    );
+        //    TKey4 key4 = FetchKeyPart<TKey4>(
+        //        keyPropName4,
+        //        columnPrefix
+        //    );
+        //    TKey5 key5 = FetchKeyPart<TKey5>(
+        //        keyPropName5,
+        //        columnPrefix
+        //    );
+        //    TKey6 key6 = FetchKeyPart<TKey6>(
+        //        keyPropName6,
+        //        columnPrefix
+        //    );
+        //    return IsDtoCached((key1, key2, key3, key4, key5, key6));
+        //}
 
-        public override bool IsDtoCached()
-        {
-            string columnPrefix = GetConfiguredColumnsPrefix();
-            string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
-            string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
-            string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
-            string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
-            string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
-            string keyPropName6 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 5);
-            return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6, columnPrefix);
-        }
+        //public override bool IsDtoCached()
+        //{
+        //    string columnPrefix = GetConfiguredColumnsPrefix();
+        //    string keyPropName1 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 0);
+        //    string keyPropName2 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 1);
+        //    string keyPropName3 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 2);
+        //    string keyPropName4 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 3);
+        //    string keyPropName5 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 4);
+        //    string keyPropName6 = GetConfiguredKeyPropNameByIndex(KeyItemsCount, 5);
+        //    return IsDtoCached(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6, columnPrefix);
+        //}
     }
 }

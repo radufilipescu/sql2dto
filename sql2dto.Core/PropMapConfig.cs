@@ -48,14 +48,20 @@ namespace sql2dto.Core
         public PropMapConfig Clone()
         {
             var clone = new PropMapConfig(this.Info, this.DefaultValue);
+            clone.DeclarationOrder = this.DeclarationOrder;
             clone.ColumnName = this.ColumnName;
             clone.ColumnOrdinal = this.ColumnOrdinal;
             clone.Converter = this.Converter;
+            clone.IsKey = this.IsKey;
+            clone.IsNullableKey = this.IsNullableKey;
             return clone;
         }
 
+        public int DeclarationOrder { get; set; }
         public string ColumnName { get; set; }
         public int? ColumnOrdinal { get; set; }
+        public bool IsKey { get; set; }
+        public bool IsNullableKey { get; set; }
         public Func<object, object> Converter { get; set; }
 
         internal readonly Type InnerPropType;

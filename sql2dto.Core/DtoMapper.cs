@@ -56,12 +56,7 @@ namespace sql2dto.Core
                 DefaultColumnsPrefix = columnsPrefixAttr.Value;
             }
 
-            var keyPropsAttribute = dtoType.GetCustomAttribute<KeyPropsAttribute>();
-            if (keyPropsAttribute != null)
-            {
-                DefaultOrderedKeyPropNames = keyPropsAttribute.KeyPropNames;
-            }
-
+            var keyPropMapConfigs = new List<PropMapConfig>();
             foreach (var propInfo in dtoType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 if (!propInfo.CanWrite)
@@ -93,8 +88,11 @@ namespace sql2dto.Core
                 var propMapAttribute = propInfo.GetCustomAttribute<PropMapAttribute>();
                 if (propMapAttribute != null)
                 {
+                    propMapConfig.DeclarationOrder = propMapAttribute.DeclarationOrder;
                     propMapConfig.ColumnName = propMapAttribute.ColumnName;
                     propMapConfig.ColumnOrdinal = propMapAttribute.ColumnOrdinal;
+                    propMapConfig.IsKey = propMapAttribute.IsKey;
+                    propMapConfig.IsNullableKey = propMapAttribute.IsNullableKey;
                 }
 
                 var converterAttribute = propInfo.GetCustomAttribute<ConverterAttribute>();
@@ -103,7 +101,25 @@ namespace sql2dto.Core
                     propMapConfig.Converter = converterAttribute.Converter;
                 }
 
+                if (propMapConfig.IsKey || propMapConfig.IsNullableKey)
+                {
+                    keyPropMapConfigs.Add(propMapConfig);
+                }
+
                 _defaultPropMapConfigs.Add(propMapConfig.Info.Name, propMapConfig);
+            }
+
+            var keyPropsAttribute = dtoType.GetCustomAttribute<KeyPropsAttribute>();
+            if (keyPropsAttribute != null)
+            {
+                DefaultOrderedKeyPropNames = keyPropsAttribute.KeyPropNames;
+            }
+            else if (keyPropMapConfigs.Count > 0)
+            {
+                DefaultOrderedKeyPropNames = keyPropMapConfigs
+                    .OrderBy(c => c.DeclarationOrder)
+                    .Select(c => c.Info.Name)
+                    .ToArray();
             }
         }
 
