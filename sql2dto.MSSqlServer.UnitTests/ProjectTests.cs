@@ -286,5 +286,22 @@ namespace sql2dto.MSSqlServer.UnitTests
                 Assert.True(result[0].Addresses[1].IsCapitalCity);
             }
         }
+
+        [Fact]
+        public async void Test2()
+        {
+            var u = sql2dto.dbo.Users.As("u");
+            var a = sql2dto.dbo.Addresses.As("a");
+
+            var query = sql2dto.SqlBuilder
+                    .FetchQuery<User>(u)
+                        .Include<Address>(a, (user, address) => { user.Addresses.Add(address); address.User = user; })
+                    .From(u)
+                    .LeftJoin(a, on: u.Id == a.UserId);
+            using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
+            {
+                var result = query.ExecAsync(conn);
+            }
+        }
     }
 }

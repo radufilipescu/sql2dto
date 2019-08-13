@@ -25,6 +25,11 @@ namespace sql2dto.Oracle
             return new SqlQuery(this);
         }
 
+        public override SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table)
+        {
+            return new SqlFetchQuery<TDto>(this, table);
+        }
+
         public override SqlInsert InsertInto(SqlTable table)
         {
             return new SqlInsert(this, table);

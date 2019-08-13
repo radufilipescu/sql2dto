@@ -12,6 +12,7 @@ namespace sql2dto.Core
 
         public abstract SqlParameterExpression Parameter(string name, object value);
         public abstract SqlQuery Query();
+        public abstract SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table) where TDto : new();
         public abstract SqlInsert InsertInto(SqlTable table);
         public abstract SqlUpdate Update(SqlTable table);
         public abstract SqlDelete DeleteFrom(SqlTable table);

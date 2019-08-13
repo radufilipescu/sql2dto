@@ -296,6 +296,7 @@ namespace sql2dto.Core
         private bool _isDistinct;
         public bool GetIsDistinct() => _isDistinct;
 
+        #region SQL CLAUSES
         public SqlQuery Distinct()
         {
             _isDistinct = true;
@@ -423,6 +424,7 @@ namespace sql2dto.Core
             _commonTableExpressions.Add((expressionName, query, new HashSet<string>(columnNames)));
             return this;
         }
+        #endregion
 
         public string BuildQueryString()
         {
