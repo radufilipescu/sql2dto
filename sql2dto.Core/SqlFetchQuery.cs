@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,25 +12,195 @@ namespace sql2dto.Core
     {
         private readonly SqlBuilder _builder;
         private readonly SqlQuery _sqlQuery;
-        public SqlFetchQuery(SqlBuilder builder, SqlTable table)
+
+        #region CONSTRUCTORS
+        public SqlFetchQuery(SqlBuilder builder, SqlTable table, params SqlColumn[] exceptColumns)
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
-            _sqlQuery.Project<TDto>(table);
+            _sqlQuery.Project<TDto>(table, exceptColumns);
         }
+
+        public SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
+        {
+            _builder = builder;
+            _sqlQuery = new SqlQuery(builder);
+            _sqlQuery.Project<TDto>(mapper, table, exceptColumns);
+        }
+
+        public SqlFetchQuery(SqlBuilder builder, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+        {
+            _builder = builder;
+            _sqlQuery = new SqlQuery(builder);
+            _sqlQuery.Project<TDto>(columnsPrefix, table, exceptColumns);
+        }
+
+        public SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+        {
+            _builder = builder;
+            _sqlQuery = new SqlQuery(builder);
+            _sqlQuery.Project<TDto>(mapper, columnsPrefix, table, exceptColumns);
+        }
+        #endregion
+
+        #region INCLUDE
+        private List<Action<FetchOp<TDto>, ReadHelper>> _includes = new List<Action<FetchOp<TDto>, ReadHelper>>();
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
             where TChildDto : new()
         {
-            _sqlQuery.Project<TDto>(table);
+            _sqlQuery.Project<TChildDto>(table);
+            var include = new Action<FetchOp<TDto>, ReadHelper>((parentFetchOp, helper) =>
+            {
+                var childFetchOp = FetchOp<TChildDto>.Create(helper);
+                childIncludeConfig?.Invoke(childFetchOp);
+                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+            });
+            _includes.Add(include);
             return this;
         }
 
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+        {
+            _sqlQuery.Project<TChildDto>(columnsPrefix, table);
+            var include = new Action<FetchOp<TDto>, ReadHelper>((parentFetchOp, helper) =>
+            {
+                var childFetchOp = FetchOp<TChildDto>.Create(columnsPrefix, helper);
+                childIncludeConfig?.Invoke(childFetchOp);
+                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+            });
+            _includes.Add(include);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+        {
+            _sqlQuery.Project<TChildDto>(childMapper, table);
+            var include = new Action<FetchOp<TDto>, ReadHelper>((parentFetchOp, helper) =>
+            {
+                var childFetchOp = FetchOp<TChildDto>.Create(helper, childMapper);
+                childIncludeConfig?.Invoke(childFetchOp);
+                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+            });
+            _includes.Add(include);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+        {
+            _sqlQuery.Project<TChildDto>(childMapper, columnsPrefix, table);
+            var include = new Action<FetchOp<TDto>, ReadHelper>((parentFetchOp, helper) =>
+            {
+                var childFetchOp = FetchOp<TChildDto>.Create(columnsPrefix, helper, childMapper);
+                childIncludeConfig?.Invoke(childFetchOp);
+                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+            });
+            _includes.Add(include);
+            return this;
+        }
+        #endregion
+
+        #region TABLE DIRECT PROJECTION
+        public SqlFetchQuery<TDto> Project<TProjDto>(SqlTable table, params SqlColumn[] exceptColumns)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(table, exceptColumns);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(columnsPrefix, table, exceptColumns);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, table, exceptColumns);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, columnsPrefix, table, exceptColumns);
+            return this;
+        }
+        #endregion
+
+        #region EXPRESSION PROJECTION
+        public SqlFetchQuery<TDto> Project<TProjDto>(params (SqlExpression, Expression<Func<TProjDto, object>>)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(params (SqlExpression, string)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, params (SqlExpression, Expression<Func<TProjDto, object>>)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, params (SqlExpression, string)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(string columnsPrefix, params (SqlExpression, Expression<Func<TProjDto, object>>)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(columnsPrefix, projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(columnsPrefix, projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, string columnsPrefix, params (SqlExpression, Expression<Func<TProjDto, object>>)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, columnsPrefix, projectExpressions);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> Project<TProjDto>(DtoMapper<TProjDto> mapper, string columnsPrefix, params (SqlExpression, string)[] projectExpressions)
+            where TProjDto : new()
+        {
+            _sqlQuery.Project<TProjDto>(mapper, columnsPrefix, projectExpressions);
+            return this;
+        }
+        #endregion
+
+        #region EXECUTE
         public async Task<List<TDto>> ExecAsync(DbConnection connection)
         {
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection))
             {
                 var fetch = h.Fetch<TDto>();
+                foreach (var include in _includes)
+                {
+                    include(fetch, h);
+                }
                 return fetch.All();
             }
         }
@@ -39,8 +210,18 @@ namespace sql2dto.Core
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection, transaction))
             {
                 var fetch = h.Fetch<TDto>();
+                foreach (var include in _includes)
+                {
+                    include(fetch, h);
+                }
                 return fetch.All();
             }
+        }
+        #endregion
+
+        public string BuildQueryString()
+        {
+            return _sqlQuery.BuildQueryString();
         }
 
         #region SQL CLAUSES

@@ -1410,6 +1410,226 @@ namespace sql2dto.Core
         }
         #endregion
 
+        #region 5 Keys
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, childMapper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, childMapper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyReadFunc);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyReadFunc);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+        #endregion
+
+        #region 6 Keys
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, childMapper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, DtoMapper<TChildDto> childMapper, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, childMapper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyReadFunc);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+
+        public FetchOp<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<FetchOp<TChildDto>> childIncludeConfig = null)
+            where TChildDto : new()
+            where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
+            where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
+            where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
+            where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
+            where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
+            where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
+        {
+            var childFetchOp = FetchOp<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyReadFunc);
+            childIncludeConfig?.Invoke(childFetchOp);
+            return this.Include(childFetchOp, map);
+        }
+        #endregion
+
         #endregion
 
         private FetchResult<TDto> FetchFromCurrentRow()

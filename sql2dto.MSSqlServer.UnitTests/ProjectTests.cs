@@ -292,15 +292,34 @@ namespace sql2dto.MSSqlServer.UnitTests
         {
             var u = sql2dto.dbo.Users.As("u");
             var a = sql2dto.dbo.Addresses.As("a");
+            var r = sql2dto.dbo.Users.As("r");
 
             var query = sql2dto.SqlBuilder
                     .FetchQuery<User>(u)
                         .Include<Address>(a, (user, address) => { user.Addresses.Add(address); address.User = user; })
+                        .Include<User>(r, "ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; })
+
+                    .Project<Address>(
+                        (Sql.Case()
+                            .When(Sql.Like(a.Street, "B.%"), then: true)
+                            .Else(false)
+                        .End(), dto => dto.IsCapitalCity)
+                    )
+
                     .From(u)
-                    .LeftJoin(a, on: u.Id == a.UserId);
+                    .LeftJoin(a, on: u.Id == a.UserId)
+                    .LeftJoin(r, on: u.ReportsToId == r.Id);
+
+            var queryStr = query.BuildQueryString();
+
             using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Server=srv-db;Database=sql2dto;User Id=sa;Password=@PentaQuark;"))
             {
-                var result = query.ExecAsync(conn);
+                var result = await query.ExecAsync(conn);
+
+                Assert.Equal(3, result.Count);
+                Assert.Equal(2, result[0].Addresses.Count);
+                Assert.False(result[0].Addresses[0].IsCapitalCity);
+                Assert.True(result[0].Addresses[1].IsCapitalCity);
             }
         }
     }
