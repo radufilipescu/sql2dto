@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 
 namespace sql2dto.Core.UnitTests.Utils
@@ -13,6 +14,8 @@ namespace sql2dto.Core.UnitTests.Utils
         private List<string[]> _columnNames;
         private List<List<object[]>> _values;
         private int _currentRow;
+
+        private List<Type> _fixedColumnTypes;
 
         public FakeDataReader(params string[] columnNames)
         {
@@ -35,7 +38,33 @@ namespace sql2dto.Core.UnitTests.Utils
                 throw new ArgumentOutOfRangeException(nameof(values));
             }
 
+            if (_fixedColumnTypes != null)
+            {
+                for (var vi = 0; vi < values.Length; vi++)
+                {
+                    var val = values[vi];
+                    if (val == null)
+                    {
+                        continue;
+                    }
+                    else if (val.GetType() != _fixedColumnTypes[vi])
+                    {
+                        throw new ArgumentException($"Values at index [{vi}] contains type {val.GetType()} but {_fixedColumnTypes[vi]} was expected", nameof(values));
+                    }
+                }
+            }
+
             _values[_currentAddResult].Add(values);
+        }
+
+        public void FixColumnTypes(params Type[] types)
+        {
+            if (types.Length != _columnNames[_currentReadResult].Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(types));
+            }
+
+            _fixedColumnTypes = new List<Type>(types);
         }
 
         public object this[int i] => GetValue(i);
@@ -112,6 +141,16 @@ namespace sql2dto.Core.UnitTests.Utils
 
         public Type GetFieldType(int i)
         {
+            if (_fixedColumnTypes != null)
+            {
+                var fieldType = _fixedColumnTypes.ElementAtOrDefault(i);
+                if (fieldType == null)
+                {
+                    throw new ArgumentException($"Fixed column types does not contain index [{i}]", nameof(i));
+                }
+                return fieldType;
+            }
+
             if (_currentRow == -1)
             {
                 return _values[_currentReadResult][0][i].GetType();

@@ -1817,28 +1817,28 @@ namespace sql2dto.Core
         #endregion
 
         #region Fetch Operations
-        public FetchOp<TDto> Fetch<TDto>()
+        public FetchOperation<TDto> Fetch<TDto>()
             where TDto : new()
         {
-            return FetchOp<TDto>.Create(this);
+            return FetchOperation<TDto>.Create(this);
         }
 
-        public FetchOp<TDto> Fetch<TDto>(DtoMapper<TDto> mapper)
+        public FetchOperation<TDto> Fetch<TDto>(DtoMapper<TDto> mapper)
             where TDto : new()
         {
-            return FetchOp<TDto>.Create(this, mapper);
+            return FetchOperation<TDto>.Create(this, mapper);
         }
 
-        public FetchOp<TDto> Fetch<TDto>(string columnsPrefix)
+        public FetchOperation<TDto> Fetch<TDto>(string columnsPrefix)
             where TDto : new()
         {
-            return FetchOp<TDto>.Create(columnsPrefix, this);
+            return FetchOperation<TDto>.Create(columnsPrefix, this);
         }
 
-        public FetchOp<TDto> Fetch<TDto>(string columnsPrefix, DtoMapper<TDto> mapper)
+        public FetchOperation<TDto> Fetch<TDto>(string columnsPrefix, DtoMapper<TDto> mapper)
             where TDto : new()
         {
-            return FetchOp<TDto>.Create(columnsPrefix, this, mapper);
+            return FetchOperation<TDto>.Create(columnsPrefix, this, mapper);
         }
         #endregion
 

@@ -76,7 +76,7 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
         }
 
         [Fact]
-        public void Test1()
+        public void Test_with_data()
         {
             var fakeReader = new FakeDataReader(
                 "empId", "empFirstName", "empLastName", 
@@ -94,6 +94,86 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             var fetch = 
                 h.Fetch<Employee>()
+                    .Include<Executive>((emp, ex) => { emp.Direct = ex; })
+                    .Include<HolidayRequest>((emp, hreq) => { emp.HolidayRequests.Add(hreq); })
+                    .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) => { depFetchOp
+                        .Include<Location>((dep, loc) => { dep.Locations.Add(loc); })
+                        .Include<Employee>("head", (dep, head) => { dep.Head = head; }, (empFetchOp) => { empFetchOp
+                            .Include<Executive>((emp, ex) => { emp.Direct = ex; });
+                        });
+                    });
+
+            var result = fetch.All();
+        }
+
+        [Fact]
+        public void Test_with_NO_data()
+        {
+            var fakeReader = new FakeDataReader(
+                "empId", "empFirstName", "empLastName",
+                "execId", "execFirstName", "execLastName", "execTitle",
+                "depName",
+                "headId", "headFirstName", "headLastName",
+                "locCountry", "locCity",
+                "hreqEmployeeId", "hreqStart", "hreqEnd"
+            );
+
+            fakeReader.FixColumnTypes(
+                typeof(int), typeof(string), typeof(string),
+                typeof(int), typeof(string), typeof(string), typeof(string),
+                typeof(string),
+                typeof(int), typeof(string), typeof(string),
+                typeof(string), typeof(string),
+                typeof(int), typeof(DateTime), typeof(DateTime)
+            );
+
+            var h = new ReadHelper(fakeReader);
+
+            var fetch =
+                h.Fetch<Employee>()
+                    .Include<Executive>((emp, ex) => { emp.Direct = ex; })
+                    .Include<HolidayRequest>((emp, hreq) => { emp.HolidayRequests.Add(hreq); })
+                    .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) => { depFetchOp
+                        .Include<Location>((dep, loc) => { dep.Locations.Add(loc); })
+                        .Include<Employee>("head", (dep, head) => { dep.Head = head; }, (empFetchOp) => { empFetchOp
+                            .Include<Executive>((emp, ex) => { emp.Direct = ex; });
+                        });
+                    });
+
+            var result = fetch.All();
+        }
+
+        [Fact]
+        public void Test_with_EMPTY_data()
+        {
+            var fakeReader = new FakeDataReader(
+                "empId", "empFirstName", "empLastName",
+                "execId", "execFirstName", "execLastName", "execTitle",
+                "depName",
+                "headId", "headFirstName", "headLastName",
+                "locCountry", "locCity",
+                "hreqEmployeeId", "hreqStart", "hreqEnd"
+            );
+
+            fakeReader.FixColumnTypes(
+                typeof(int), typeof(string), typeof(string),
+                typeof(int), typeof(string), typeof(string), typeof(string),
+                typeof(string),
+                typeof(int), typeof(string), typeof(string),
+                typeof(string), typeof(string),
+                typeof(int), typeof(DateTime), typeof(DateTime)
+            );
+
+            fakeReader.AddRow(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            fakeReader.AddRow(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            fakeReader.AddRow(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            fakeReader.AddRow(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+
+            var h = new ReadHelper(fakeReader);
+
+            var fetch =
+                h.Fetch<Employee>()
+                    .Include<Executive>((emp, ex) => { emp.Direct = ex; })
                     .Include<HolidayRequest>((emp, hreq) => { emp.HolidayRequests.Add(hreq); })
                     .Include<Department>((emp, dep) => { emp.Department = dep; }, (depFetchOp) => { depFetchOp
                         .Include<Location>((dep, loc) => { dep.Locations.Add(loc); })
