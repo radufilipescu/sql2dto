@@ -45,38 +45,40 @@ namespace sql2dto.Core.UnitTests.FetchOpTests
 
             var result = fetch.All();
 
-            //Assert.True(result.Count == 2);
-            //Assert.True(result[0].Author == "Radu");
-            //Assert.True(result[1].Author == "Bob");
+            Assert.True(result.Count == 2);
+            Assert.True(result[0].Author == "Radu");
+            Assert.True(result[1].Author == "Bob");
 
-            //Assert.True(result[0].Posts.Count == 3);
-            //Assert.True(result[1].Posts.Count == 1);
+            Assert.True(result[0].Posts.Count == 3);
+            Assert.True(result[1].Posts.Count == 1);
 
-            //Assert.True(result[1].Posts[0].Title == "Bob-First");
+            Assert.True(result[1].Posts[0].Title == "Bob-First");
 
-            //Assert.True(result[0].Posts[0].Title == "Radu-First");
-            //Assert.True(result[0].Posts[1].Title == "Radu-Second");
-            //Assert.True(result[0].Posts[2].Title == "Radu-Third");
+            Assert.True(result[0].Posts[0].Title == "Radu-First");
+            Assert.True(result[0].Posts[1].Title == "Radu-Second");
+            Assert.True(result[0].Posts[2].Title == "Radu-Third");
 
+            // EXAMPLE OF SQL query that woudl change the order of Ids when OrderBy is applied over joined tables
             //select
             //*
             //from
             //(
-            //	select 1 'a', 10000 'b'
+            //	select 1 'a', 10 'b'
             //	union
             //	select 2, 50
             //	union
-            //	select 1, 20000
+            //	select 1, 20
             //	union
             //	select 2, 20
             //	union
-            //	select 1, 40000
+            //	select 1, 40
             //	union
             //	select 2, 10
             //	union
-            //	select 1, 30000
+            //	select 1, 30
             //) as X
             //order by X.b desc;
+
         }
     }
 }
