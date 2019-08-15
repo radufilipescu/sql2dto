@@ -24,6 +24,14 @@ namespace sql2dto.Core.UnitTests.Utils
             _currentRow = -1;
         }
 
+        public FakeDataReader(params (string, Type)[] columnNameAndTypes)
+        {
+            _columnNames = new List<string[]> { columnNameAndTypes.Select(i => i.Item1).ToArray() };
+            this.FixColumnTypes(columnNameAndTypes.Select(i => i.Item2).ToArray());
+            _values = new List<List<object[]>> { new List<object[]>() };
+            _currentRow = -1;
+        }
+
         public void AddNewResult(params string[] columnNames)
         {
             _currentAddResult++;
