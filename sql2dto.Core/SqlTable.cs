@@ -12,8 +12,7 @@ namespace sql2dto.Core
             _tableSchema = tableSchema;
             _tableName = tableName;
             _tableAlias = tableAlias;
-            _columnPropertyNamesToIndexes = new Dictionary<string, int>();
-            _columnNamesToIndexes = new Dictionary<string, int>();
+            _columnNamesToIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _columns = new List<SqlColumn>();
         }
 
@@ -30,16 +29,6 @@ namespace sql2dto.Core
         private string _tableAlias;
         public override string GetAlias() => _tableAlias;
 
-        private Dictionary<string, int> _columnPropertyNamesToIndexes;
-        public SqlColumn GetColumnByPropertyName(string propertyName)
-        {
-            if (_columnPropertyNamesToIndexes.TryGetValue(propertyName, out int index))
-            {
-                return _columns[index];
-            }
-            throw new ArgumentOutOfRangeException(nameof(propertyName));
-        }
-
         private Dictionary<string, int> _columnNamesToIndexes;
         public override SqlColumn GetColumn(string columnNameOrAlias)
         {
@@ -48,6 +37,18 @@ namespace sql2dto.Core
                 return _columns[index];
             }
             throw new ArgumentOutOfRangeException(nameof(columnNameOrAlias));
+        }
+
+        public override bool TryGetColumn(string columnNameOrAlias, out SqlColumn sqlColumn)
+        {
+            if (_columnNamesToIndexes.TryGetValue(columnNameOrAlias, out int index))
+            {
+                sqlColumn = _columns[index];
+                return true;
+            }
+
+            sqlColumn = null;
+            return false;
         }
 
         private List<SqlColumn> _columns;
@@ -62,7 +63,6 @@ namespace sql2dto.Core
         {
             var col = new SqlColumn(this, propertyName, columnName);
             _columns.Add(col);
-            _columnPropertyNamesToIndexes.Add(propertyName, _columns.Count - 1);
             _columnNamesToIndexes.Add(columnName, _columns.Count - 1);
             return col;
         }

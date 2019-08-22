@@ -142,7 +142,7 @@ namespace sql2dto.Core
             {
                 if (_mapper == null)
                 {
-                    if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(keyPartPropName, out PropMapConfig conf))
+                    if (DtoMapper<TDto>.DefaultPropMapConfigs.TryGetValue(keyPartPropName, out PropMapConfig conf))
                     {
                         return conf.IsNullableKey;
                     }
@@ -151,7 +151,7 @@ namespace sql2dto.Core
                 }
                 else
                 {
-                    if (_mapper.TryGetInnerPropMapConfig(keyPartPropName, out PropMapConfig conf))
+                    if (_mapper.PropMapConfigs.TryGetValue(keyPartPropName, out PropMapConfig conf))
                     {
                         return conf.IsNullableKey;
                     }

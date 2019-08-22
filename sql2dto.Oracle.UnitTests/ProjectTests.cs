@@ -259,9 +259,9 @@ namespace sql2dto.Oracle.UnitTests
                     Sql.Const(1) == param1
                     & Sql.Const("abc").Like("%abc%")
                     & Sql.Const("%abc%").Like("!%abc!%", escapeChar: "!")
-                );
+                )
 
-                //.OrderBy(u.ID);
+                .OrderBy(u.ID);
                 //.SkipRows(1)
                 //.TakeRows(2);
 
@@ -275,6 +275,44 @@ namespace sql2dto.Oracle.UnitTests
                                 .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
                 var result = fetch.All();
+
+                Assert.Equal(3, result.Count);
+                Assert.Equal(2, result[0].Addresses.Count);
+                Assert.False(result[0].Addresses[0].IsCapitalCity);
+                Assert.True(result[0].Addresses[1].IsCapitalCity);
+            }
+        }
+
+        [Fact]
+        public async void Test2()
+        {
+            var u = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("u");
+            var a = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_ADDRESSES.As("a");
+            var r = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("r");
+
+            var query = sql2dto.SqlBuilder
+                    .FetchQuery<User>(u)
+                        .Include<Address>(a, (user, address) => { user.Addresses.Add(address); address.User = user; })
+                        .Include<User>(r, "ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; })
+
+                    .Project<Address>(
+                        (Sql.Case()
+                            .When(Sql.Like(a.STREET, "B.%"), then: true)
+                            .Else(false)
+                        .End(), dto => dto.IsCapitalCity)
+                    )
+
+                    .From(u)
+                    .LeftJoin(a, on: u.ID == a.USERID)
+                    .LeftJoin(r, on: u.REPORTSTOID == r.ID)
+
+                    .OrderBy(u.ID);
+
+            var queryStr = query.BuildQueryString();
+
+            using (var conn = await sql2dto.SqlBuilder.ConnectAsync("Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=srv-db)(PORT=1521))(CONNECT_DATA=(SID=orcl)));User Id=ADMINEMMETT; Password=adminemmett;"))
+            {
+                var result = await query.ExecAsync(conn);
 
                 Assert.Equal(3, result.Count);
                 Assert.Equal(2, result[0].Addresses.Count);

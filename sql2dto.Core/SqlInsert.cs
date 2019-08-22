@@ -15,7 +15,7 @@ namespace sql2dto.Core
             _builder = builder;
             _table = table;
             _columnsToSet = new List<(SqlColumn, SqlExpression)>();
-            _dbParameters = new Dictionary<string, DbParameter>();
+            _dbParameters = new Dictionary<string, DbParameter>(StringComparer.OrdinalIgnoreCase);
         }
 
         private SqlBuilder _builder;

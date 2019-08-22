@@ -10,14 +10,12 @@ namespace sql2dto.Core
 {
     public class SqlQuery : SqlTabularSource, ISqlStatement
     {
-        public SqlStatementType StatementType => SqlStatementType.SELECT;
-
         public SqlQuery(SqlBuilder builder)
         {
             _builder = builder;
-            _dbParameters = new Dictionary<string, DbParameter>();
+            _dbParameters = new Dictionary<string, DbParameter>(StringComparer.OrdinalIgnoreCase);
             _selectExpressions = new List<(SqlExpression, string)>();
-            _selectExpresionAliasesToIndexes = new Dictionary<string, int>();
+            _selectExpresionAliasesToIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _fromAndJoinClauses = new List<(SqlJoinType, SqlTabularSource, SqlExpression)>();
             _whereExpression = null;
             _groupByExpressions = new List<SqlExpression>();
@@ -29,11 +27,28 @@ namespace sql2dto.Core
             _takeRowsCount = -1;
         }
 
+        #region SqlTabularSource
+        public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
         public override SqlExpressionType GetExpressionType() => SqlExpressionType.SUB_QUERY;
 
-        private SqlBuilder _builder;
-        public string GetSqlBuilderLanguageImplementation() => _builder.GetLanguageImplementation();
-        public IReadHelperSettings GetReadHelperSettings() => _builder.ReadHelperSettings;
+        private string _queryAlias;
+        public override string GetAlias() => _queryAlias;
+
+        public override SqlColumn GetColumn(string columnNameOrAlias)
+        {
+            var col = new SqlColumn(this, null, columnNameOrAlias);
+            return col;
+        }
+
+        public override bool TryGetColumn(string columnNameOrAlias, out SqlColumn sqlColumn)
+        {
+            sqlColumn = new SqlColumn(this, null, columnNameOrAlias);
+            return true;
+        }
+        #endregion
+
+        #region ISqlStatement
+        public SqlStatementType StatementType => SqlStatementType.SELECT;
 
         private Dictionary<string, DbParameter> _dbParameters;
         public Dictionary<string, DbParameter> GetDbParameters() => _dbParameters;
@@ -46,9 +61,12 @@ namespace sql2dto.Core
             }
             return false;
         }
+        #endregion
 
-        private string _queryAlias;
-        public override string GetAlias() => _queryAlias;
+        #region EXPRESSION HOLDERS
+        private SqlBuilder _builder;
+        public string GetSqlBuilderLanguageImplementation() => _builder.GetLanguageImplementation();
+        public IReadHelperSettings GetReadHelperSettings() => _builder.ReadHelperSettings;
 
         private List<(SqlExpression, string)> _selectExpressions;
         public List<(SqlExpression, string)> GetSelectExpressions() => _selectExpressions;
@@ -98,6 +116,11 @@ namespace sql2dto.Core
         private int _takeRowsCount;
         public int GetTakeRowsCount() => _takeRowsCount;
 
+        private bool _isDistinct;
+        public bool GetIsDistinct() => _isDistinct;
+        #endregion
+
+        #region SKIP/TAKE ROWS
         public SqlQuery SkipRows(int count)
         {
             if (count < 0)
@@ -117,8 +140,7 @@ namespace sql2dto.Core
             _takeRowsCount = count;
             return this;
         }
-
-        public sealed override SqlTabularSourceType TabularType => SqlTabularSourceType.QUERY;
+        #endregion
 
         #region SELECT
         public SqlQuery Select(SqlExpression expression, string columnAlias = null)
@@ -160,6 +182,7 @@ namespace sql2dto.Core
         }
         #endregion
 
+        #region PROJECT
         #region TABLE DIRECT PROJECTION
         public SqlQuery Project<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
              where TDto : new()
@@ -183,6 +206,42 @@ namespace sql2dto.Core
             where TDto : new()
         {
             var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
+            foreach (var propMapConfig in mapper?.PropMapConfigs.Values ?? DtoMapper<TDto>.DefaultPropMapConfigs.Values)
+            {
+                SqlColumn sqlColumn;
+
+                if (table.TryGetColumn(propMapConfig.Info.Name, out sqlColumn))
+                {
+                    if (except.Contains(propMapConfig.Info.Name))
+                    {
+                        continue;
+                    }
+
+                    if (propMapConfig.ColumnName != null && except.Contains(propMapConfig.ColumnName))
+                    {
+                        continue;
+                    }
+
+                    AddSelectExpression(sqlColumn, $"{columnsPrefix}{propMapConfig.ColumnName ?? propMapConfig.Info.Name}");
+                }
+                else if (propMapConfig.ColumnName != null && table.TryGetColumn(propMapConfig.ColumnName, out sqlColumn))
+                {
+                    string columnName = propMapConfig.ColumnName;
+                    if (except.Contains(columnName))
+                    {
+                        continue;
+                    }
+
+                    AddSelectExpression(sqlColumn, $"{columnsPrefix}{columnName}");
+                }
+            }
+            return this;
+        }
+
+        public SqlQuery Project_OBSOLETE<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
             foreach (var col in table.ListAllColumns())
             {
                 if (except.Contains(col.GetColumnName()))
@@ -193,14 +252,14 @@ namespace sql2dto.Core
                 string propName = col.GetPropertyName();
                 if (mapper == null)
                 {
-                    if (DtoMapper<TDto>.TryGetDefaultInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
+                    if (DtoMapper<TDto>.DefaultPropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
                     {
                         AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
                     }
                 }
                 else
                 {
-                    if (mapper.TryGetInnerPropMapConfig(propName, out PropMapConfig propMapConfig))
+                    if (mapper.PropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
                     {
                         AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
                     }
@@ -208,7 +267,6 @@ namespace sql2dto.Core
             }
             return this;
         }
-
         #endregion
 
         #region EXPRESSION PROJECTION
@@ -280,21 +338,7 @@ namespace sql2dto.Core
             return this;
         }
         #endregion
-
-        public override SqlColumn GetColumn(string columnNameOrAlias)
-        {
-            var col = new SqlColumn(this, null, columnNameOrAlias);
-            return col;
-        }
-
-        public SqlQuery As(string subqueryAlias)
-        {
-            _queryAlias = subqueryAlias;
-            return this;
-        }
-
-        private bool _isDistinct;
-        public bool GetIsDistinct() => _isDistinct;
+        #endregion
 
         #region SQL CLAUSES
         public SqlQuery Distinct()
@@ -426,11 +470,7 @@ namespace sql2dto.Core
         }
         #endregion
 
-        public string BuildQueryString()
-        {
-            return _builder.BuildQueryString(this);
-        }
-
+        #region BUILD DB COMMAND
         public DbCommand BuildDbCommand()
         {
             return _builder.BuildDbCommand(this);
@@ -445,7 +485,9 @@ namespace sql2dto.Core
         {
             return _builder.BuildDbCommand(this, connection, transaction);
         }
+        #endregion
 
+        #region EXECUTE
         public ReadHelper ExecReadHelper(DbConnection connection)
         {
             return _builder.ExecReadHelper(this, connection);
@@ -464,6 +506,18 @@ namespace sql2dto.Core
         public async Task<ReadHelper> ExecReadHelperAsync(DbConnection connection, DbTransaction transaction)
         {
             return await _builder.ExecReadHelperAsync(this, connection, transaction);
+        }
+        #endregion
+
+        public SqlQuery As(string subqueryAlias)
+        {
+            _queryAlias = subqueryAlias;
+            return this;
+        }
+
+        public string BuildQueryString()
+        {
+            return _builder.BuildQueryString(this);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace sql2dto.Core
 {
-    public class SqlFetchQuery<TDto>
+    public class SqlFetchQuery<TDto> : ISqlStatement
         where TDto : new()
     {
         private readonly SqlBuilder _builder;
@@ -41,6 +41,20 @@ namespace sql2dto.Core
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
             _sqlQuery.Project<TDto>(mapper, columnsPrefix, table, exceptColumns);
+        }
+        #endregion
+
+        #region ISqlStatement
+        public SqlStatementType StatementType => SqlStatementType.SELECT;
+
+        public Dictionary<string, DbParameter> GetDbParameters()
+        {
+            return _sqlQuery.GetDbParameters();
+        }
+
+        public bool AddDbParameterIfNotFound(DbParameter parameter)
+        {
+            return _sqlQuery.AddDbParameterIfNotFound(parameter);
         }
         #endregion
 
@@ -102,6 +116,21 @@ namespace sql2dto.Core
         }
         #endregion
 
+        #region SKIP/TAKE ROWS
+        public SqlFetchQuery<TDto> SkipRows(int count)
+        {
+            _sqlQuery.SkipRows(count);
+            return this;
+        }
+
+        public SqlFetchQuery<TDto> TakeRows(int count)
+        {
+            _sqlQuery.TakeRows(count);
+            return this;
+        }
+        #endregion
+
+        #region PROJECT
         #region TABLE DIRECT PROJECTION
         public SqlFetchQuery<TDto> Project<TProjDto>(SqlTable table, params SqlColumn[] exceptColumns)
             where TProjDto : new()
@@ -189,39 +218,7 @@ namespace sql2dto.Core
             return this;
         }
         #endregion
-
-        #region EXECUTE
-        public async Task<List<TDto>> ExecAsync(DbConnection connection)
-        {
-            using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection))
-            {
-                var fetch = h.Fetch<TDto>();
-                foreach (var include in _includes)
-                {
-                    include(fetch, h);
-                }
-                return fetch.All();
-            }
-        }
-
-        public async Task<List<TDto>> ExecAsync(DbConnection connection, DbTransaction transaction)
-        {
-            using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection, transaction))
-            {
-                var fetch = h.Fetch<TDto>();
-                foreach (var include in _includes)
-                {
-                    include(fetch, h);
-                }
-                return fetch.All();
-            }
-        }
         #endregion
-
-        public string BuildQueryString()
-        {
-            return _sqlQuery.BuildQueryString();
-        }
 
         #region SQL CLAUSES
         public SqlFetchQuery<TDto> Distinct()
@@ -344,5 +341,55 @@ namespace sql2dto.Core
             return this;
         }
         #endregion
+
+        #region BUILD DB COMMAND
+        public DbCommand BuildDbCommand()
+        {
+            return _builder.BuildDbCommand(this._sqlQuery);
+        }
+
+        public DbCommand BuildDbCommand(DbConnection connection)
+        {
+            return _builder.BuildDbCommand(this._sqlQuery, connection);
+        }
+
+        public DbCommand BuildDbCommand(DbConnection connection, DbTransaction transaction)
+        {
+            return _builder.BuildDbCommand(this._sqlQuery, connection, transaction);
+        }
+        #endregion
+
+        #region EXECUTE
+        public async Task<List<TDto>> ExecAsync(DbConnection connection)
+        {
+            using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection))
+            {
+                var fetch = h.Fetch<TDto>();
+                foreach (var include in _includes)
+                {
+                    include(fetch, h);
+                }
+                return fetch.All();
+            }
+        }
+
+        public async Task<List<TDto>> ExecAsync(DbConnection connection, DbTransaction transaction)
+        {
+            using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection, transaction))
+            {
+                var fetch = h.Fetch<TDto>();
+                foreach (var include in _includes)
+                {
+                    include(fetch, h);
+                }
+                return fetch.All();
+            }
+        }
+        #endregion
+
+        public string BuildQueryString()
+        {
+            return _sqlQuery.BuildQueryString();
+        }
     }
 }

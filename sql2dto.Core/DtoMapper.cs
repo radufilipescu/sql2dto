@@ -13,6 +13,7 @@ namespace sql2dto.Core
     {
         #region STATIC
         protected static Dictionary<string, PropMapConfig> _defaultPropMapConfigs;
+        internal static IReadOnlyDictionary<string, PropMapConfig> DefaultPropMapConfigs => _defaultPropMapConfigs;
         public static bool ImplementsIOnDtoRead { get; private set; }
         internal static string DefaultColumnsPrefix { get; private set; }
         internal static string[] DefaultOrderedKeyPropNames { get; private set; }
@@ -26,20 +27,6 @@ namespace sql2dto.Core
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(propName));
-            }
-        }
-
-        internal static bool TryGetDefaultInnerPropMapConfig(string propName, out PropMapConfig result)
-        {
-            if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
-            {
-                result = cfg;
-                return true;
-            }
-            else
-            {
-                result = null;
-                return false;
             }
         }
 
@@ -224,6 +211,7 @@ namespace sql2dto.Core
         #endregion
 
         protected Dictionary<string, PropMapConfig> _propMapConfigs;
+        internal IReadOnlyDictionary<string, PropMapConfig> PropMapConfigs => _propMapConfigs;
         internal string ColumnsPrefix { get; private set; }
         internal string[] OrderedKeyPropNames { get; private set; }
 
@@ -236,20 +224,6 @@ namespace sql2dto.Core
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(propName));
-            }
-        }
-
-        internal bool TryGetInnerPropMapConfig(string propName, out PropMapConfig result)
-        {
-            if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
-            {
-                result = cfg;
-                return true;
-            }
-            else
-            {
-                result = null;
-                return false;
             }
         }
 

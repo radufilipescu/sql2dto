@@ -22,5 +22,11 @@ namespace sql2dto.Core
         {
             return null;
         }
+
+        public override bool TryGetColumn(string columnNameOrAlias, out SqlColumn sqlColumn)
+        {
+            sqlColumn = null;
+            return false;
+        }
     }
 }

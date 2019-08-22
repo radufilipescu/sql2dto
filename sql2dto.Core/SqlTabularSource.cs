@@ -9,5 +9,6 @@ namespace sql2dto.Core
         public abstract SqlTabularSourceType TabularType { get; }
         public abstract string GetAlias();
         public abstract SqlColumn GetColumn(string columnNameOrAlias);
+        public abstract bool TryGetColumn(string columnNameOrAlias, out SqlColumn sqlColumn);
     }
 }
