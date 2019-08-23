@@ -17,8 +17,8 @@ namespace sql2dto.Core.UnitTests.ConverterTests
             public bool IsActive { get; set; }
         }
 
-        private DtoMapper<Employee_WithMapper> _employeeMapper = new DtoMapper<Employee_WithMapper>()
-            .MapProp(nameof(Employee_WithMapper.IsActive), (value) => Convert.ToBoolean(value ?? 0));
+        private DtoMapper<Employee_WithMapper> _employeeMapper = DtoMapper<Employee_WithMapper>.Default.Clone()
+            .MapProp(_ => _.IsActive, (value) => Convert.ToBoolean(value ?? 0));
 
         [Fact]
         public void Test()

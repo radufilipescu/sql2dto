@@ -150,7 +150,7 @@ namespace sql2dto.Core
 
         public object GetValue<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetValue(ordinal.Value);
@@ -163,7 +163,7 @@ namespace sql2dto.Core
 
         public object GetNullableValue<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.IsDBNull(ordinal.Value) ? null : Reader.GetValue(ordinal.Value);
@@ -342,7 +342,7 @@ namespace sql2dto.Core
 
         public bool GetBoolean<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return this.GetBoolean(ordinal.Value);
@@ -355,7 +355,7 @@ namespace sql2dto.Core
 
         public bool? GetNullableBoolean<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -422,7 +422,7 @@ namespace sql2dto.Core
 
         public byte GetByte<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetByte(ordinal.Value);
@@ -462,7 +462,7 @@ namespace sql2dto.Core
 
         public long GetBytes<TDto>(string propName, long fieldOffset, byte[] buffer, int bufferoffset, int length) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, null);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, null);
             if (ordinal.HasValue)
             {
                 return Reader.GetBytes(ordinal.Value, fieldOffset, buffer, bufferoffset, length);
@@ -475,7 +475,7 @@ namespace sql2dto.Core
 
         public long GetBytes<TDto>(string propName, string columnsPrefix, long fieldOffset, byte[] buffer, int bufferoffset, int length) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetBytes(ordinal.Value, fieldOffset, buffer, bufferoffset, length);
@@ -528,7 +528,7 @@ namespace sql2dto.Core
 
         public char GetChar<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetChar(ordinal.Value);
@@ -568,7 +568,7 @@ namespace sql2dto.Core
 
         public long GetChars<TDto>(string propName, long fieldOffset, char[] buffer, int bufferoffset, int length) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, null);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, null);
             if (ordinal.HasValue)
             {
                 return Reader.GetChars(ordinal.Value, fieldOffset, buffer, bufferoffset, length);
@@ -581,7 +581,7 @@ namespace sql2dto.Core
 
         public long GetChars<TDto>(string propName, string columnsPrefix, long fieldOffset, char[] buffer, int bufferoffset, int length) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetChars(ordinal.Value, fieldOffset, buffer, bufferoffset, length);
@@ -634,7 +634,7 @@ namespace sql2dto.Core
 
         public string GetDataTypeName<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDataTypeName(ordinal.Value);
@@ -712,7 +712,7 @@ namespace sql2dto.Core
 
         public DateTime GetDateTime<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDateTime(ordinal.Value);
@@ -725,7 +725,7 @@ namespace sql2dto.Core
 
         public DateTime? GetNullableDateTime<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -830,7 +830,7 @@ namespace sql2dto.Core
 
         public decimal GetDecimal<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDecimal(ordinal.Value);
@@ -843,7 +843,7 @@ namespace sql2dto.Core
 
         public decimal? GetNullableDecimal<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -948,7 +948,7 @@ namespace sql2dto.Core
 
         public double GetDouble<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetDouble(ordinal.Value);
@@ -961,7 +961,7 @@ namespace sql2dto.Core
 
         public double? GetNullableDouble<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1028,7 +1028,7 @@ namespace sql2dto.Core
 
         public Type GetFieldType<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetFieldType(ordinal.Value);
@@ -1106,7 +1106,7 @@ namespace sql2dto.Core
 
         public float GetFloat<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetFloat(ordinal.Value);
@@ -1119,7 +1119,7 @@ namespace sql2dto.Core
 
         public float? GetNullableFloat<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1224,7 +1224,7 @@ namespace sql2dto.Core
 
         public Guid GetGuid<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetGuid(ordinal.Value);
@@ -1237,7 +1237,7 @@ namespace sql2dto.Core
 
         public Guid? GetNullableGuid<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1342,7 +1342,7 @@ namespace sql2dto.Core
 
         public short GetInt16<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt16(ordinal.Value);
@@ -1355,7 +1355,7 @@ namespace sql2dto.Core
 
         public short? GetNullableInt16<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1460,7 +1460,7 @@ namespace sql2dto.Core
 
         public int GetInt32<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt32(ordinal.Value);
@@ -1473,7 +1473,7 @@ namespace sql2dto.Core
 
         public int? GetNullableInt32<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1578,7 +1578,7 @@ namespace sql2dto.Core
 
         public long GetInt64<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetInt64(ordinal.Value);
@@ -1591,7 +1591,7 @@ namespace sql2dto.Core
 
         public long? GetNullableInt64<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1696,7 +1696,7 @@ namespace sql2dto.Core
 
         public string GetString<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.GetString(ordinal.Value);
@@ -1709,7 +1709,7 @@ namespace sql2dto.Core
 
         public string GetNullableString<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 if (Reader.IsDBNull(ordinal.Value))
@@ -1788,7 +1788,7 @@ namespace sql2dto.Core
 
         public bool IsDBNull<TDto>(string propName, string columnsPrefix = null) where TDto : new()
         {
-            int? ordinal = DtoMapper<TDto>.ExtractDefaultOrdinal(this, propName, columnsPrefix);
+            int? ordinal = DtoMapper<TDto>.Default.ExtractOrdinal(this, propName, columnsPrefix);
             if (ordinal.HasValue)
             {
                 return Reader.IsDBNull(ordinal.Value);

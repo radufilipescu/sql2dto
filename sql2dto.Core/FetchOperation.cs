@@ -29,14 +29,14 @@ namespace sql2dto.Core
 
         private static DtoCollection<TDto> CreateKeyedDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
         {
-            var keyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.DefaultOrderedKeyPropNames;
+            var keyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.Default.OrderedKeyPropNames;
             var genericArguments = new List<Type>
             {
                 typeof(TDto)
             };
             foreach (string keyPropName in keyPropNames)
             {
-                var keyInnerPropTypeName = mapper?.GetInnerPropMapConfig(keyPropName).InnerPropType ?? DtoMapper<TDto>.GetDefaultInnerPropMapConfig(keyPropName).InnerPropType;
+                var keyInnerPropTypeName = mapper?.PropMapConfigs[keyPropName].InnerPropType ?? DtoMapper<TDto>.Default.PropMapConfigs[keyPropName].InnerPropType;
                 genericArguments.Add(keyInnerPropTypeName);
             }
 
@@ -96,7 +96,7 @@ namespace sql2dto.Core
         private static DtoCollection<TDto> CreateDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
         {
             DtoCollection<TDto> collection;
-            var orderedKeyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.DefaultOrderedKeyPropNames;
+            var orderedKeyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.Default.OrderedKeyPropNames;
             if (orderedKeyPropNames != null 
                 && orderedKeyPropNames.Length > 0)
             {
