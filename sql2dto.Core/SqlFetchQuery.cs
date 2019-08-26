@@ -59,7 +59,7 @@ namespace sql2dto.Core
         #endregion
 
         #region INCLUDE
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(table);
@@ -67,13 +67,13 @@ namespace sql2dto.Core
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper);
                 then?.Invoke(childFetchOp);
-                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+                parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(columnsPrefix, table);
@@ -81,13 +81,13 @@ namespace sql2dto.Core
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper);
                 then?.Invoke(childFetchOp);
-                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+                parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, table);
@@ -95,13 +95,13 @@ namespace sql2dto.Core
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper, childMapper);
                 then?.Invoke(childFetchOp);
-                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+                parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, columnsPrefix, table);
@@ -109,7 +109,7 @@ namespace sql2dto.Core
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, childMapper);
                 then?.Invoke(childFetchOp);
-                parentFetchOp.Include<TChildDto>(childFetchOp, map);
+                parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;

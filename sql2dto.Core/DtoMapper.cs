@@ -11,36 +11,22 @@ namespace sql2dto.Core
 {
     public partial class DtoMapper<TDto> where TDto : new()
     {
-        #region STATIC
-        protected static Dictionary<string, PropMapConfig> _defaultPropMapConfigs;
-        internal static IReadOnlyDictionary<string, PropMapConfig> DefaultPropMapConfigs => _defaultPropMapConfigs;
-        public static bool ImplementsIOnDtoRead { get; private set; }
-        internal static string DefaultColumnsPrefix { get; private set; }
-        internal static string[] DefaultOrderedKeyPropNames { get; private set; }
+        internal static bool ImplementsIOnDtoRead { get; private set; }
 
-        internal static PropMapConfig GetDefaultInnerPropMapConfig(string propName)
-        {
-            if (_defaultPropMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
-            {
-                return cfg;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(propName));
-            }
-        }
+        public static DtoMapper<TDto> Default { get; private set; }
 
-        protected static void InitDefault()
+        static DtoMapper()
         {
-            _defaultPropMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
+            var propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
             var dtoType = typeof(TDto);
 
             ImplementsIOnDtoRead = typeof(IOnDtoRead).IsAssignableFrom(dtoType);
 
+            string columnsPrefix = null;
             var columnsPrefixAttr = dtoType.GetTypeInfo().GetCustomAttribute<ColumnsPrefixAttribute>();
             if (columnsPrefixAttr != null)
             {
-                DefaultColumnsPrefix = columnsPrefixAttr.Value;
+                columnsPrefix = columnsPrefixAttr.Value;
             }
 
             var keyPropMapConfigs = new List<PropMapConfig>();
@@ -93,65 +79,30 @@ namespace sql2dto.Core
                     keyPropMapConfigs.Add(propMapConfig);
                 }
 
-                _defaultPropMapConfigs.Add(propMapConfig.Info.Name, propMapConfig);
+                propMapConfigs.Add(propMapConfig.Info.Name, propMapConfig);
             }
 
+            string[] orderedKeyPropNames = null;
             var keyPropsAttribute = dtoType.GetCustomAttribute<KeyPropsAttribute>();
             if (keyPropsAttribute != null)
             {
-                DefaultOrderedKeyPropNames = keyPropsAttribute.KeyPropNames;
+                orderedKeyPropNames = keyPropsAttribute.KeyPropNames;
             }
             else if (keyPropMapConfigs.Count > 0)
             {
-                DefaultOrderedKeyPropNames = keyPropMapConfigs
+                orderedKeyPropNames = keyPropMapConfigs
                     .OrderBy(c => c.DeclarationOrder)
                     .Select(c => c.Info.Name)
                     .ToArray();
             }
-        }
 
-        static DtoMapper()
-        {
-            InitDefault();
-        }
-
-        private static int? ExtractOrdinal(Dictionary<string, PropMapConfig> propMapConfigs, ReadOnlyDictionary<string, int> columnNamesToOrdinals, string propName, string columnsPrefix = null)
-        {
-            if (propMapConfigs.TryGetValue(propName, out PropMapConfig config))
+            Default = new DtoMapper<TDto>()
             {
-                return ExtractOrdinal(columnNamesToOrdinals, config, columnsPrefix);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException(nameof(propName), $"Property map config for '{propName}' could not be found on type {typeof(TDto).FullName}");
-            }
-        }
-
-        public static int? ExtractDefaultOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)
-        {
-            return ExtractOrdinal(_defaultPropMapConfigs, helper.ColumnNamesToOrdinals, propName, columnsPrefix);
-        }
-
-        private static int? ExtractOrdinal(ReadOnlyDictionary<string, int> columnNamesToColumnOrdinals, PropMapConfig config, string columnsPrefix = null)
-        {
-            if (config.ColumnOrdinal.HasValue)
-            {
-                return config.ColumnOrdinal.Value;
-            }
-            else
-            {
-                string colName = config.ColumnName ?? config.Info.Name;
-                if (columnsPrefix != null)
-                {
-                    colName = columnsPrefix + colName;
-                }
-
-                if (columnNamesToColumnOrdinals.TryGetValue(colName, out int ordinal))
-                {
-                    return ordinal;
-                }
-            }
-            return null;
+                IsDefaultMapper = true,
+                ColumnsPrefix = columnsPrefix,
+                _propMapConfigs = propMapConfigs,
+                OrderedKeyPropNames = orderedKeyPropNames
+            };
         }
 
         private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, string columnsPrefix = null)
@@ -204,46 +155,101 @@ namespace sql2dto.Core
             return lambda.Compile();
         }
 
-        public static Func<TDto> CreateDefaultMapFunc(ReadHelper helper, string columnsPrefix = null)
-        {
-            return CreateMapFunc(helper, _defaultPropMapConfigs, columnsPrefix ?? DefaultColumnsPrefix);
-        }
-        #endregion
-
+        public bool IsDefaultMapper { get; private set; }
         protected Dictionary<string, PropMapConfig> _propMapConfigs;
         internal IReadOnlyDictionary<string, PropMapConfig> PropMapConfigs => _propMapConfigs;
         internal string ColumnsPrefix { get; private set; }
         internal string[] OrderedKeyPropNames { get; private set; }
 
-        internal PropMapConfig GetInnerPropMapConfig(string propName)
+        private DtoMapper(string columnsPrefix = null)
         {
-            if (_propMapConfigs.TryGetValue(propName, out PropMapConfig cfg))
+            IsDefaultMapper = false;
+            ColumnsPrefix = columnsPrefix;
+            OrderedKeyPropNames = null;
+            _propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, string columnName)
+        {
+            return this.MapProp(InternalUtils.GetPropertyName(propertySelector), columnName);
+        }
+
+        public DtoMapper<TDto> MapProp(string propertyName, string columnName)
+        {
+            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
             {
-                return cfg;
+                config.ColumnName = columnName;
             }
             else
             {
-                throw new ArgumentOutOfRangeException(nameof(propName));
+                throw new ArgumentException("Property not found", nameof(propertyName));
             }
+
+            return this;
         }
 
-        private void Init(string columnsPrefix = null)
+        public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, string columnName, Func<object, object> converter)
         {
-            ColumnsPrefix = columnsPrefix;
-            _propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
-            foreach (var defaultPropMapConfig in _defaultPropMapConfigs)
-            {
-                _propMapConfigs.Add(defaultPropMapConfig.Key, defaultPropMapConfig.Value.Clone());
-            }
-            if (DefaultOrderedKeyPropNames != null)
-            {
-                Array.Copy(DefaultOrderedKeyPropNames, OrderedKeyPropNames, DefaultOrderedKeyPropNames.Length);
-            }
+            return this.MapProp(InternalUtils.GetPropertyName(propertySelector), columnName, converter);
         }
 
-        public DtoMapper(string columnsPrefix = null)
+        public DtoMapper<TDto> MapProp(string propertyName, string columnName, Func<object, object> converter)
         {
-            Init(columnsPrefix);
+            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+            {
+                config.ColumnName = columnName;
+                config.Converter = converter;
+            }
+            else
+            {
+                throw new ArgumentException("Property not found", nameof(propertyName));
+            }
+
+            return this;
+        }
+
+        public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, int columnOrdinal)
+        {
+            return this.MapProp(InternalUtils.GetPropertyName(propertySelector), columnOrdinal);
+        }
+
+        public DtoMapper<TDto> MapProp(string propertyName, int columnOrdinal)
+        {
+            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+            {
+                config.ColumnOrdinal = columnOrdinal;
+            }
+            else
+            {
+                throw new ArgumentException("Property not found", nameof(propertyName));
+            }
+
+            return this;
+        }
+
+        public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, int columnOrdinal, Func<object, object> converter)
+        {
+            return this.MapProp(InternalUtils.GetPropertyName(propertySelector), columnOrdinal, converter);
+        }
+
+        public DtoMapper<TDto> MapProp(string propertyName, int columnOrdinal, Func<object, object> converter)
+        {
+            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+            {
+                config.ColumnOrdinal = columnOrdinal;
+                config.Converter = converter;
+            }
+            else
+            {
+                throw new ArgumentException("Property not found", nameof(propertyName));
+            }
+
+            return this;
+        }
+
+        public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, Func<object, object> converter)
+        {
+            return this.MapProp(InternalUtils.GetPropertyName(propertySelector), converter);
         }
 
         public DtoMapper<TDto> MapProp(string propertyName, Func<object, object> converter)
@@ -254,62 +260,112 @@ namespace sql2dto.Core
             }
             else
             {
-                throw new ArgumentException("Not found", nameof(propertyName));
+                throw new ArgumentException("Property not found", nameof(propertyName));
             }
 
             return this;
         }
 
-        public DtoMapper<TDto> MapProp(string propertyName, string columnName, Func<object, object> converter = null)
+        public DtoMapper<TDto> SetKeyProps(params Expression<Func<TDto, object>>[] keyPropSelectors)
         {
-            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
-            {
-                config.ColumnName = columnName;
-                config.Converter = converter;
-            }
-            else
-            {
-                throw new ArgumentException("Not found", nameof(propertyName));
-            }
-
-            return this;
+            return this.SetKeyProps(keyPropSelectors.Select(s => InternalUtils.GetPropertyName(s)).ToArray());
         }
 
-        public DtoMapper<TDto> MapProp(string propertyName, int columnOrdinal, Func<object, object> converter = null)
+        public DtoMapper<TDto> SetKeyProps(params string[] keyPropNames)
         {
-            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+            foreach (var keyPropName in keyPropNames)
             {
-                config.ColumnOrdinal = columnOrdinal;
-                config.Converter = converter;
+                if (!_propMapConfigs.ContainsKey(keyPropName))
+                {
+                    throw new ArgumentException("Property not found", nameof(keyPropName));
+                }
             }
-            else
-            {
-                throw new ArgumentException("Not found", nameof(propertyName));
-            }
-
-            return this;
-        }
-
-        public DtoMapper<TDto> SetKeyPropNames(params string[] keyPropNames)
-        {
             OrderedKeyPropNames = keyPropNames;
             return this;
         }
 
-        public Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
+        public DtoMapper<TDto> SetNullableKeyProps(params Expression<Func<TDto, object>>[] nullableKeyPropSelectors)
         {
-            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix ?? DefaultColumnsPrefix);
+            return this.SetNullableKeyProps(nullableKeyPropSelectors.Select(sel => (InternalUtils.GetPropertyName(sel), true)).ToArray());
         }
 
-        public int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)
+        public DtoMapper<TDto> SetNullableKeyProps(params (Expression<Func<TDto, object>>, bool)[] nullableKeyPropSelectors)
         {
-            return ExtractOrdinal(_propMapConfigs, helper.ColumnNamesToOrdinals, propName, columnsPrefix);
+            return this.SetNullableKeyProps(nullableKeyPropSelectors.Select(tuple => (InternalUtils.GetPropertyName(tuple.Item1), tuple.Item2)).ToArray());
+        }
+
+        public DtoMapper<TDto> SetNullableKeyProps(params string[] nullableKeyPropNames)
+        {
+            return this.SetNullableKeyProps(nullableKeyPropNames.Select(x => (x, true)).ToArray());
+        }
+
+        public DtoMapper<TDto> SetNullableKeyProps(params (string, bool)[] nullableKeyPropNames)
+        {
+            OrderedKeyPropNames = nullableKeyPropNames.Select(s => s.Item1).ToArray();
+            foreach (var tuple in nullableKeyPropNames)
+            {
+                if (_propMapConfigs.TryGetValue(tuple.Item1, out PropMapConfig config))
+                {
+                    config.IsNullableKey = tuple.Item2;
+                }
+                else
+                {
+                    throw new ArgumentException("Property not found", nameof(tuple.Item1));
+                }
+            }
+            return this;
+        }
+
+        public DtoMapper<TDto> SetColumnsPrefix(string columnsPrefix)
+        {
+            ColumnsPrefix = columnsPrefix;
+            return this;
+        }
+
+        internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
+        {
+            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
+        }
+
+        internal int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)
+        {
+            if (_propMapConfigs.TryGetValue(propName, out PropMapConfig config))
+            {
+                return ExtractOrdinal(helper.ColumnNamesToOrdinals, config, columnsPrefix);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(propName), $"Property map config for '{propName}' could not be found on type {typeof(TDto).FullName}");
+            }
+        }
+
+        private static int? ExtractOrdinal(ReadOnlyDictionary<string, int> columnNamesToColumnOrdinals, PropMapConfig config, string columnsPrefix = null)
+        {
+            if (config.ColumnOrdinal.HasValue)
+            {
+                return config.ColumnOrdinal.Value;
+            }
+            else
+            {
+                string colName = config.ColumnName ?? config.Info.Name;
+                if (columnsPrefix != null)
+                {
+                    colName = columnsPrefix + colName;
+                }
+
+                if (columnNamesToColumnOrdinals.TryGetValue(colName, out int ordinal))
+                {
+                    return ordinal;
+                }
+            }
+            return null;
         }
 
         public DtoMapper<TDto> Clone()
         {
             var clone = new DtoMapper<TDto>(this.ColumnsPrefix);
-            clone.OrderedKeyPropNames = this.OrderedKeyPropNames.ToArray();
+            clone.IsDefaultMapper = false;
+            clone.OrderedKeyPropNames = this.OrderedKeyPropNames?.ToArray();
             foreach (var propMapConfig in this._propMapConfigs)
             {
                 clone._propMapConfigs.Add(propMapConfig.Key, propMapConfig.Value.Clone());

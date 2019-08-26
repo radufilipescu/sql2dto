@@ -187,7 +187,7 @@ namespace sql2dto.Core
         public SqlQuery Project<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
              where TDto : new()
         {
-            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, table: table, exceptColumns: exceptColumns);
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, table: table, exceptColumns: exceptColumns);
         }
 
         public SqlQuery Project<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
@@ -199,14 +199,14 @@ namespace sql2dto.Core
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
             where TDto : new()
         {
-            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, table: table, exceptColumns: exceptColumns);
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, table: table, exceptColumns: exceptColumns);
         }
 
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
             where TDto : new()
         {
             var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
-            foreach (var propMapConfig in mapper?.PropMapConfigs.Values ?? DtoMapper<TDto>.DefaultPropMapConfigs.Values)
+            foreach (var propMapConfig in mapper?.PropMapConfigs.Values ?? DtoMapper<TDto>.Default.PropMapConfigs.Values)
             {
                 SqlColumn sqlColumn;
 
@@ -252,7 +252,7 @@ namespace sql2dto.Core
                 string propName = col.GetPropertyName();
                 if (mapper == null)
                 {
-                    if (DtoMapper<TDto>.DefaultPropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
+                    if (DtoMapper<TDto>.Default.PropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
                     {
                         AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
                     }
@@ -274,26 +274,26 @@ namespace sql2dto.Core
             where TDto : new()
         {
             var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
-            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: expressions);
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, projectExpressions: expressions);
         }
 
         public SqlQuery Project<TDto>(params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
-            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
+            return Project<TDto>(mapper: null, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, projectExpressions: projectExpressions);
         }
 
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
             where TDto : new()
         {
             var expressions = projectExpressions.Select(item => (item.Item1, InternalUtils.GetPropertyName(item.Item2))).ToArray();
-            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: expressions);
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, projectExpressions: expressions);
         }
 
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, params (SqlExpression, string)[] projectExpressions)
             where TDto : new()
         {
-            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.DefaultColumnsPrefix, projectExpressions: projectExpressions);
+            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, projectExpressions: projectExpressions);
         }
 
         public SqlQuery Project<TDto>(string columnsPrefix, params (SqlExpression, Expression<Func<TDto, object>>)[] projectExpressions)
@@ -328,11 +328,11 @@ namespace sql2dto.Core
             {
                 if (mapper == null)
                 {
-                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(DtoMapper<TDto>.GetDefaultInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}");
+                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(DtoMapper<TDto>.Default.PropMapConfigs[tuple.Item2].ColumnName ?? tuple.Item2)}");
                 }
                 else
                 {
-                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(mapper.GetInnerPropMapConfig(tuple.Item2).ColumnName ?? tuple.Item2)}");
+                    AddSelectExpression(tuple.Item1, $"{columnsPrefix}{(mapper.PropMapConfigs[tuple.Item2].ColumnName ?? tuple.Item2)}");
                 }
             }
             return this;

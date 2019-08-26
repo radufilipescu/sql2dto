@@ -43,6 +43,27 @@ namespace sql2dto.Core.UnitTests.KeyTests
             NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());
         }
 
+        [Fact]
+        public void Fetch_by_nullable_key_prop()
+        {
+            var mapper = DtoMapper<Human>.Default.Clone()
+                .SetNullableKeyProps(_ => _.Name);
+
+            var fakeReader = new FakeDataReader("Name", "Age");
+            NullableKeyTestsData.SetupHumansData(fakeReader);
+
+            var h = new ReadHelper(fakeReader);
+
+            var humCol = new DtoCollection<Human, string>(h, mapper);
+
+            while (h.Read())
+            {
+                humCol.Fetch();
+            }
+
+            NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());
+        }
+
         public class Human_2Keyes : IHuman
         {
             public string Name { get; set; }
@@ -73,6 +94,27 @@ namespace sql2dto.Core.UnitTests.KeyTests
                         (h.GetString(nameof(Human.Name)), h.GetInt32(nameof(Human.Age)))
                     );
                 }
+            }
+
+            NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());
+        }
+
+        [Fact]
+        public void Fetch_by_compound_nullable_key_prop()
+        {
+            var mapper = DtoMapper<Human_2Keyes>.Default.Clone()
+                .SetNullableKeyProps(_ => _.Name, _ => _.Age);
+
+            var fakeReader = new FakeDataReader("Name", "Age");
+            NullableKeyTestsData.SetupHumansData(fakeReader);
+
+            var h = new ReadHelper(fakeReader);
+
+            var humCol = new DtoCollection<Human_2Keyes, string, int>(h, mapper);
+
+            while (h.Read())
+            {
+                humCol.Fetch();
             }
 
             NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());

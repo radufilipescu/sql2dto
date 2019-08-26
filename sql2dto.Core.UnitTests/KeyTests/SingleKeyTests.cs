@@ -54,8 +54,8 @@ namespace sql2dto.Core.UnitTests.KeyTests
             KeyTestsData.AssertDataIntegrity(empCol.InnerList.Cast<IEmployee>());
         }
 
-        private DtoMapper<Empolyee> _empMapper = new DtoMapper<Empolyee>()
-            .SetKeyPropNames(nameof(Empolyee.Id));
+        private DtoMapper<Empolyee> _empMapper = DtoMapper<Empolyee>.Default.Clone()
+            .SetKeyProps(_ => _.Id);
 
         [Fact]
         public void Fetch_using_mapper_instance_config()
@@ -66,6 +66,35 @@ namespace sql2dto.Core.UnitTests.KeyTests
             var h = new ReadHelper(fakeReader);
 
             var empCol = new DtoCollection<Empolyee, int>(h, _empMapper);
+
+            while (h.Read())
+            {
+                var e = empCol.Fetch();
+            }
+
+            KeyTestsData.AssertDataIntegrity(empCol.InnerList.Cast<IEmployee>());
+        }
+
+        public class Empolyee_WithDefaultMapper : IEmployee
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public double Age { get; set; }
+        }
+
+        [Fact]
+        public void Fetch_using_default_mapper_config()
+        {
+            DtoMapper<Empolyee_WithDefaultMapper>.Default
+                .SetColumnsPrefix("EMP_")
+                .SetKeyProps(_ => _.Id);
+
+            var fakeReader = new FakeDataReader("EMP_Id", "EMP_Name", "EMP_Age");
+            KeyTestsData.SetupEmployeesData(fakeReader);
+
+            var h = new ReadHelper(fakeReader);
+
+            var empCol = new DtoCollection<Empolyee_WithDefaultMapper, int>(h);
 
             while (h.Read())
             {

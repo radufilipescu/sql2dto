@@ -57,12 +57,12 @@ namespace sql2dto.Core
             return clone;
         }
 
-        public int DeclarationOrder { get; set; }
-        public string ColumnName { get; set; }
-        public int? ColumnOrdinal { get; set; }
-        public bool IsKey { get; set; }
-        public bool IsNullableKey { get; set; }
-        public Func<object, object> Converter { get; set; }
+        public int DeclarationOrder { get; internal set; }
+        public string ColumnName { get; internal set; }
+        public int? ColumnOrdinal { get; internal set; }
+        public bool IsKey { get; internal set; }
+        public bool IsNullableKey { get; internal set; }
+        public Func<object, object> Converter { get; internal set; }
 
         internal readonly Type InnerPropType;
         internal readonly string InnerPropTypeName;

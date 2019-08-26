@@ -19,8 +19,7 @@ namespace sql2dto.Core
 
         private void SetupMapFunc()
         {
-            _mapFunc = _mapper?.CreateMapFunc(_helper, _columnsPrefix) 
-                ?? DtoMapper<TDto>.CreateDefaultMapFunc(_helper, _columnsPrefix);
+            _mapFunc = (_mapper ?? DtoMapper<TDto>.Default).CreateMapFunc(_helper, _columnsPrefix);
         }
 
         protected void SetupColumnNamesToOrdinalsChangedHandler()
@@ -90,28 +89,20 @@ namespace sql2dto.Core
 
         protected string GetConfiguredColumnsPrefix()
         {
-            return _columnsPrefix ?? _mapper?.ColumnsPrefix ?? DtoMapper<TDto>.DefaultColumnsPrefix;
+            return _columnsPrefix ?? (_mapper ?? DtoMapper<TDto>.Default).ColumnsPrefix;
         }
 
         protected string GetConfiguredKeyPropNameByIndex(int keyItemsCount, int index)
         {
-            if (_mapper == null && DtoMapper<TDto>.DefaultOrderedKeyPropNames != null)
+            var mapper = _mapper ?? DtoMapper<TDto>.Default;
+            if (mapper.OrderedKeyPropNames != null)
             {
-                if (DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length == keyItemsCount)
+                if (mapper.OrderedKeyPropNames.Length == keyItemsCount)
                 {
-                    return DtoMapper<TDto>.DefaultOrderedKeyPropNames[index];
+                    return mapper.OrderedKeyPropNames[index];
                 }
 
-                throw new InvalidOperationException($"This collection's key has {keyItemsCount} items while the map config has {DtoMapper<TDto>.DefaultOrderedKeyPropNames.Length}");
-            }
-            else if (_mapper != null && _mapper.OrderedKeyPropNames != null)
-            {
-                if (_mapper.OrderedKeyPropNames.Length == keyItemsCount)
-                {
-                    return _mapper.OrderedKeyPropNames[index];
-                }
-
-                throw new InvalidOperationException($"This collection's key has {keyItemsCount} items while the map config has {_mapper.OrderedKeyPropNames.Length}");
+                throw new InvalidOperationException($"This collection's key has {keyItemsCount} items while the map config has {mapper.OrderedKeyPropNames.Length}");
             }
 
             throw new InvalidOperationException("No key properties configuration was made for current map");
@@ -140,24 +131,13 @@ namespace sql2dto.Core
         {
             try
             {
-                if (_mapper == null)
+                var mapper = _mapper ?? DtoMapper<TDto>.Default;
+                if (mapper.PropMapConfigs.TryGetValue(keyPartPropName, out PropMapConfig conf))
                 {
-                    if (DtoMapper<TDto>.DefaultPropMapConfigs.TryGetValue(keyPartPropName, out PropMapConfig conf))
-                    {
-                        return conf.IsNullableKey;
-                    }
-
-                    return false;
+                    return conf.IsNullableKey;
                 }
-                else
-                {
-                    if (_mapper.PropMapConfigs.TryGetValue(keyPartPropName, out PropMapConfig conf))
-                    {
-                        return conf.IsNullableKey;
-                    }
 
-                    return false;
-                }
+                return false;
             }
             catch (Exception ex)
             {
@@ -190,6 +170,7 @@ namespace sql2dto.Core
     {
         private const int KeyItemsCount = 1;
         public Dictionary<TKey, int> KeyesToIndexes { get; private set; }
+        public int? NullKeyIndex { get; private set; }
 
         public DtoCollection(ReadHelper helper)
             : base(helper)
@@ -218,16 +199,34 @@ namespace sql2dto.Core
         public TDto FetchByKeyValue(TKey key)
         {
             TDto dto;
-            if (KeyesToIndexes.TryGetValue(key, out int index))
+
+            if (key == null)
             {
-                dto = InnerList[index];
-                LastFetchedIndex = index;
+                if (NullKeyIndex.HasValue)
+                {
+                    dto = InnerList[NullKeyIndex.Value];
+                    LastFetchedIndex = NullKeyIndex.Value;
+                }
+                else
+                {
+                    dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                    NullKeyIndex = LastFetchedIndex;
+                }
             }
             else
             {
-                dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
-                KeyesToIndexes.Add(key, LastFetchedIndex);
+                if (KeyesToIndexes.TryGetValue(key, out int index))
+                {
+                    dto = InnerList[index];
+                    LastFetchedIndex = index;
+                }
+                else
+                {
+                    dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                    KeyesToIndexes.Add(key, LastFetchedIndex);
+                }
             }
+            
             return dto;
         }
 

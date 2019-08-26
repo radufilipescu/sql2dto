@@ -20,19 +20,19 @@ namespace sql2dto.Core.UnitTests.MappingTests.Data
         public static void AssertDataIntegrity(IEnumerable<IEmployee> emps)
         {
             var alex = emps.First();
-            Assert.Equal(alex.Id, 1);
-            Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.Age, 0.1);
+            Assert.Equal(1, alex.Id);
+            Assert.Equal("Alex", alex.Name);
+            Assert.Equal(0.1, alex.Age);
 
             var george = emps.ElementAt(1);
-            Assert.Equal(george.Id, 2);
-            Assert.Equal(george.Name, "George");
-            Assert.Equal(george.Age, null);
+            Assert.Equal(2, george.Id);
+            Assert.Equal("George", george.Name);
+            Assert.Null(george.Age);
 
             var lisa = emps.ElementAt(2);
-            Assert.Equal(lisa.Id, 3);
-            Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.Age, 0.3);
+            Assert.Equal(3, lisa.Id);
+            Assert.Equal("Lisa", lisa.Name);
+            Assert.Equal(0.3, lisa.Age);
         }
 
         internal static void AssertDataIntegrity(IEnumerable<ConverterTests.Data.IEmployee> enumerable)
