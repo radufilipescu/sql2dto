@@ -852,8 +852,10 @@ $@"{BuildSqlJoinTypeString(joinType)}
                     return "AVG";
                 case SqlFunctionName.CONCAT:
                     return "CONCAT";
+                case SqlFunctionName.COALESCE:
+                    return "COALESCE";
                 default:
-                    throw new NotImplementedException($"SqlFunctionName: {func}");
+                    throw new NotImplementedException($"Sql function not implemented: {func}");
             }
         }
 
