@@ -98,5 +98,26 @@ namespace sql2dto.Core.UnitTests.KeyTests
 
             NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());
         }
+
+        [Fact]
+        public void Fetch_by_compound_nullable_key_prop()
+        {
+            var mapper = DtoMapper<Human_2Keyes>.Default.Clone()
+                .SetNullableKeyProps(_ => _.Name, _ => _.Age);
+
+            var fakeReader = new FakeDataReader("Name", "Age");
+            NullableKeyTestsData.SetupHumansData(fakeReader);
+
+            var h = new ReadHelper(fakeReader);
+
+            var humCol = new DtoCollection<Human_2Keyes, string, int>(h, mapper);
+
+            while (h.Read())
+            {
+                humCol.Fetch();
+            }
+
+            NullableKeyTestsData.AssertDataIntegrity(humCol.InnerList.Cast<IHuman>());
+        }
     }
 }

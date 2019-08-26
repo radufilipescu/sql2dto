@@ -24,19 +24,19 @@ namespace sql2dto.Core.UnitTests.KeyTests.Data
             Assert.Equal(3, emps.Count());
 
             var alex = emps.First();
-            Assert.Equal(alex.Id, 1);
-            Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.Age, 0.1);
+            Assert.Equal(1, alex.Id);
+            Assert.Equal("Alex", alex.Name);
+            Assert.Equal(0.1, alex.Age);
 
             var geroge = emps.ElementAt(1);
-            Assert.Equal(geroge.Id, 2);
-            Assert.Equal(geroge.Name, "George");
-            Assert.Equal(geroge.Age, 0.2);
+            Assert.Equal(2, geroge.Id);
+            Assert.Equal("George", geroge.Name);
+            Assert.Equal(0.2, geroge.Age);
 
             var lisa = emps.ElementAt(2);
-            Assert.Equal(lisa.Id, 3);
-            Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.Age, 0.3);
+            Assert.Equal(3, lisa.Id);
+            Assert.Equal("Lisa", lisa.Name);
+            Assert.Equal(0.3, lisa.Age);
         }
     }
 }

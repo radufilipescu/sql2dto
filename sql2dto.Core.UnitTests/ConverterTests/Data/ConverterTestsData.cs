@@ -22,24 +22,24 @@ namespace sql2dto.Core.UnitTests.ConverterTests.Data
             Assert.Equal(4, emps.Count());
 
             var alex = emps.First();
-            Assert.Equal(alex.Id, 1);
-            Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.IsActive, true);
+            Assert.Equal(1, alex.Id);
+            Assert.Equal("Alex", alex.Name);
+            Assert.True(alex.IsActive);
 
             var geroge = emps.ElementAt(1);
-            Assert.Equal(geroge.Id, 2);
-            Assert.Equal(geroge.Name, "George");
-            Assert.Equal(geroge.IsActive, false);
+            Assert.Equal(2, geroge.Id);
+            Assert.Equal("George", geroge.Name);
+            Assert.False(geroge.IsActive);
 
             var lisa = emps.ElementAt(2);
-            Assert.Equal(lisa.Id, 3);
-            Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.IsActive, true);
+            Assert.Equal(3, lisa.Id);
+            Assert.Equal("Lisa", lisa.Name);
+            Assert.True(lisa.IsActive);
 
             var jerome = emps.ElementAt(3);
-            Assert.Equal(jerome.Id, 4);
-            Assert.Equal(jerome.Name, "Jerome");
-            Assert.Equal(jerome.IsActive, false);
+            Assert.Equal(4, jerome.Id);
+            Assert.Equal("Jerome", jerome.Name);
+            Assert.False(jerome.IsActive);
         }
     }
 }

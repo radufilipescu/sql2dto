@@ -170,6 +170,7 @@ namespace sql2dto.Core
     {
         private const int KeyItemsCount = 1;
         public Dictionary<TKey, int> KeyesToIndexes { get; private set; }
+        public int? NullKeyIndex { get; private set; }
 
         public DtoCollection(ReadHelper helper)
             : base(helper)
@@ -198,16 +199,34 @@ namespace sql2dto.Core
         public TDto FetchByKeyValue(TKey key)
         {
             TDto dto;
-            if (KeyesToIndexes.TryGetValue(key, out int index))
+
+            if (key == null)
             {
-                dto = InnerList[index];
-                LastFetchedIndex = index;
+                if (NullKeyIndex.HasValue)
+                {
+                    dto = InnerList[NullKeyIndex.Value];
+                    LastFetchedIndex = NullKeyIndex.Value;
+                }
+                else
+                {
+                    dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                    NullKeyIndex = LastFetchedIndex;
+                }
             }
             else
             {
-                dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
-                KeyesToIndexes.Add(key, LastFetchedIndex);
+                if (KeyesToIndexes.TryGetValue(key, out int index))
+                {
+                    dto = InnerList[index];
+                    LastFetchedIndex = index;
+                }
+                else
+                {
+                    dto = base.Fetch(); // here LastFetchedIndex is actualised as InnerList.Count - 1
+                    KeyesToIndexes.Add(key, LastFetchedIndex);
+                }
             }
+            
             return dto;
         }
 

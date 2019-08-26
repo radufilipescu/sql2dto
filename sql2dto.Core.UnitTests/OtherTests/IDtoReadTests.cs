@@ -28,7 +28,7 @@ namespace sql2dto.Core.UnitTests.OtherTests
             public void OnDtoRead(Dictionary<string, object> rowValues)
             {
                 DtoReadCallsCount++;
-                Assert.Equal(0, BItems.Count);
+                Assert.Empty(BItems);
             }
         }
 

@@ -957,197 +957,197 @@ namespace sql2dto.Core
 
         #region No Keys
 
-        public FetchOperation<TDto> Include<TChildDto>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto>(DtoMapper<TChildDto> childMapper,  Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto>(DtoMapper<TChildDto> childMapper,  Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
         {
             var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 1 Key
-        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> map, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyPropName);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyPropName);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> map, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 2 Keys
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyPropName1, keyPropName2);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 3 Keys
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1155,10 +1155,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1166,10 +1166,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1177,10 +1177,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1188,10 +1188,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1199,10 +1199,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyPropName1, keyPropName2, keyPropName3);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1210,10 +1210,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1221,10 +1221,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1232,12 +1232,12 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 4 Keys
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1246,10 +1246,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1258,10 +1258,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1270,10 +1270,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1282,10 +1282,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1294,10 +1294,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1306,10 +1306,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1318,10 +1318,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1330,12 +1330,12 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 5 Keys
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1345,10 +1345,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1358,10 +1358,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1371,10 +1371,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1384,10 +1384,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1397,10 +1397,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1410,10 +1410,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1423,10 +1423,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1436,12 +1436,12 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 
         #region 6 Keys
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1452,10 +1452,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1466,10 +1466,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1480,10 +1480,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> map, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1494,10 +1494,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, childMapper);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1508,10 +1508,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1522,10 +1522,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1536,10 +1536,10 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
 
-        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> map, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
+        public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
             where TChildDto : new()
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
@@ -1550,7 +1550,7 @@ namespace sql2dto.Core
         {
             var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyReadFunc);
             then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, map);
+            return this.Include(childFetchOp, includer);
         }
         #endregion
 

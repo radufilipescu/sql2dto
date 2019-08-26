@@ -24,16 +24,16 @@ namespace sql2dto.Core.UnitTests.KeyTests.Data
             Assert.Equal(3, humans.Count());
 
             var alex = humans.First();
-            Assert.Equal(alex.Name, "Alex");
-            Assert.Equal(alex.Age, 1);
+            Assert.Equal("Alex", alex.Name);
+            Assert.Equal(1, alex.Age);
 
             var george = humans.ElementAt(1);
-            Assert.Equal(george.Name, null);
-            Assert.Equal(george.Age, 2);
+            Assert.Null(george.Name);
+            Assert.Equal(2, george.Age);
 
             var lisa = humans.ElementAt(2);
-            Assert.Equal(lisa.Name, "Lisa");
-            Assert.Equal(lisa.Age, 3);
+            Assert.Equal("Lisa", lisa.Name);
+            Assert.Equal(3, lisa.Age);
         }
     }
 }
