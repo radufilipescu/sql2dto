@@ -105,6 +105,11 @@ namespace sql2dto.Core
         {
             return new SqlFunctionCallExpression(SqlFunctionName.CONCAT, expressions.ToList(), distinct: false, over: null);
         }
+
+        public static SqlFunctionCallExpression Coalesce(params SqlExpression[] expressions)
+        {
+            return new SqlFunctionCallExpression(SqlFunctionName.COALESCE, expressions.ToList(), distinct: false, over: null);
+        }
         #endregion
 
         #region windowing functions

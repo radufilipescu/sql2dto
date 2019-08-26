@@ -10,6 +10,8 @@ namespace sql2dto.Core
 
         CONCAT,
 
+        COALESCE,
+
         // windowing functions
         SUM,
         AVERAGE,
