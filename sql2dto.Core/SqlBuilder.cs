@@ -11,14 +11,50 @@ namespace sql2dto.Core
         public abstract string GetLanguageImplementation();
 
         public abstract SqlParameterExpression Parameter(string name, object value);
-        public abstract SqlQuery Query();
-        public abstract SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table, params SqlColumn[] exceptColumns) where TDto : new();
-        public abstract SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns) where TDto : new();
-        public abstract SqlFetchQuery<TDto> FetchQuery<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns) where TDto : new();
-        public abstract SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns) where TDto : new();
-        public abstract SqlInsert InsertInto(SqlTable table);
-        public abstract SqlUpdate Update(SqlTable table);
-        public abstract SqlDelete DeleteFrom(SqlTable table);
+
+        public SqlQuery Query()
+        {
+            return new SqlQuery(this);
+        }
+
+        public SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            return new SqlFetchQuery<TDto>(this, table, exceptColumns);
+        }
+
+        public SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            return new SqlFetchQuery<TDto>(this, mapper, table, exceptColumns);
+        }
+
+        public SqlFetchQuery<TDto> FetchQuery<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            return new SqlFetchQuery<TDto>(this, columnsPrefix, table, exceptColumns);
+        }
+
+        public SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+            where TDto : new()
+        {
+            return new SqlFetchQuery<TDto>(this, mapper, columnsPrefix, table, exceptColumns);
+        }
+
+        public SqlInsert InsertInto(SqlTable table)
+        {
+            return new SqlInsert(this, table);
+        }
+
+        public SqlUpdate Update(SqlTable table)
+        {
+            return new SqlUpdate(this, table);
+        }
+
+        public SqlDelete DeleteFrom(SqlTable table)
+        {
+            return new SqlDelete(this, table);
+        }
 
         #region ADO.NET
         public abstract DbConnection Connect(string connectionString);

@@ -105,7 +105,7 @@ namespace sql2dto.MSSqlServer.UnitTests
                 .LeftJoin(a, on: (a.UserId == u.Id & u.Id == a.UserId) | a.Street == param2 + param1)
                 .FullJoin(a, on: a.UserId == u.Id & (u.Id == a.UserId | a.Street == param2 + param1))
                 .CrossJoin(a)
-                .RightJoin(innerQuery, innerQuery.GetColumn("Street") == Sql.Const(-1)) //TODO
+                .RightJoin(innerQuery, on: innerQuery.GetColumn("Street") == Sql.Const(-1)) //TODO
 
                 .Where(a.Street - a.Id == u.Id | u.Id * u.FirstName == param1 & a.Street == param2 + Sql.Const("FOO"))
 
