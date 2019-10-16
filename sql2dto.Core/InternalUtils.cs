@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace sql2dto.Core
 {
-    internal class InternalUtils
+    internal static class InternalUtils
     {
         internal static string GetPropertyName<T>(Expression<Func<T, object>> expression)
         {

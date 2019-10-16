@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace sql2dto.Core
 {
-    public partial class DtoMapper<TDto> where TDto : new()
+    public partial class DtoMapper<TDto>
     {
         internal static bool ImplementsIOnDtoRead { get; private set; }
 
@@ -17,6 +17,7 @@ namespace sql2dto.Core
 
         static DtoMapper()
         {
+            var fieldMapConfigs = new Dictionary<string, FieldMapConfig>(StringComparer.OrdinalIgnoreCase);
             var propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
             var dtoType = typeof(TDto);
 
@@ -29,14 +30,34 @@ namespace sql2dto.Core
                 columnsPrefix = columnsPrefixAttr.Value;
             }
 
+            var ctorInfo = dtoType.GetConstructors(BindingFlags.Instance | BindingFlags.Public)
+                .OrderBy(ci => ci.GetParameters().Length)
+                .FirstOrDefault();
+
+            foreach (var fieldInfo in dtoType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            {
+                object defaultValue = null;
+
+                if (!fieldInfo.FieldType.GetTypeInfo().IsValueType)
+                {
+                    if (fieldInfo.FieldType != typeof(string))
+                    {
+                        continue;
+                    }
+                }
+                else
+                {
+                    defaultValue = Activator.CreateInstance(fieldInfo.FieldType);
+                }
+
+                var fieldMapConfig = new FieldMapConfig(fieldInfo, defaultValue);
+
+                fieldMapConfigs.Add(fieldMapConfig.Info.Name, fieldMapConfig);
+            }
+
             var keyPropMapConfigs = new List<PropMapConfig>();
             foreach (var propInfo in dtoType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (!propInfo.CanWrite)
-                {
-                    continue;
-                }
-
                 if (propInfo.GetCustomAttribute<IgnorePropAttribute>() != null)
                 {
                     continue;
@@ -100,18 +121,36 @@ namespace sql2dto.Core
             {
                 IsDefaultMapper = true,
                 ColumnsPrefix = columnsPrefix,
+                _ctorInfo = ctorInfo,
                 _propMapConfigs = propMapConfigs,
+                _fieldMapConfigs = fieldMapConfigs,
                 OrderedKeyPropNames = orderedKeyPropNames
             };
         }
 
-        private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, string columnsPrefix = null)
+        private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, ConstructorInfo ctorInfo, 
+            string columnsPrefix = null, 
+            Dictionary<string, object> injectedValues = null)
         {
             var readHelperConstExpr = Expression.Constant(helper, typeof(ReadHelper));
+
+            List<PropMapConfig> backedPropMapConfigs = new List<PropMapConfig>();
 
             List<MemberBinding> memberBindings = new List<MemberBinding>();
             foreach (var propMapConfig in propertyMapConfigs.Values)
             {
+                if (propMapConfig.BackingFieldMapConfig != null)
+                {
+                    backedPropMapConfigs.Add(propMapConfig);
+                    continue;
+                }
+                else if (!propMapConfig.Info.CanWrite)
+                {
+                    throw new Exception(
+                        $"Property '{propMapConfig.Info.Name}' cannot be written to. Either create a setter for it or use a backing field. "
+                        + "If property is inherited, use a protected setter or a protected backing field.");
+                }
+
                 int? ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, propMapConfig, columnsPrefix);
                 if (!ordinal.HasValue)
                 {
@@ -148,16 +187,41 @@ namespace sql2dto.Core
                 }
             }
 
-            var newItemExpr = Expression.New(typeof(TDto));
+            var ctorParamExprs = injectedValues?.Values.Select(v => Expression.Constant(v)).ToArray() ?? new ConstantExpression[0];
+
+            var newItemExpr = (ctorInfo == null || ctorInfo.GetParameters().Length == 0)
+                ? Expression.New(typeof(TDto))
+                : Expression.New(ctorInfo, ctorParamExprs);
             var memberInitExpr = Expression.MemberInit(newItemExpr, memberBindings);
 
             var lambda = Expression.Lambda<Func<TDto>>(memberInitExpr);
-            return lambda.Compile();
+            var compiledLambda = lambda.Compile();
+
+            if (backedPropMapConfigs.Count > 0)
+            {
+                return new Func<TDto>(() =>
+                {
+                    var dto = compiledLambda();
+                    foreach (var backedPropMapConfig in backedPropMapConfigs)
+                    {
+                        var ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, backedPropMapConfig, columnsPrefix);
+                        var val = helper.GetNullableValue(ordinal.Value);
+                        backedPropMapConfig.BackingFieldMapConfig.Info.SetValue(dto, val);
+                    }
+                    return dto;
+                });
+            }
+
+            return compiledLambda;
         }
 
         public bool IsDefaultMapper { get; private set; }
         protected Dictionary<string, PropMapConfig> _propMapConfigs;
+        private Dictionary<string, FieldMapConfig> _fieldMapConfigs;
+        private ConstructorInfo _ctorInfo;
+
         internal IReadOnlyDictionary<string, PropMapConfig> PropMapConfigs => _propMapConfigs;
+        internal IReadOnlyDictionary<string, FieldMapConfig> FieldMapConfigs => _fieldMapConfigs;
         internal string ColumnsPrefix { get; private set; }
         internal string[] OrderedKeyPropNames { get; private set; }
 
@@ -167,6 +231,33 @@ namespace sql2dto.Core
             ColumnsPrefix = columnsPrefix;
             OrderedKeyPropNames = null;
             _propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public DtoMapper<TDto> BackingField(Expression<Func<TDto, object>> propertySelector, string fieldName)
+        {
+            return this.BackingField(InternalUtils.GetPropertyName(propertySelector), fieldName);
+        }
+
+        public DtoMapper<TDto> BackingField(string propertyName, string fieldName)
+        {
+            if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+            {
+                if (_fieldMapConfigs.TryGetValue(fieldName, out FieldMapConfig fieldConfig))
+                {
+                    config.BackingFieldName = fieldName;
+                    config.BackingFieldMapConfig = fieldConfig;
+                }
+                else
+                {
+                    throw new ArgumentException("Backing field not found", nameof(fieldName));
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Property not found", nameof(propertyName));
+            }
+
+            return this;
         }
 
         public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, string columnName)
@@ -322,9 +413,9 @@ namespace sql2dto.Core
             return this;
         }
 
-        internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
+        internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null, Dictionary<string, object> injectedValues = null)
         {
-            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
+            return CreateMapFunc(helper, _propMapConfigs, _ctorInfo, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix, injectedValues);
         }
 
         internal int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)

@@ -5,12 +5,12 @@ using System.Text;
 
 namespace sql2dto.Core
 {
-    public class PropMapConfig
+    public class FieldMapConfig
     {
         public readonly object DefaultValue;
-        public readonly PropertyInfo Info;
+        public readonly FieldInfo Info;
 
-        public PropMapConfig(PropertyInfo info, object defaultValue)
+        public FieldMapConfig(FieldInfo info, object defaultValue)
         {
             this.Info = info;
             this.DefaultValue = defaultValue;
@@ -20,14 +20,14 @@ namespace sql2dto.Core
             Type innerPropType = null;
             string innerPropTypeName = null;
             string getterName = "Get";
-            if (this.Info.PropertyType.IsGenericType
-                && this.Info.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (this.Info.FieldType.IsGenericType
+                && this.Info.FieldType.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
-                innerPropType = Nullable.GetUnderlyingType(this.Info.PropertyType);
+                innerPropType = Nullable.GetUnderlyingType(this.Info.FieldType);
                 innerPropTypeName = innerPropType.Name;
                 getterName += "Nullable" + innerPropTypeName;
             }
-            else if (this.Info.PropertyType == stringType)
+            else if (this.Info.FieldType == stringType)
             {
                 innerPropType = stringType;
                 innerPropTypeName = stringType.Name;
@@ -35,7 +35,7 @@ namespace sql2dto.Core
             }
             else
             {
-                innerPropType = this.Info.PropertyType;
+                innerPropType = this.Info.FieldType;
                 innerPropTypeName = innerPropType.Name;
                 getterName += innerPropTypeName;
             }
@@ -45,16 +45,15 @@ namespace sql2dto.Core
             this.ReadHelperGetterMethodInfo = ReadHelper.GetGetterOrdinalMethodInfo(this.ReadHelperGetterMethodName);
         }
 
-        public PropMapConfig Clone()
+        public FieldMapConfig Clone()
         {
-            var clone = new PropMapConfig(this.Info, this.DefaultValue);
+            var clone = new FieldMapConfig(this.Info, this.DefaultValue);
             clone.DeclarationOrder = this.DeclarationOrder;
             clone.ColumnName = this.ColumnName;
             clone.ColumnOrdinal = this.ColumnOrdinal;
             clone.Converter = this.Converter;
             clone.IsKey = this.IsKey;
             clone.IsNullableKey = this.IsNullableKey;
-            clone.BackingFieldName = this.BackingFieldName;
             return clone;
         }
 
@@ -64,8 +63,6 @@ namespace sql2dto.Core
         public bool IsKey { get; internal set; }
         public bool IsNullableKey { get; internal set; }
         public Func<object, object> Converter { get; internal set; }
-        public string BackingFieldName { get; internal set; }
-        public FieldMapConfig BackingFieldMapConfig { get; internal set; }
 
         internal readonly Type InnerPropType;
         internal readonly string InnerPropTypeName;

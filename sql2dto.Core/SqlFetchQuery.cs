@@ -8,35 +8,35 @@ using System.Threading.Tasks;
 namespace sql2dto.Core
 {
     public class SqlFetchQuery<TDto> : ISqlStatement
-        where TDto : new()
+
     {
         private readonly SqlBuilder _builder;
         private readonly SqlQuery _sqlQuery;
         private readonly List<Action<FetchOperation<TDto>, ReadHelper>> _includes = new List<Action<FetchOperation<TDto>, ReadHelper>>();
 
         #region CONSTRUCTORS
-        public SqlFetchQuery(SqlBuilder builder, SqlTable table, params SqlColumn[] exceptColumns)
+        internal SqlFetchQuery(SqlBuilder builder, SqlTable table, params SqlColumn[] exceptColumns)
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
             _sqlQuery.Project<TDto>(table, exceptColumns);
         }
 
-        public SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
+        internal SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
             _sqlQuery.Project<TDto>(mapper, table, exceptColumns);
         }
 
-        public SqlFetchQuery(SqlBuilder builder, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+        internal SqlFetchQuery(SqlBuilder builder, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
             _sqlQuery.Project<TDto>(columnsPrefix, table, exceptColumns);
         }
 
-        public SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
+        internal SqlFetchQuery(SqlBuilder builder, DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
@@ -60,12 +60,12 @@ namespace sql2dto.Core
 
         #region INCLUDE
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
             _sqlQuery.Project<TChildDto>(table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
-                var childFetchOp = FetchOperation<TChildDto>.Create(helper);
+                var childFetchOp = FetchOperation<TChildDto>.Create(helper, parentFetchOp.InjectedValues);
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -74,12 +74,12 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
             _sqlQuery.Project<TChildDto>(columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
-                var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper);
+                var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, parentFetchOp.InjectedValues);
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -88,12 +88,12 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
             _sqlQuery.Project<TChildDto>(childMapper, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
-                var childFetchOp = FetchOperation<TChildDto>.Create(helper, childMapper);
+                var childFetchOp = FetchOperation<TChildDto>.Create(helper, childMapper, parentFetchOp.InjectedValues);
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -102,12 +102,12 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
             _sqlQuery.Project<TChildDto>(childMapper, columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
-                var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, childMapper);
+                var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, childMapper, parentFetchOp.InjectedValues);
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -360,11 +360,11 @@ namespace sql2dto.Core
         #endregion
 
         #region EXECUTE
-        public async Task<List<TDto>> ExecAsync(DbConnection connection)
+        public async Task<List<TDto>> ExecAsync(DbConnection connection, Dictionary<string, object> injectedValues = null)
         {
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection))
             {
-                var fetch = h.Fetch<TDto>();
+                var fetch = h.Fetch<TDto>(injectedValues);
                 foreach (var include in _includes)
                 {
                     include(fetch, h);
@@ -373,11 +373,11 @@ namespace sql2dto.Core
             }
         }
 
-        public async Task<List<TDto>> ExecAsync(DbConnection connection, DbTransaction transaction)
+        public async Task<List<TDto>> ExecAsync(DbConnection connection, DbTransaction transaction, Dictionary<string, object> injectedValues = null)
         {
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection, transaction))
             {
-                var fetch = h.Fetch<TDto>();
+                var fetch = h.Fetch<TDto>(injectedValues);
                 foreach (var include in _includes)
                 {
                     include(fetch, h);

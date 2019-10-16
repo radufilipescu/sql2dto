@@ -25,26 +25,6 @@ namespace sql2dto.Oracle
             return new SqlQuery(this);
         }
 
-        public override SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
-        {
-            return new SqlFetchQuery<TDto>(this, table, exceptColumns);
-        }
-
-        public override SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
-        {
-            return new SqlFetchQuery<TDto>(this, table, exceptColumns);
-        }
-
-        public override SqlFetchQuery<TDto> FetchQuery<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
-        {
-            return new SqlFetchQuery<TDto>(this, columnsPrefix, table, exceptColumns);
-        }
-
-        public override SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
-        {
-            return new SqlFetchQuery<TDto>(this, mapper, columnsPrefix, table, exceptColumns);
-        }
-
         public override SqlInsert InsertInto(SqlTable table)
         {
             return new SqlInsert(this, table);

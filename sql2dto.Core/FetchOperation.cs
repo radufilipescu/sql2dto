@@ -5,29 +5,31 @@ using System.Text;
 namespace sql2dto.Core
 {
     public class FetchOperation<TDto> : IIncludeOperation<TDto>
-        where TDto : new()
+        
     {
-        private class CollectResult<T>
-            where T : new()
+        private class CollectResult
         {
-            public T Current { get; set; }
+            public TDto Current { get; set; }
             public int CurrentIndex { get; set; }
-            public List<T> List { get; set; }
+            public List<TDto> List { get; set; }
         }
 
         private ReadHelper _readHelper;
-        private Func<CollectResult<TDto>> _collectFunc;
-        private List<Action<CollectResult<TDto>>> _includes;
+        private Func<CollectResult> _collectFunc;
+        private List<Action<CollectResult>> _includes;
         private Dictionary<int, Dictionary<int, HashSet<int>>> _parentChildrenBounds;
+        internal Dictionary<string, object> InjectedValues { get; private set; }
 
-        private FetchOperation(ReadHelper readHelper) 
+        private FetchOperation(ReadHelper readHelper, Dictionary<string, object> injectedValues) 
         {
             _readHelper = readHelper;
-            _includes = new List<Action<CollectResult<TDto>>>();
+            _includes = new List<Action<CollectResult>>();
             _parentChildrenBounds = new Dictionary<int, Dictionary<int, HashSet<int>>>();
+            InjectedValues = injectedValues;
         }
 
-        private static DtoCollection<TDto> CreateKeyedDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        private static DtoCollection<TDto> CreateKeyedDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper,
+            Dictionary<string, object> injectedValues = null)
         {
             var keyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.Default.OrderedKeyPropNames;
             var genericArguments = new List<Type>
@@ -73,34 +75,35 @@ namespace sql2dto.Core
             {
                 if (columnsPrefix != null)
                 {
-                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper, mapper);
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper, mapper, injectedValues);
                 }
                 else
                 {
-                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, mapper);
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, mapper, injectedValues);
                 }
             }
             else
             {
                 if (columnsPrefix != null)
                 {
-                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper);
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, columnsPrefix, readHelper, injectedValues);
                 }
                 else
                 {
-                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper);
+                    return (DtoCollection<TDto>)Activator.CreateInstance(collectionType, readHelper, injectedValues);
                 }
             }
         }
 
-        private static DtoCollection<TDto> CreateDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        private static DtoCollection<TDto> CreateDtoCollection(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper,
+            Dictionary<string, object> injectedValues = null)
         {
             DtoCollection<TDto> collection;
             var orderedKeyPropNames = mapper?.OrderedKeyPropNames ?? DtoMapper<TDto>.Default.OrderedKeyPropNames;
             if (orderedKeyPropNames != null 
                 && orderedKeyPropNames.Length > 0)
             {
-                collection = CreateKeyedDtoCollection(columnsPrefix, readHelper, mapper);
+                collection = CreateKeyedDtoCollection(columnsPrefix, readHelper, mapper, injectedValues);
             }
             else
             {
@@ -108,22 +111,22 @@ namespace sql2dto.Core
                 {
                     if (columnsPrefix != null)
                     {
-                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper, mapper);
+                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper, mapper, injectedValues);
                     }
                     else
                     {
-                        collection = new DtoCollection<TDto>(readHelper, mapper);
+                        collection = new DtoCollection<TDto>(readHelper, mapper, injectedValues);
                     }
                 }
                 else
                 {
                     if (columnsPrefix != null)
                     {
-                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper);
+                        collection = new DtoCollection<TDto>(columnsPrefix, readHelper, injectedValues);
                     }
                     else
                     {
-                        collection = new DtoCollection<TDto>(readHelper);
+                        collection = new DtoCollection<TDto>(readHelper, injectedValues);
                     }
                 }
             }
@@ -138,7 +141,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.Fetch();
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -149,7 +152,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -161,7 +164,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -174,7 +177,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -188,7 +191,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -203,7 +206,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -219,7 +222,7 @@ namespace sql2dto.Core
             {
                 var key = keyReadFunc(fetchOp._readHelper);
                 TDto current = collection.FetchByKeyValue(key);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -229,7 +232,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -240,7 +243,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -252,7 +255,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -265,7 +268,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -279,7 +282,7 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
 
@@ -294,55 +297,59 @@ namespace sql2dto.Core
             fetchOp._collectFunc = () =>
             {
                 TDto current = collection.FetchByKeyProps(keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
-                return new CollectResult<TDto> { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
+                return new CollectResult { List = collection.InnerList, Current = current, CurrentIndex = collection.LastFetchedIndex };
             };
         }
         #endregion
 
         #region No Keys
-        public static FetchOperation<TDto> Create(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
         {
-            var result = new FetchOperation<TDto>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
             DtoCollection<TDto> collection = CreateDtoCollection(
                 columnsPrefix: null, 
                 readHelper: readHelper, 
-                mapper: null
+                mapper: null,
+                injectedValues: injectedValues
             );
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
         {
-            var result = new FetchOperation<TDto>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
             DtoCollection<TDto> collection = CreateDtoCollection(
                 columnsPrefix: null, 
                 readHelper: readHelper, 
-                mapper: mapper
+                mapper: mapper,
+                injectedValues: injectedValues
             );
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
         {
-            var result = new FetchOperation<TDto>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
             DtoCollection<TDto> collection = CreateDtoCollection(
                 columnsPrefix: columnsPrefix,
                 readHelper: readHelper, 
-                mapper: mapper
+                mapper: mapper,
+                injectedValues: injectedValues
             );
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
         {
-            var result = new FetchOperation<TDto>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
             DtoCollection<TDto> collection = CreateDtoCollection(
                 columnsPrefix: columnsPrefix,
                 readHelper: readHelper, 
-                mapper: null
+                mapper: null,
+                injectedValues: injectedValues
             );
             SetupDefaultCollectFunc(result, collection);
             return result;
@@ -350,457 +357,457 @@ namespace sql2dto.Core
         #endregion
 
         #region 1 Key
-        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, TKey> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, string keyPropName)
+        public static FetchOperation<TDto> Create<TKey>(ReadHelper readHelper, string keyPropName, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, string keyPropName)
+        public static FetchOperation<TDto> Create<TKey>(string columnsPrefix, ReadHelper readHelper, string keyPropName, Dictionary<string, object> injectedValues = null)
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName);
             return result;
         }
         #endregion
 
         #region 2 Keys
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, string keyPropName1, string keyPropName2)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(ReadHelper readHelper, string keyPropName1, string keyPropName2, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2)
+        public static FetchOperation<TDto> Create<TKey1, TKey2>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2);
             return result;
         }
         #endregion
 
         #region 3 Keys
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3);
             return result;
         }
         #endregion
 
         #region 4 Keys
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
             return result;
         }
         #endregion
 
         #region 5 Keys
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
             return result;
         }
         #endregion
 
         #region 6 Keys
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -808,13 +815,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -822,13 +829,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, DtoMapper<TDto> mapper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -836,13 +843,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, mapper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, mapper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -850,13 +857,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, injectedValues);
             SetupDefaultCollectFunc(result, collection);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -864,13 +871,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -878,13 +885,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyValueFunc(result, collection, keyReadFunc);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -892,13 +899,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
             return result;
         }
 
-        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6)
+        public static FetchOperation<TDto> Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, ReadHelper readHelper, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Dictionary<string, object> injectedValues = null)
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -906,8 +913,8 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var result = new FetchOperation<TDto>(readHelper);
-            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper);
+            var result = new FetchOperation<TDto>(readHelper, injectedValues);
+            var collection = new DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, readHelper, injectedValues);
             SetupCollectByKeyPropNamesFunc(result, collection, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
             return result;
         }
@@ -919,11 +926,11 @@ namespace sql2dto.Core
 
         #region MAIN INCLUDE
         internal FetchOperation<TDto> Include<TChildDto>(FetchOperation<TChildDto> childOp, Action<TDto, TChildDto> map)
-            where TChildDto : new()
+            
         {
             int boundIndex = _parentChildrenBounds.Count;
             _parentChildrenBounds.Add(boundIndex, new Dictionary<int, HashSet<int>>());
-            var include = new Action<CollectResult<TDto>>((parent) =>
+            var include = new Action<CollectResult>((parent) =>
             {
                 var child = childOp.FetchFromCurrentRow();
                 if (child.Current == null)
@@ -958,33 +965,33 @@ namespace sql2dto.Core
         #region No Keys
 
         public FetchOperation<TDto> Include<TChildDto>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto>(DtoMapper<TChildDto> childMapper,  Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -992,73 +999,73 @@ namespace sql2dto.Core
 
         #region 1 Key
         public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyPropName);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyPropName, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyPropName);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyPropName, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(Action<TDto, TChildDto> includer, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, TKey> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey : IComparable, IConvertible, IEquatable<TKey>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1066,81 +1073,81 @@ namespace sql2dto.Core
 
         #region 2 Keys
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyPropName1, keyPropName2);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyPropName1, keyPropName2, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1148,89 +1155,89 @@ namespace sql2dto.Core
 
         #region 3 Keys
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyPropName1, keyPropName2, keyPropName3);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1238,97 +1245,97 @@ namespace sql2dto.Core
 
         #region 4 Keys
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1336,105 +1343,105 @@ namespace sql2dto.Core
 
         #region 5 Keys
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
             where TKey4 : IComparable, IConvertible, IEquatable<TKey4>
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1442,7 +1449,7 @@ namespace sql2dto.Core
 
         #region 6 Keys
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1450,13 +1457,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1464,13 +1471,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1478,13 +1485,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1492,13 +1499,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, childMapper);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, childMapper, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1506,13 +1513,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, string keyPropName1, string keyPropName2, string keyPropName3, string keyPropName4, string keyPropName5, string keyPropName6, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1520,13 +1527,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyPropName1, keyPropName2, keyPropName3, keyPropName4, keyPropName5, keyPropName6, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1534,13 +1541,13 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
 
         public FetchOperation<TDto> Include<TChildDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(string columnsPrefix, Action<TDto, TChildDto> includer, Func<ReadHelper, (TKey1, TKey2, TKey3, TKey4, TKey5, TKey6)> keyReadFunc, Action<IIncludeOperation<TChildDto>> then = null)
-            where TChildDto : new()
+            
             where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
             where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
             where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -1548,7 +1555,7 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>
         {
-            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyReadFunc);
+            var childFetchOp = FetchOperation<TChildDto>.Create<TKey1, TKey2, TKey3, TKey4, TKey5, TKey6>(columnsPrefix, this._readHelper, keyReadFunc, this.InjectedValues);
             then?.Invoke(childFetchOp);
             return this.Include(childFetchOp, includer);
         }
@@ -1556,23 +1563,14 @@ namespace sql2dto.Core
 
         #endregion
 
-        private CollectResult<TDto> FetchFromCurrentRow()
+        private CollectResult FetchFromCurrentRow()
         {
-            CollectResult<TDto> result = _collectFunc();
+            CollectResult result = _collectFunc();
             foreach (var include in _includes)
             {
                 include(result);
             }
             return result;
-        }
-
-        public TDto One()
-        {
-            if (_readHelper.Read())
-            {
-                return FetchFromCurrentRow().Current;
-            }
-            return default(TDto);
         }
 
         public List<TDto> All()
