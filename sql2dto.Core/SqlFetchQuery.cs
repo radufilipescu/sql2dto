@@ -66,6 +66,7 @@ namespace sql2dto.Core
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper);
+                childFetchOp.InternalSqlQuery = _sqlQuery;
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -80,6 +81,7 @@ namespace sql2dto.Core
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper);
+                childFetchOp.InternalSqlQuery = _sqlQuery;
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -94,6 +96,7 @@ namespace sql2dto.Core
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper, childMapper);
+                childFetchOp.InternalSqlQuery = _sqlQuery;
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
@@ -108,6 +111,7 @@ namespace sql2dto.Core
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, childMapper);
+                childFetchOp.InternalSqlQuery = _sqlQuery;
                 then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });

@@ -348,5 +348,19 @@ namespace sql2dto.Core
             where TKey5 : IComparable, IConvertible, IEquatable<TKey5>
             where TKey6 : IComparable, IConvertible, IEquatable<TKey6>;
         #endregion
+
+        #region With InternalSqlQuery
+        FetchOperation<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+            where TChildDto : new();
+
+        FetchOperation<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+            where TChildDto : new();
+
+        FetchOperation<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+            where TChildDto : new();
+
+        FetchOperation<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+            where TChildDto : new();
+        #endregion
     }
 }
