@@ -154,6 +154,11 @@ namespace sql2dto.MSSqlServer.UnitTests
         [Fact]
         public async void Test1()
         {
+            var reportsToUserMapper = DtoMapper<User>.Default.Clone()
+                .IgnoreProps(_ => _.LifePeriod)
+                //.SetFetchTolerance(true)
+                ;
+
             var param1 = sql2dto.SqlBuilder.Parameter("p_1", 1);
             var param2 = sql2dto.SqlBuilder.Parameter("p_2", 2);
             var param3 = sql2dto.SqlBuilder.Parameter("p_3", 3);
@@ -196,19 +201,21 @@ namespace sql2dto.MSSqlServer.UnitTests
                         .Else(false)
                     .End(), nameof(Address.IsCapitalCity))
                 )
+
                 //.Project<Address>(
                 //    (Sql.Cast(Sql.Case()
                 //        .When(Sql.Like(a.Street, "B.%"), then: true)
                 //        .Else(false)
                 //    .End(), to: "BIT"), dto => dto.IsCapitalCity)
                 //)
+
                 .Project<Address>(
                     (Sql.Case()
                         .When(Sql.Like(a.Street, "B.%"), then: true)
                         .Else(false)
                     .End(), dto => dto.IsCapitalCity)
                 )
-                .Project<User>("ReportsToUser", r, exceptColumns: r.ReportsToId)
+                .Project<User>("ReportsToUser", r)
                 //.Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
                 .Project<User>((ulpCTE.LifePeriod, nameof(User.LifePeriod)))
                 //
@@ -276,7 +283,7 @@ namespace sql2dto.MSSqlServer.UnitTests
             {
                 var fetch = h.Fetch<User>()
                                 .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
-                                .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
+                                .Include<User>("ReportsToUser", reportsToUserMapper, (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
                 var result = fetch.All();
 
@@ -294,10 +301,20 @@ namespace sql2dto.MSSqlServer.UnitTests
             var a = sql2dto.dbo.Addresses.As("a");
             var r = sql2dto.dbo.Users.As("r");
 
+            var caseWhenLifePeriod =
+                Sql.Case()
+                    .When(Sql.IsNull(u.Age), then: "UNKOWN")
+                    .When(u.Age >= Sql.Const(18), then: "Adult")
+                    .Else("Teenage")
+                .End();
+
             var query = sql2dto.SqlBuilder
                     .FetchQuery<User>(u)
                         .Include<Address>(a, (user, address) => { user.Addresses.Add(address); address.User = user; })
                         .Include<User>(r, "ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; })
+
+                    .Project<User>((caseWhenLifePeriod, user => user.LifePeriod))
+                    .Project<User>("ReportsToUser", (caseWhenLifePeriod, user => user.LifePeriod))
 
                     .Project<Address>(
                         (Sql.Case()

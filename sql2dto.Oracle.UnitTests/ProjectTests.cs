@@ -147,6 +147,11 @@ namespace sql2dto.Oracle.UnitTests
         [Fact]
         public async void Test1()
         {
+            var reportsToUserMapper = DtoMapper<User>.Default.Clone()
+                .IgnoreProps(_ => _.LifePeriod)
+                //.SetFetchTolerance(true)
+                ;
+
             var param1 = sql2dto.SqlBuilder.Parameter("p_1", 1);
             var param2 = sql2dto.SqlBuilder.Parameter("p_2", 2);
             var param3 = sql2dto.SqlBuilder.Parameter("p_3", 3);
@@ -203,7 +208,7 @@ namespace sql2dto.Oracle.UnitTests
                         .Else(false)
                     .End(), dto => dto.IsCapitalCity)
                 )
-                .Project<User>("ReportsToUser", r, exceptColumns: r.REPORTSTOID)
+                .Project<User>("ReportsToUser", r)
                 //.Project<User>((Sql.CTEColumn("ulp_cte", nameof(User.LifePeriod)), nameof(User.LifePeriod)))
                 .Project<User>((ulpCTE.LIFEPERIOD, nameof(User.LifePeriod)))
                 //
@@ -272,7 +277,7 @@ namespace sql2dto.Oracle.UnitTests
             {
                 var fetch = h.Fetch<User>()
                                 .Include<Address>((user, address) => { user.Addresses.Add(address); address.User = user; })
-                                .Include<User>("ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
+                                .Include<User>("ReportsToUser", reportsToUserMapper, (user, reportsToUser) => { user.ReportsToUser = reportsToUser; });
 
                 var result = fetch.All();
 
@@ -290,10 +295,20 @@ namespace sql2dto.Oracle.UnitTests
             var a = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_ADDRESSES.As("a");
             var r = sql2dto.ADMINEMMETT.ZZZ_SQL2DTO_USERS.As("r");
 
+            var caseWhenLifePeriod = 
+                Sql.Case()
+                    .When(Sql.IsNull(u.AGE), then: "UNKOWN")
+                    .When(u.AGE >= Sql.Const(18), then: "Adult")
+                    .Else("Teenage")
+                .End();
+
             var query = sql2dto.SqlBuilder
                     .FetchQuery<User>(u)
                         .Include<Address>(a, (user, address) => { user.Addresses.Add(address); address.User = user; })
                         .Include<User>(r, "ReportsToUser", (user, reportsToUser) => { user.ReportsToUser = reportsToUser; })
+
+                    .Project<User>((caseWhenLifePeriod, user => user.LifePeriod))
+                    .Project<User>("ReportsToUser", (caseWhenLifePeriod, user => user.LifePeriod))
 
                     .Project<Address>(
                         (Sql.Case()

@@ -1554,68 +1554,6 @@ namespace sql2dto.Core
         }
         #endregion
 
-        #region With InternalSqlQuery
-        internal SqlQuery InternalSqlQuery { get; set; }
-        const string INTERNAL_SQL_QUERY_NOT_AVAILABLE_ERROR_MESSAGE =
-            "No InternalSqlQuery available to project DTO from SqlTable. Use SqlBuilder.FetchQuery<TDto>(SqlTable) instead of SqlBuilder.Query().";
-
-        public FetchOperation<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null) where TChildDto : new()
-        {
-            if (InternalSqlQuery is null)
-            {
-                throw new InvalidOperationException(INTERNAL_SQL_QUERY_NOT_AVAILABLE_ERROR_MESSAGE);
-            }
-
-            InternalSqlQuery.Project<TChildDto>(table);
-            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper);
-            childFetchOp.InternalSqlQuery = InternalSqlQuery;
-            then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, includer);
-        }
-
-        public FetchOperation<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null) where TChildDto : new()
-        {
-            if (InternalSqlQuery is null)
-            {
-                throw new InvalidOperationException(INTERNAL_SQL_QUERY_NOT_AVAILABLE_ERROR_MESSAGE);
-            }
-
-            InternalSqlQuery.Project<TChildDto>(table);
-            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper);
-            childFetchOp.InternalSqlQuery = InternalSqlQuery;
-            then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, includer);
-        }
-
-        public FetchOperation<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null) where TChildDto : new()
-        {
-            if (InternalSqlQuery is null)
-            {
-                throw new InvalidOperationException(INTERNAL_SQL_QUERY_NOT_AVAILABLE_ERROR_MESSAGE);
-            }
-
-            InternalSqlQuery.Project<TChildDto>(table);
-            var childFetchOp = FetchOperation<TChildDto>.Create(this._readHelper, childMapper);
-            childFetchOp.InternalSqlQuery = InternalSqlQuery;
-            then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, includer);
-        }
-
-        public FetchOperation<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null) where TChildDto : new()
-        {
-            if (InternalSqlQuery is null)
-            {
-                throw new InvalidOperationException(INTERNAL_SQL_QUERY_NOT_AVAILABLE_ERROR_MESSAGE);
-            }
-
-            InternalSqlQuery.Project<TChildDto>(table);
-            var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, this._readHelper, childMapper);
-            childFetchOp.InternalSqlQuery = InternalSqlQuery;
-            then?.Invoke(childFetchOp);
-            return this.Include(childFetchOp, includer);
-        }
-        #endregion
-
         #endregion
 
         private CollectResult<TDto> FetchFromCurrentRow()

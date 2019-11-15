@@ -105,17 +105,31 @@ namespace sql2dto.Core
             };
         }
 
-        private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, string columnsPrefix = null)
+        private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, bool isFetchTolerant, string columnsPrefix = null)
         {
             var readHelperConstExpr = Expression.Constant(helper, typeof(ReadHelper));
 
             List<MemberBinding> memberBindings = new List<MemberBinding>();
             foreach (var propMapConfig in propertyMapConfigs.Values)
             {
+                if (propMapConfig.Ignored)
+                {
+                    continue;
+                }
+
                 int? ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, propMapConfig, columnsPrefix);
                 if (!ordinal.HasValue)
                 {
-                    continue;
+                    if (isFetchTolerant)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        throw new Exception($"SqlReader column related to property '{typeof(TDto).Name}.{propMapConfig.Info.Name}'" 
+                            + (columnsPrefix != null ? $" using prefix '{columnsPrefix}'" : "")
+                            + " was not found. Make sure the column is projected into SQL query.");
+                    }
                 }
 
                 if (propMapConfig.Converter == null)
@@ -167,6 +181,34 @@ namespace sql2dto.Core
             ColumnsPrefix = columnsPrefix;
             OrderedKeyPropNames = null;
             _propMapConfigs = new Dictionary<string, PropMapConfig>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public bool IsFetchTolerant { get; private set; }
+        public DtoMapper<TDto> SetFetchTolerance(bool tolerance)
+        {
+            IsFetchTolerant = tolerance;
+            return this;
+        }
+
+        public DtoMapper<TDto> IgnoreProps(params Expression<Func<TDto, object>>[] propertySelectors)
+        {
+            return this.IgnoreProps(propertySelectors.Select(s => InternalUtils.GetPropertyName(s)).ToArray());
+        }
+
+        public DtoMapper<TDto> IgnoreProps(params string[] propertyNames)
+        {
+            foreach (var propertyName in propertyNames)
+            {
+                if (_propMapConfigs.TryGetValue(propertyName, out PropMapConfig config))
+                {
+                    config.Ignored = true;
+                }
+                else
+                {
+                    throw new ArgumentException("Property not found", nameof(propertyNames));
+                }
+            }
+            return this;
         }
 
         public DtoMapper<TDto> MapProp(Expression<Func<TDto, object>> propertySelector, string columnName)
@@ -324,7 +366,7 @@ namespace sql2dto.Core
 
         internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
         {
-            return CreateMapFunc(helper, _propMapConfigs, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
+            return CreateMapFunc(helper, _propMapConfigs, IsFetchTolerant, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
         }
 
         internal int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)
@@ -366,6 +408,7 @@ namespace sql2dto.Core
             var clone = new DtoMapper<TDto>(this.ColumnsPrefix);
             clone.IsDefaultMapper = false;
             clone.OrderedKeyPropNames = this.OrderedKeyPropNames?.ToArray();
+            clone.IsFetchTolerant = this.IsFetchTolerant;
             foreach (var propMapConfig in this._propMapConfigs)
             {
                 clone._propMapConfigs.Add(propMapConfig.Key, propMapConfig.Value.Clone());

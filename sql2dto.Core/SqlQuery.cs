@@ -237,36 +237,6 @@ namespace sql2dto.Core
             }
             return this;
         }
-
-        public SqlQuery Project_OBSOLETE<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
-            where TDto : new()
-        {
-            var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
-            foreach (var col in table.ListAllColumns())
-            {
-                if (except.Contains(col.GetColumnName()))
-                {
-                    continue;
-                }
-
-                string propName = col.GetPropertyName();
-                if (mapper == null)
-                {
-                    if (DtoMapper<TDto>.Default.PropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
-                    {
-                        AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
-                    }
-                }
-                else
-                {
-                    if (mapper.PropMapConfigs.TryGetValue(propName, out PropMapConfig propMapConfig))
-                    {
-                        AddSelectExpression(col, $"{columnsPrefix}{(propMapConfig.ColumnName ?? propName)}");
-                    }
-                }
-            }
-            return this;
-        }
         #endregion
 
         #region EXPRESSION PROJECTION

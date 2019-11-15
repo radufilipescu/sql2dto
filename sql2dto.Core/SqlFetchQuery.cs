@@ -59,60 +59,52 @@ namespace sql2dto.Core
         #endregion
 
         #region INCLUDE
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper);
-                childFetchOp.InternalSqlQuery = _sqlQuery;
-                then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper);
-                childFetchOp.InternalSqlQuery = _sqlQuery;
-                then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(helper, childMapper);
-                childFetchOp.InternalSqlQuery = _sqlQuery;
-                then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);
             return this;
         }
 
-        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> includer, Action<IIncludeOperation<TChildDto>> then = null)
+        public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> includer)
             where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
             {
                 var childFetchOp = FetchOperation<TChildDto>.Create(columnsPrefix, helper, childMapper);
-                childFetchOp.InternalSqlQuery = _sqlQuery;
-                then?.Invoke(childFetchOp);
                 parentFetchOp.Include<TChildDto>(childFetchOp, includer);
             });
             _includes.Add(include);

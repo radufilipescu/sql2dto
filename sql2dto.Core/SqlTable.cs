@@ -12,7 +12,8 @@ namespace sql2dto.Core
             _tableSchema = tableSchema;
             _tableName = tableName;
             _tableAlias = tableAlias;
-            _columnNamesToIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _columnSqlNamesToIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _columnPropertyNamesToIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _columns = new List<SqlColumn>();
         }
 
@@ -29,21 +30,31 @@ namespace sql2dto.Core
         private string _tableAlias;
         public override string GetAlias() => _tableAlias;
 
-        private Dictionary<string, int> _columnNamesToIndexes;
+        private Dictionary<string, int> _columnSqlNamesToIndexes;
+        private Dictionary<string, int> _columnPropertyNamesToIndexes;
         public override SqlColumn GetColumn(string columnNameOrAlias)
         {
-            if (_columnNamesToIndexes.TryGetValue(columnNameOrAlias, out int index))
+            if (_columnSqlNamesToIndexes.TryGetValue(columnNameOrAlias, out int colIndex))
             {
-                return _columns[index];
+                return _columns[colIndex];
+            }
+            if (_columnPropertyNamesToIndexes.TryGetValue(columnNameOrAlias, out int propIndex))
+            {
+                return _columns[propIndex];
             }
             throw new ArgumentOutOfRangeException(nameof(columnNameOrAlias));
         }
 
         public override bool TryGetColumn(string columnNameOrAlias, out SqlColumn sqlColumn)
         {
-            if (_columnNamesToIndexes.TryGetValue(columnNameOrAlias, out int index))
+            if (_columnSqlNamesToIndexes.TryGetValue(columnNameOrAlias, out int colIndex))
             {
-                sqlColumn = _columns[index];
+                sqlColumn = _columns[colIndex];
+                return true;
+            }
+            if (_columnPropertyNamesToIndexes.TryGetValue(columnNameOrAlias, out int propIndex))
+            {
+                sqlColumn = _columns[propIndex];
                 return true;
             }
 
@@ -63,7 +74,22 @@ namespace sql2dto.Core
         {
             var col = new SqlColumn(this, propertyName, columnName);
             _columns.Add(col);
-            _columnNamesToIndexes.Add(columnName, _columns.Count - 1);
+            try
+            {
+                _columnSqlNamesToIndexes.Add(columnName, _columns.Count - 1);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Found duplicated column SQL name '{columnName}'", ex);
+            }
+            try
+            {
+                _columnPropertyNamesToIndexes.Add(propertyName, _columns.Count - 1);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Found duplicated column property name '{propertyName}'", ex);
+            }
             return col;
         }
     }

@@ -17,8 +17,8 @@ namespace sql2dto.Core
 
             Type stringType = typeof(string);
 
-            Type innerPropType = null;
-            string innerPropTypeName = null;
+            Type innerPropType;
+            string innerPropTypeName;
             string getterName = "Get";
             if (this.Info.PropertyType.IsGenericType
                 && this.Info.PropertyType.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -54,6 +54,7 @@ namespace sql2dto.Core
             clone.Converter = this.Converter;
             clone.IsKey = this.IsKey;
             clone.IsNullableKey = this.IsNullableKey;
+            clone.Ignored = this.Ignored;
             return clone;
         }
 
@@ -63,6 +64,7 @@ namespace sql2dto.Core
         public bool IsKey { get; internal set; }
         public bool IsNullableKey { get; internal set; }
         public Func<object, object> Converter { get; internal set; }
+        public bool Ignored { get; internal set; }
 
         internal readonly Type InnerPropType;
         internal readonly string InnerPropTypeName;
