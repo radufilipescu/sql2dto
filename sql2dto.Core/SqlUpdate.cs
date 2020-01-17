@@ -76,7 +76,7 @@ namespace sql2dto.Core
 
         //TODO
         //public SqlUpdate Dto<TDto>(TDto dto)
-        //    where TDto : new()
+        //where TDto : new()
         //{
 
         //    return this;

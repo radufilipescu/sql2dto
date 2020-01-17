@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace sql2dto.Core
 {
     public class SqlFetchQuery<TDto> : ISqlStatement
-        where TDto : new()
+        //where TDto : new()
     {
         private readonly SqlBuilder _builder;
         private readonly SqlQuery _sqlQuery;

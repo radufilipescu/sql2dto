@@ -5,10 +5,10 @@ using System.Text;
 namespace sql2dto.Core
 {
     public class FetchOperation<TDto> : IIncludeOperation<TDto>
-        where TDto : new()
+        //where TDto : new()
     {
         private class CollectResult<T>
-            where T : new()
+            //where T : new()
         {
             public T Current { get; set; }
             public int CurrentIndex { get; set; }

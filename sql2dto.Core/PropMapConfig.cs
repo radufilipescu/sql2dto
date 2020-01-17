@@ -10,12 +10,12 @@ namespace sql2dto.Core
         public readonly object DefaultValue;
         public readonly PropertyInfo Info;
 
-        public PropMapConfig(PropertyInfo info, object defaultValue)
+        public PropMapConfig(PropertyInfo info)
         {
-            this.Info = info;
-            this.DefaultValue = defaultValue;
-
             Type stringType = typeof(string);
+
+            this.Info = info;
+            this.DefaultValue = info.PropertyType == stringType ? null : Activator.CreateInstance(info.PropertyType);
 
             Type innerPropType;
             string innerPropTypeName;
@@ -47,7 +47,7 @@ namespace sql2dto.Core
 
         public PropMapConfig Clone()
         {
-            var clone = new PropMapConfig(this.Info, this.DefaultValue);
+            var clone = new PropMapConfig(this.Info);
             clone.DeclarationOrder = this.DeclarationOrder;
             clone.ColumnName = this.ColumnName;
             clone.ColumnOrdinal = this.ColumnOrdinal;

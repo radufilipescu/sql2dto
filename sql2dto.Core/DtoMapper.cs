@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace sql2dto.Core
 {
-    public partial class DtoMapper<TDto> where TDto : new()
+    public partial class DtoMapper<TDto> //where TDto : new()
     {
         internal static bool ImplementsIOnDtoRead { get; private set; }
 
@@ -29,20 +29,27 @@ namespace sql2dto.Core
                 columnsPrefix = columnsPrefixAttr.Value;
             }
 
+            var ctorInfo = dtoType
+                .GetConstructors(BindingFlags.Instance | BindingFlags.Public)
+                .OrderBy(k => k.GetParameters().Length)
+                .FirstOrDefault();
+
+            if (ctorInfo == null)
+            {
+                bool containsPrivateCtors = dtoType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Length > 0;
+                if (containsPrivateCtors)
+                {
+                    throw new Exception($"Type '{typeof(TDto).FullName}' must have at least one public constructor or no constructors at all");
+                }
+            }
+
             var keyPropMapConfigs = new List<PropMapConfig>();
             foreach (var propInfo in dtoType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (!propInfo.CanWrite)
-                {
-                    continue;
-                }
-
                 if (propInfo.GetCustomAttribute<IgnorePropAttribute>() != null)
                 {
                     continue;
                 }
-
-                object defaultValue = null;
 
                 if (!propInfo.PropertyType.GetTypeInfo().IsValueType)
                 {
@@ -51,12 +58,8 @@ namespace sql2dto.Core
                         continue;
                     }
                 }
-                else
-                {
-                    defaultValue = Activator.CreateInstance(propInfo.PropertyType);
-                }
 
-                var propMapConfig = new PropMapConfig(propInfo, defaultValue);
+                var propMapConfig = new PropMapConfig(propInfo);
 
                 var propMapAttribute = propInfo.GetCustomAttribute<PropMapAttribute>();
                 if (propMapAttribute != null)
@@ -96,83 +99,170 @@ namespace sql2dto.Core
                     .ToArray();
             }
 
+            var useCtor = (ctorInfo?.GetParameters()?.Length ?? 0) > 0;
+
             Default = new DtoMapper<TDto>()
             {
                 IsDefaultMapper = true,
                 ColumnsPrefix = columnsPrefix,
+                _ctorInfo = useCtor ? ctorInfo : null,
                 _propMapConfigs = propMapConfigs,
                 OrderedKeyPropNames = orderedKeyPropNames
             };
         }
 
-        private static Func<TDto> CreateMapFunc(ReadHelper helper, Dictionary<string, PropMapConfig> propertyMapConfigs, bool isFetchTolerant, string columnsPrefix = null)
+        internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
         {
+            //return CreateMapFunc(helper, _ctorMapParamConfigs, _propMapConfigs, IsFetchTolerant, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
+            var finalColumnsPrefix = columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix;
+
             var readHelperConstExpr = Expression.Constant(helper, typeof(ReadHelper));
 
-            List<MemberBinding> memberBindings = new List<MemberBinding>();
-            foreach (var propMapConfig in propertyMapConfigs.Values)
+            var ctorParametersExpressions = new List<Expression>();
+            var usedPropsInCtor = new HashSet<string>();
+            if (_ctorInfo != null)
             {
+                foreach (var ctorParameter in _ctorInfo.GetParameters())
+                {
+                    if (!_propMapConfigs.TryGetValue(ctorParameter.Name, out PropMapConfig propMapConfig))
+                    {
+                        throw new Exception($"Parameter '{ctorParameter.Name}' from type '{typeof(TDto).Name}' constructor does not have a matching property."
+                            + " Either add a matching property or remove the constructor parameter.");
+                    }
+
+                    if (propMapConfig.Ignored)
+                    {
+                        throw new Exception(
+                            $"Constructor parameter '{typeof(TDto).Name}.{ctorParameter.Name}'" 
+                            + $" is using a matching property '{typeof(TDto).Name}.{ctorParameter.Name}' that is ignored."
+                            + " Either remove the constructor parameter, or remove the Ignore setting on the property");
+                    }
+
+                    usedPropsInCtor.Add(propMapConfig.Info.Name);
+
+                    int? ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, propMapConfig, finalColumnsPrefix);
+                    if (!ordinal.HasValue)
+                    {
+                        throw new Exception($"The constructor parameter '{typeof(TDto).Name}.{ctorParameter.Name}'"
+                            + $" matched to property '{typeof(TDto).Name}.{propMapConfig.Info.Name}'"
+                            + $" could not be read because column '{finalColumnsPrefix ?? ""}{propMapConfig.ColumnName ?? propMapConfig.Info.Name}'"
+                            + " was not found within the IDataReader's columns. Make sure the column is projected into the query.");
+                    }
+
+                    CreateGetColumnValueExpression(readHelperConstExpr, ordinal, propMapConfig,
+                        (getValueExpression) =>
+                        {
+                            if (propMapConfig.Converter == null)
+                            {
+                                ctorParametersExpressions.Add(getValueExpression);
+                            }
+                            else
+                            {
+                                ctorParametersExpressions.Add(Expression.Convert(getValueExpression, propMapConfig.Info.PropertyType));
+                            }
+                        });
+                }
+            }
+
+            List<MemberBinding> memberBindings = new List<MemberBinding>();
+            foreach (var propMapConfig in _propMapConfigs.Values)
+            {
+                if (!propMapConfig.Info.CanWrite)
+                {
+                    continue;
+                }
+
                 if (propMapConfig.Ignored)
                 {
                     continue;
                 }
 
-                int? ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, propMapConfig, columnsPrefix);
+                if (usedPropsInCtor.Contains(propMapConfig.Info.Name))
+                {
+                    continue;
+                }
+
+                int? ordinal = ExtractOrdinal(helper.ColumnNamesToOrdinals, propMapConfig, finalColumnsPrefix);
                 if (!ordinal.HasValue)
                 {
-                    if (isFetchTolerant)
+                    if (IsFetchTolerant)
                     {
                         continue;
                     }
                     else
                     {
-                        throw new Exception($"SqlReader column related to property '{typeof(TDto).Name}.{propMapConfig.Info.Name}'" 
-                            + (columnsPrefix != null ? $" using prefix '{columnsPrefix}'" : "")
-                            + " was not found. Make sure the column is projected into SQL query.");
+                        throw new Exception($"The property '{typeof(TDto).Name}.{propMapConfig.Info.Name}'"
+                            + $" could not be read because column '{finalColumnsPrefix ?? ""}{propMapConfig.ColumnName ?? propMapConfig.Info.Name}'"
+                            + " was not found within the IDataReader's columns. Make sure the column is projected into the query.");
                     }
                 }
 
-                if (propMapConfig.Converter == null)
-                {
-                    Expression getValueExpr = Expression.Call(readHelperConstExpr,
-                        propMapConfig.ReadHelperGetterMethodInfo, new Expression[]
-                            {
-                                Expression.Constant(ordinal, typeof(int))
-                            }
-                    );
-
-                    var memberBinding = Expression.Bind(propMapConfig.Info, getValueExpr);
-                    memberBindings.Add(memberBinding);
-                }
-                else
-                {
-                    Expression getValueExpr = Expression.Call(readHelperConstExpr,
-                        ReadHelper.GetValueOrDefaultMethodInfo, new Expression[]
-                            {
-                                Expression.Constant(ordinal, typeof(int)),
-                                Expression.Constant(propMapConfig.DefaultValue, typeof(object))
-                            }
-                    );
-
-                    Expression<Func<object, object>> converterExpr = (v) => propMapConfig.Converter(v);
-                    getValueExpr = Expression.Invoke(converterExpr, getValueExpr);
-
-                    var memberBinding = Expression.Bind(propMapConfig.Info, Expression.Convert(getValueExpr, propMapConfig.Info.PropertyType));
-                    memberBindings.Add(memberBinding);
-                }
+                CreateGetColumnValueExpression(readHelperConstExpr, ordinal, propMapConfig, 
+                    (getValueExpression) =>
+                    {
+                        if (propMapConfig.Converter == null)
+                        {
+                            var memberBinding = Expression.Bind(propMapConfig.Info, getValueExpression);
+                            memberBindings.Add(memberBinding);
+                        }
+                        else
+                        {
+                            var memberBinding = Expression.Bind(propMapConfig.Info, Expression.Convert(getValueExpression, propMapConfig.Info.PropertyType));
+                            memberBindings.Add(memberBinding);
+                        }
+                    });
             }
 
-            var newItemExpr = Expression.New(typeof(TDto));
+            var newItemExpr = _ctorInfo == null
+                ? Expression.New(typeof(TDto))
+                : Expression.New(_ctorInfo, ctorParametersExpressions);
+
             var memberInitExpr = Expression.MemberInit(newItemExpr, memberBindings);
 
             var lambda = Expression.Lambda<Func<TDto>>(memberInitExpr);
             return lambda.Compile();
         }
 
+        private void CreateGetColumnValueExpression(ConstantExpression readHelperConstExpr, int? ordinal, PropMapConfig propMapConfig, Action<Expression> callback)
+        {
+            if (propMapConfig.Converter == null)
+            {
+                Expression getValueExpr = Expression.Call(readHelperConstExpr,
+                    propMapConfig.ReadHelperGetterMethodInfo, new Expression[]
+                        {
+                                Expression.Constant(ordinal, typeof(int))
+                        }
+                );
+
+                callback(getValueExpr);
+            }
+            else
+            {
+                Expression getValueExpr = Expression.Call(readHelperConstExpr,
+                    ReadHelper.GetValueOrDefaultMethodInfo, new Expression[]
+                        {
+                                Expression.Constant(ordinal, typeof(int)),
+                                Expression.Constant(propMapConfig.DefaultValue, typeof(object))
+                        }
+                );
+
+                Expression<Func<object, object>> converterExpr = (v) => propMapConfig.Converter(v);
+                getValueExpr = Expression.Invoke(converterExpr, getValueExpr);
+
+                callback(getValueExpr);
+            }
+        }
+
         public bool IsDefaultMapper { get; private set; }
+
+        protected ConstructorInfo _ctorInfo;
+        internal ConstructorInfo CtorInfo => _ctorInfo;
+
         protected Dictionary<string, PropMapConfig> _propMapConfigs;
         internal IReadOnlyDictionary<string, PropMapConfig> PropMapConfigs => _propMapConfigs;
+
         internal string ColumnsPrefix { get; private set; }
+
         internal string[] OrderedKeyPropNames { get; private set; }
 
         private DtoMapper(string columnsPrefix = null)
@@ -187,6 +277,27 @@ namespace sql2dto.Core
         public DtoMapper<TDto> SetFetchTolerance(bool tolerance)
         {
             IsFetchTolerant = tolerance;
+            return this;
+        }
+
+        public DtoMapper<TDto> UseConstructor(ConstructorInfo ctorInfo)
+        {
+            if (ctorInfo == null)
+            {
+                throw new ArgumentNullException(nameof(ctorInfo));
+            }
+
+            if (ctorInfo.DeclaringType != typeof(TDto))
+            {
+                throw new ArgumentException($"Type '{typeof(TDto).FullName}' does not contain this constructor", nameof(ctorInfo));
+            }
+
+            if (!ctorInfo.IsPublic)
+            {
+                throw new Exception($"DtoMapper<{typeof(TDto).FullName}> must use a public constructor");
+            }
+
+            _ctorInfo = ctorInfo;
             return this;
         }
 
@@ -362,11 +473,6 @@ namespace sql2dto.Core
         {
             ColumnsPrefix = columnsPrefix;
             return this;
-        }
-
-        internal Func<TDto> CreateMapFunc(ReadHelper helper, string columnsPrefix = null)
-        {
-            return CreateMapFunc(helper, _propMapConfigs, IsFetchTolerant, columnsPrefix ?? ColumnsPrefix ?? Default.ColumnsPrefix);
         }
 
         internal int? ExtractOrdinal(ReadHelper helper, string propName, string columnsPrefix = null)

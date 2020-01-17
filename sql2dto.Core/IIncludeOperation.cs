@@ -5,7 +5,7 @@ using System.Text;
 namespace sql2dto.Core
 {
     public interface IIncludeOperation<TDto>
-        where TDto : new()
+        //where TDto : new()
     {
         // Once the "Covariant Return Type" is implemented in C#, then we can change the return types
         // from all include methods in this interface to return IIncludeOperation<TDto> instead

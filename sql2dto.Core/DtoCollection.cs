@@ -7,7 +7,7 @@ using System.Text;
 
 namespace sql2dto.Core
 {
-    public class DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto> //where TDto : new()
     {
         public List<TDto> InnerList { get; private set; }
         public int LastFetchedIndex { get; protected set; }
@@ -165,7 +165,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey> : DtoCollection<TDto> //where TDto : new()
         where TKey : IComparable, IConvertible, IEquatable<TKey>
     {
         private const int KeyItemsCount = 1;
@@ -249,7 +249,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey1, TKey2> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey1, TKey2> : DtoCollection<TDto> //where TDto : new()
         where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
         where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
     {
@@ -318,7 +318,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey1, TKey2, TKey3> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3> : DtoCollection<TDto> //where TDto : new()
         where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
         where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -391,7 +391,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4> : DtoCollection<TDto> //where TDto : new()
         where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
         where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -468,7 +468,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5> : DtoCollection<TDto> //where TDto : new()
         where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
         where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         where TKey3 : IComparable, IConvertible, IEquatable<TKey3>
@@ -549,7 +549,7 @@ namespace sql2dto.Core
         }
     }
 
-    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> : DtoCollection<TDto> where TDto : new()
+    public class DtoCollection<TDto, TKey1, TKey2, TKey3, TKey4, TKey5, TKey6> : DtoCollection<TDto> //where TDto : new()
         where TKey1 : IComparable, IConvertible, IEquatable<TKey1>
         where TKey2 : IComparable, IConvertible, IEquatable<TKey2>
         where TKey3 : IComparable, IConvertible, IEquatable<TKey3>

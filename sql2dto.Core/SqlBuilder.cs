@@ -18,25 +18,25 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> FetchQuery<TDto>(SqlTable table, params SqlColumn[] exceptColumns)
-            where TDto : new()
+            //where TDto : new()
         {
             return new SqlFetchQuery<TDto>(this, table, exceptColumns);
         }
 
         public SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
-            where TDto : new()
+            //where TDto : new()
         {
             return new SqlFetchQuery<TDto>(this, mapper, table, exceptColumns);
         }
 
         public SqlFetchQuery<TDto> FetchQuery<TDto>(string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
-            where TDto : new()
+            //where TDto : new()
         {
             return new SqlFetchQuery<TDto>(this, columnsPrefix, table, exceptColumns);
         }
 
         public SqlFetchQuery<TDto> FetchQuery<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
-            where TDto : new()
+            //where TDto : new()
         {
             return new SqlFetchQuery<TDto>(this, mapper, columnsPrefix, table, exceptColumns);
         }
