@@ -60,7 +60,7 @@ namespace sql2dto.Core
 
         #region INCLUDE
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, Action<TDto, TChildDto> includer)
-            where TChildDto : new()
+            //where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
@@ -73,7 +73,7 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, string columnsPrefix, Action<TDto, TChildDto> includer)
-            where TChildDto : new()
+            //where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
@@ -86,7 +86,7 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, Action<TDto, TChildDto> includer)
-            where TChildDto : new()
+            //where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
@@ -99,7 +99,7 @@ namespace sql2dto.Core
         }
 
         public SqlFetchQuery<TDto> Include<TChildDto>(SqlTable table, DtoMapper<TChildDto> childMapper, string columnsPrefix, Action<TDto, TChildDto> includer)
-            where TChildDto : new()
+            //where TChildDto : new()
         {
             _sqlQuery.Project<TChildDto>(childMapper, columnsPrefix, table);
             var include = new Action<FetchOperation<TDto>, ReadHelper>((parentFetchOp, helper) =>
