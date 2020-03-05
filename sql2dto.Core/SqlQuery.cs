@@ -199,12 +199,14 @@ namespace sql2dto.Core
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, SqlTable table, params SqlColumn[] exceptColumns)
             //where TDto : new()
         {
-            return Project<TDto>(mapper: mapper, columnsPrefix: DtoMapper<TDto>.Default.ColumnsPrefix, table: table, exceptColumns: exceptColumns);
+            return Project<TDto>(mapper: mapper, columnsPrefix: null, table: table, exceptColumns: exceptColumns);
         }
 
         public SqlQuery Project<TDto>(DtoMapper<TDto> mapper, string columnsPrefix, SqlTable table, params SqlColumn[] exceptColumns)
             //where TDto : new()
         {
+            string prefix = columnsPrefix ?? mapper?.ColumnsPrefix ?? DtoMapper<TDto>.Default.ColumnsPrefix;
+
             var except = new HashSet<string>(exceptColumns.Select(col => col.GetColumnName()));
             foreach (var propMapConfig in mapper?.PropMapConfigs.Values ?? DtoMapper<TDto>.Default.PropMapConfigs.Values)
             {
@@ -222,7 +224,7 @@ namespace sql2dto.Core
                         continue;
                     }
 
-                    AddSelectExpression(sqlColumn, $"{columnsPrefix}{propMapConfig.ColumnName ?? propMapConfig.Info.Name}");
+                    AddSelectExpression(sqlColumn, $"{prefix}{propMapConfig.ColumnName ?? propMapConfig.Info.Name}");
                 }
                 else if (propMapConfig.ColumnName != null && table.TryGetColumn(propMapConfig.ColumnName, out sqlColumn))
                 {
@@ -232,7 +234,7 @@ namespace sql2dto.Core
                         continue;
                     }
 
-                    AddSelectExpression(sqlColumn, $"{columnsPrefix}{columnName}");
+                    AddSelectExpression(sqlColumn, $"{prefix}{columnName}");
                 }
             }
             return this;

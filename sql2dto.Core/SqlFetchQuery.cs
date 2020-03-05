@@ -12,6 +12,8 @@ namespace sql2dto.Core
     {
         private readonly SqlBuilder _builder;
         private readonly SqlQuery _sqlQuery;
+        private readonly string _columnsPrefix;
+        private readonly DtoMapper<TDto> _mapper;
         private readonly List<Action<FetchOperation<TDto>, ReadHelper>> _includes = new List<Action<FetchOperation<TDto>, ReadHelper>>();
 
         #region CONSTRUCTORS
@@ -19,6 +21,8 @@ namespace sql2dto.Core
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
+            _columnsPrefix = null;
+            _mapper = null;
             _sqlQuery.Project<TDto>(table, exceptColumns);
         }
 
@@ -26,6 +30,8 @@ namespace sql2dto.Core
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
+            _columnsPrefix = null;
+            _mapper = mapper;
             _sqlQuery.Project<TDto>(mapper, table, exceptColumns);
         }
 
@@ -33,6 +39,8 @@ namespace sql2dto.Core
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
+            _columnsPrefix = columnsPrefix;
+            _mapper = null;
             _sqlQuery.Project<TDto>(columnsPrefix, table, exceptColumns);
         }
 
@@ -40,6 +48,8 @@ namespace sql2dto.Core
         {
             _builder = builder;
             _sqlQuery = new SqlQuery(builder);
+            _columnsPrefix = columnsPrefix;
+            _mapper = mapper;
             _sqlQuery.Project<TDto>(mapper, columnsPrefix, table, exceptColumns);
         }
         #endregion
@@ -360,7 +370,7 @@ namespace sql2dto.Core
         {
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection))
             {
-                var fetch = h.Fetch<TDto>();
+                var fetch = h.Fetch<TDto>(_columnsPrefix, _mapper);
                 foreach (var include in _includes)
                 {
                     include(fetch, h);
@@ -373,7 +383,7 @@ namespace sql2dto.Core
         {
             using (var h = await _builder.ExecReadHelperAsync(_sqlQuery, connection, transaction))
             {
-                var fetch = h.Fetch<TDto>();
+                var fetch = h.Fetch<TDto>(_columnsPrefix, _mapper);
                 foreach (var include in _includes)
                 {
                     include(fetch, h);
